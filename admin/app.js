@@ -24,6 +24,7 @@ const els = {
   loginPanel: $("#loginPanel"),
   adminPanel: $("#adminPanel"),
   loginForm: $("#loginForm"),
+  loginStatus: $("#loginStatus"),
   emailInput: $("#emailInput"),
   passwordInput: $("#passwordInput"),
   signOutButton: $("#signOutButton"),
@@ -50,9 +51,25 @@ const els = {
 init();
 
 async function init() {
+  window.addEventListener("error", (event) => {
+    setLoginStatus(`Error del panel: ${event.message}`, true);
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    setLoginStatus(`Error de conexion: ${event.reason?.message || event.reason || "revisa internet"}`, true);
+  });
+
   bindEvents();
-  const { data } = await supabase.auth.getSession();
-  setSession(data.session);
+  try {
+    const { data } = await withTimeout(
+      supabase.auth.getSession(),
+      12000,
+      "No pude revisar la sesion. Abre el panel con internet activo o desde http://localhost."
+    );
+    setSession(data.session);
+  } catch (error) {
+    setSession(null);
+    setLoginStatus(error.message || String(error), true);
+  }
 
   supabase.auth.onAuthStateChange((_event, session) => {
     setSession(session);
@@ -81,18 +98,30 @@ function bindEvents() {
 async function signIn(event) {
   event.preventDefault();
   setBusy(true, "Entrando...");
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: els.emailInput.value.trim(),
-    password: els.passwordInput.value,
-  });
-  setBusy(false);
+  setLoginStatus("Conectando con Supabase...");
 
-  if (error) {
-    setStatus(error.message);
-    return;
+  try {
+    const { data, error } = await withTimeout(
+      supabase.auth.signInWithPassword({
+        email: els.emailInput.value.trim(),
+        password: els.passwordInput.value,
+      }),
+      20000,
+      "Supabase no respondio. Revisa internet o abre el panel desde http://localhost en vez de file://."
+    );
+
+    if (error) {
+      setLoginStatus(authErrorMessage(error), true);
+      return;
+    }
+
+    setLoginStatus("Login correcto. Cargando panel...", false, true);
+    setSession(data.session);
+  } catch (error) {
+    setLoginStatus(error.message || String(error), true);
+  } finally {
+    setBusy(false);
   }
-
-  setSession(data.session);
 }
 
 async function signOut() {
@@ -109,6 +138,7 @@ function setSession(session) {
   els.sessionEmail.textContent = session?.user?.email ?? "Sin sesion";
 
   if (signedIn) {
+    setLoginStatus("Sesion iniciada.", false, true);
     loadFiles();
   } else {
     state.files = [];
@@ -330,6 +360,38 @@ function setBusy(isBusy, message = "") {
 
 function setStatus(message) {
   els.statusText.textContent = message;
+  if (!state.session) {
+    setLoginStatus(message);
+  }
+}
+
+function setLoginStatus(message, isError = false, isOK = false) {
+  if (!els.loginStatus) return;
+  els.loginStatus.textContent = message;
+  els.loginStatus.classList.toggle("error", isError);
+  els.loginStatus.classList.toggle("ok", isOK);
+}
+
+function authErrorMessage(error) {
+  const message = error?.message || String(error);
+  if (/invalid login credentials/i.test(message)) {
+    return "Correo o contrasena incorrectos. Confirma que es un usuario de Supabase Auth.";
+  }
+  if (/email not confirmed/i.test(message)) {
+    return "Ese correo existe, pero falta confirmar el email en Supabase Auth.";
+  }
+  if (/failed to fetch|network/i.test(message)) {
+    return "No pude conectar con Supabase. Prueba abrir el panel desde http://localhost en vez de file://.";
+  }
+  return message;
+}
+
+function withTimeout(promise, milliseconds, message) {
+  let timeoutID;
+  const timeout = new Promise((_, reject) => {
+    timeoutID = setTimeout(() => reject(new Error(message)), milliseconds);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutID));
 }
 
 async function sha256Hex(file) {
