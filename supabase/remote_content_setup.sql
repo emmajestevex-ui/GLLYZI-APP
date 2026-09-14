@@ -1,5 +1,43 @@
 create extension if not exists pgcrypto with schema extensions;
 
+create table if not exists public.license_admins (
+    user_id uuid primary key references auth.users(id) on delete cascade,
+    role text not null default 'founder',
+    created_at timestamptz not null default now(),
+    check (role in ('founder', 'admin'))
+);
+
+alter table public.license_admins enable row level security;
+revoke all on public.license_admins from anon, authenticated;
+
+create or replace function public.is_license_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+    select
+        lower(coalesce(auth.jwt() ->> 'email', '')) in (
+            'emmajestevex@gmail.com',
+            'grego23500@gmail.com'
+        )
+        or exists (
+            select 1
+            from public.license_admins
+            where user_id = auth.uid()
+        );
+$$;
+
+insert into public.license_admins (user_id, role)
+select id, 'founder'
+from auth.users
+where lower(email) in (
+    'emmajestevex@gmail.com',
+    'grego23500@gmail.com'
+)
+on conflict (user_id) do update
+set role = excluded.role;
+
 insert into storage.buckets (
     id,
     name,
@@ -493,6 +531,7 @@ revoke all on function public.admin_publish_remote_content() from public;
 revoke all on function public.get_remote_content_manifest(text, text) from public;
 
 grant execute on function public.admin_list_remote_content_files() to authenticated;
+grant execute on function public.is_license_admin() to authenticated;
 grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid) to authenticated;
 grant execute on function public.admin_set_remote_content_active(uuid, boolean) to authenticated;
 grant execute on function public.admin_delete_remote_content_file(uuid) to authenticated;

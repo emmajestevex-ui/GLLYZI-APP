@@ -1,10 +1,19 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+const createSupabaseClient = window.supabase?.createClient;
+
+if (!createSupabaseClient) {
+  const loginStatus = document.querySelector("#loginStatus");
+  if (loginStatus) {
+    loginStatus.textContent = "No pude cargar Supabase. Revisa internet y refresca la pagina.";
+    loginStatus.classList.add("error");
+  }
+  throw new Error("No pude cargar Supabase. Revisa internet y refresca la pagina.");
+}
+
+const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -153,7 +162,7 @@ async function loadFiles() {
   setBusy(false);
 
   if (error) {
-    setStatus(error.message);
+    setStatus(adminErrorMessage(error));
     state.files = [];
     renderFiles();
     return;
@@ -382,6 +391,20 @@ function authErrorMessage(error) {
   }
   if (/failed to fetch|network/i.test(message)) {
     return "No pude conectar con Supabase. Prueba abrir el panel desde http://localhost en vez de file://.";
+  }
+  return message;
+}
+
+function adminErrorMessage(error) {
+  const message = error?.message || String(error);
+  if (/not authorized/i.test(message)) {
+    return "El login funciono, pero ese correo aun no tiene permiso admin. Ejecuta supabase/remote_content_setup.sql en Supabase.";
+  }
+  if (/could not find the function|function .* does not exist|schema cache/i.test(message)) {
+    return "Falta activar el backend del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
+  }
+  if (/relation .* does not exist|remote_content/i.test(message)) {
+    return "Faltan las tablas del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
   }
   return message;
 }

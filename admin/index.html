@@ -26,8 +26,12 @@
         <form id="loginForm" class="form">
           <label>
             Correo
-            <input id="emailInput" type="email" autocomplete="email" required />
+            <input id="emailInput" type="email" autocomplete="email" list="adminEmails" value="emmajestevex@gmail.com" required />
           </label>
+          <datalist id="adminEmails">
+            <option value="emmajestevex@gmail.com"></option>
+            <option value="grego23500@gmail.com"></option>
+          </datalist>
           <label>
             Contrasena
             <input id="passwordInput" type="password" autocomplete="current-password" required />
@@ -120,6 +124,7 @@
       </article>
     </template>
 
-    <script type="module" src="./app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./app.js"></script>
   </body>
 </html>

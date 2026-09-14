@@ -69,7 +69,7 @@ jobs:
       - name: Empaquetar panel admin
         run: |
           set -euo pipefail
-          zip -r GREEG_ADMIN_panel.zip admin supabase/remote_content_setup.sql
+          zip -r GREEG_ADMIN_panel.zip admin supabase/remote_content_setup.sql supabase/admin_emails_setup.sql
           ls -lh GREEG_ADMIN_panel.zip
 
       - name: Subir panel admin

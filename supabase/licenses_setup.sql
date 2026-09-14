@@ -131,12 +131,27 @@ language sql
 security definer
 set search_path = public
 as $$
-    select exists (
-        select 1
-        from public.license_admins
-        where user_id = auth.uid()
-    );
+    select
+        lower(coalesce(auth.jwt() ->> 'email', '')) in (
+            'emmajestevex@gmail.com',
+            'grego23500@gmail.com'
+        )
+        or exists (
+            select 1
+            from public.license_admins
+            where user_id = auth.uid()
+        );
 $$;
+
+insert into public.license_admins (user_id, role)
+select id, 'founder'
+from auth.users
+where lower(email) in (
+    'emmajestevex@gmail.com',
+    'grego23500@gmail.com'
+)
+on conflict (user_id) do update
+set role = excluded.role;
 
 create or replace function public.license_status_message(p_status text)
 returns text
@@ -628,6 +643,7 @@ revoke all on function public.admin_delete_license(text) from public;
 
 grant execute on function public.activate_license(text, text) to anon, authenticated;
 grant execute on function public.check_license(text, text) to anon, authenticated;
+grant execute on function public.is_license_admin() to authenticated;
 grant execute on function public.admin_generate_licenses(integer, integer, text, jsonb, text) to authenticated;
 grant execute on function public.admin_list_licenses() to authenticated;
 grant execute on function public.admin_set_license_status(text, text) to authenticated;
