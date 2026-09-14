@@ -1,25 +1,18 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
 
-const createSupabaseClient = window.supabase?.createClient;
-
-if (!createSupabaseClient) {
-  const loginStatus = document.querySelector("#loginStatus");
-  if (loginStatus) {
-    loginStatus.textContent = "No pude cargar Supabase. Revisa internet y refresca la pagina.";
-    loginStatus.classList.add("error");
-  }
-  throw new Error("No pude cargar Supabase. Revisa internet y refresca la pagina.");
-}
-
-const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_KEY, {
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
 });
+
+window.__GREEG_ADMIN_READY = true;
 
 const state = {
   files: [],
@@ -72,7 +65,7 @@ async function init() {
   bindEvents();
   try {
     const { data } = await withTimeout(
-      supabase.auth.getSession(),
+      supabaseClient.auth.getSession(),
       12000,
       "No pude revisar la sesion. Abre el panel con internet activo o desde http://localhost."
     );
@@ -82,7 +75,7 @@ async function init() {
     setLoginStatus(error.message || String(error), true);
   }
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
     setSession(session);
   });
 }
@@ -115,7 +108,7 @@ async function signIn(event) {
 
   try {
     const { data, error } = await withTimeout(
-      supabase.auth.signInWithPassword({
+      supabaseClient.auth.signInWithPassword({
         email: els.emailInput.value.trim(),
         password: els.passwordInput.value,
       }),
@@ -154,7 +147,7 @@ async function createAccess() {
 
   try {
     const { data, error } = await withTimeout(
-      supabase.auth.signUp({
+      supabaseClient.auth.signUp({
         email,
         password,
       }),
@@ -200,7 +193,7 @@ async function resetPassword() {
       ? window.location.href
       : undefined;
     const { error } = await withTimeout(
-      supabase.auth.resetPasswordForEmail(email, {
+      supabaseClient.auth.resetPasswordForEmail(email, {
         redirectTo,
       }),
       20000,
@@ -221,7 +214,7 @@ async function resetPassword() {
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   setSession(null);
 }
 
@@ -245,7 +238,7 @@ function setSession(session) {
 async function loadFiles() {
   if (!state.session) return;
   setBusy(true, "Cargando archivos...");
-  const { data, error } = await supabase.rpc("admin_list_remote_content_files");
+  const { data, error } = await supabaseClient.rpc("admin_list_remote_content_files");
   setBusy(false);
 
   if (error) {
@@ -283,7 +276,7 @@ async function saveFile(event) {
     const storagePath = `content/${crypto.randomUUID()}/${safeFileName(file.name)}`;
 
     setStatus("Subiendo archivo...");
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
       .from(BUCKET)
       .upload(storagePath, file, {
         cacheControl: "3600",
@@ -294,7 +287,7 @@ async function saveFile(event) {
     if (uploadError) throw uploadError;
 
     setStatus("Guardando metadata...");
-    const { error: rpcError } = await supabase.rpc("admin_upsert_remote_content_file", {
+    const { error: rpcError } = await supabaseClient.rpc("admin_upsert_remote_content_file", {
       p_id: els.editingId.value || null,
       p_name: name,
       p_slug: slug,
@@ -322,7 +315,7 @@ async function saveFile(event) {
 async function toggleActive(file) {
   if (!state.session || state.busy) return;
   setBusy(true, "Actualizando estado...");
-  const { error } = await supabase.rpc("admin_set_remote_content_active", {
+  const { error } = await supabaseClient.rpc("admin_set_remote_content_active", {
     p_id: file.id,
     p_is_active: !file.is_active,
   });
@@ -342,7 +335,7 @@ async function deleteFile(file) {
   if (!ok) return;
 
   setBusy(true, "Marcando eliminacion...");
-  const { error } = await supabase.rpc("admin_delete_remote_content_file", {
+  const { error } = await supabaseClient.rpc("admin_delete_remote_content_file", {
     p_id: file.id,
   });
   setBusy(false);
@@ -358,7 +351,7 @@ async function deleteFile(file) {
 async function publishChanges() {
   if (!state.session || state.busy) return;
   setBusy(true, "Publicando manifest...");
-  const { data, error } = await supabase.rpc("admin_publish_remote_content");
+  const { data, error } = await supabaseClient.rpc("admin_publish_remote_content");
   setBusy(false);
 
   if (error) {
