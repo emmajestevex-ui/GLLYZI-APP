@@ -36,6 +36,8 @@ const els = {
   loginStatus: $("#loginStatus"),
   emailInput: $("#emailInput"),
   passwordInput: $("#passwordInput"),
+  createAccessButton: $("#createAccessButton"),
+  resetPasswordButton: $("#resetPasswordButton"),
   signOutButton: $("#signOutButton"),
   sessionEmail: $("#sessionEmail"),
   fileForm: $("#fileForm"),
@@ -87,6 +89,8 @@ async function init() {
 
 function bindEvents() {
   els.loginForm.addEventListener("submit", signIn);
+  els.createAccessButton.addEventListener("click", createAccess);
+  els.resetPasswordButton.addEventListener("click", resetPassword);
   els.signOutButton.addEventListener("click", signOut);
   els.fileForm.addEventListener("submit", saveFile);
   els.newButton.addEventListener("click", resetForm);
@@ -126,6 +130,89 @@ async function signIn(event) {
 
     setLoginStatus("Login correcto. Cargando panel...", false, true);
     setSession(data.session);
+  } catch (error) {
+    setLoginStatus(error.message || String(error), true);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function createAccess() {
+  const email = els.emailInput.value.trim();
+  const password = els.passwordInput.value;
+  if (!email || !password) {
+    setLoginStatus("Escribe correo y contrasena para crear el acceso.", true);
+    return;
+  }
+  if (!isAllowedAdminEmail(email)) {
+    setLoginStatus("Ese correo no esta en la lista admin del panel.", true);
+    return;
+  }
+
+  setBusy(true, "Creando acceso...");
+  setLoginStatus("Creando acceso en Supabase...");
+
+  try {
+    const { data, error } = await withTimeout(
+      supabase.auth.signUp({
+        email,
+        password,
+      }),
+      20000,
+      "Supabase no respondio. Revisa internet y vuelve a intentar."
+    );
+
+    if (error) {
+      setLoginStatus(createAccessErrorMessage(error), true);
+      return;
+    }
+
+    if (data.session) {
+      setLoginStatus("Acceso creado. Cargando panel...", false, true);
+      setSession(data.session);
+      return;
+    }
+
+    setLoginStatus("Acceso creado. Si Supabase pide confirmacion, revisa el correo y luego entra.", false, true);
+  } catch (error) {
+    setLoginStatus(error.message || String(error), true);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function resetPassword() {
+  const email = els.emailInput.value.trim();
+  if (!email) {
+    setLoginStatus("Escribe el correo primero.", true);
+    return;
+  }
+  if (!isAllowedAdminEmail(email)) {
+    setLoginStatus("Ese correo no esta en la lista admin del panel.", true);
+    return;
+  }
+
+  setBusy(true, "Enviando recuperacion...");
+  setLoginStatus("Enviando correo de recuperacion...");
+
+  try {
+    const redirectTo = window.location.protocol.startsWith("http")
+      ? window.location.href
+      : undefined;
+    const { error } = await withTimeout(
+      supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      }),
+      20000,
+      "Supabase no respondio. Revisa internet y vuelve a intentar."
+    );
+
+    if (error) {
+      setLoginStatus(error.message || String(error), true);
+      return;
+    }
+
+    setLoginStatus("Listo. Revisa ese correo para cambiar la contrasena.", false, true);
   } catch (error) {
     setLoginStatus(error.message || String(error), true);
   } finally {
@@ -384,13 +471,24 @@ function setLoginStatus(message, isError = false, isOK = false) {
 function authErrorMessage(error) {
   const message = error?.message || String(error);
   if (/invalid login credentials/i.test(message)) {
-    return "Correo o contrasena incorrectos. Confirma que es un usuario de Supabase Auth.";
+    return "Correo o contrasena incorrectos. Puedes tocar Crear acceso o Recuperar contrasena.";
   }
   if (/email not confirmed/i.test(message)) {
     return "Ese correo existe, pero falta confirmar el email en Supabase Auth.";
   }
   if (/failed to fetch|network/i.test(message)) {
     return "No pude conectar con Supabase. Prueba abrir el panel desde http://localhost en vez de file://.";
+  }
+  return message;
+}
+
+function createAccessErrorMessage(error) {
+  const message = error?.message || String(error);
+  if (/already|registered|exists/i.test(message)) {
+    return "Ese correo ya existe. Usa Entrar o Recuperar contrasena.";
+  }
+  if (/signup|disabled/i.test(message)) {
+    return "Supabase no permite crear usuarios desde aqui. Crea el usuario en Authentication > Users.";
   }
   return message;
 }
@@ -407,6 +505,10 @@ function adminErrorMessage(error) {
     return "Faltan las tablas del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
   }
   return message;
+}
+
+function isAllowedAdminEmail(email) {
+  return ["emmajestevex@gmail.com", "grego23500@gmail.com"].includes(email.trim().toLowerCase());
 }
 
 function withTimeout(promise, milliseconds, message) {

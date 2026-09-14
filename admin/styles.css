@@ -195,6 +195,12 @@ textarea:focus {
   background: var(--accent-strong);
 }
 
+.loginActions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
 .ghost,
 .fileActions button {
   background: var(--panel-strong);
@@ -328,6 +334,7 @@ textarea:focus {
   }
 
   .panelHeader,
+  .loginActions,
   .toolbar {
     align-items: stretch;
     flex-direction: column;
@@ -336,6 +343,10 @@ textarea:focus {
   .actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .loginActions {
+    grid-template-columns: 1fr;
   }
 
   .toolbar input {
