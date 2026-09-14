@@ -1,0 +1,339 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0d10;
+  --panel: #15191f;
+  --panel-strong: #1d232b;
+  --line: #2b333d;
+  --text: #f4f7fb;
+  --muted: #95a0ad;
+  --accent: #f01821;
+  --accent-strong: #ff4249;
+  --blue: #3fa7ff;
+  --green: #4bd47b;
+  --warning: #f5b84b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.topbar,
+.panelHeader,
+.fileMain,
+.fileSide,
+.actions,
+.session,
+.toolbar,
+.fileActions {
+  display: flex;
+  align-items: center;
+}
+
+.topbar {
+  justify-content: space-between;
+  gap: 18px;
+  padding: 8px 0 24px;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.02;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.muted {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.narrow {
+  max-width: 460px;
+}
+
+.panelHeader {
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  color: #cfd6df;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  color: var(--text);
+  background: #0f1318;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 11px 12px;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgba(240, 24, 33, 0.2);
+}
+
+.primary,
+.ghost,
+.fileActions button {
+  min-height: 38px;
+  border-radius: 7px;
+  padding: 0 14px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.primary {
+  background: var(--accent);
+}
+
+.primary:hover {
+  background: var(--accent-strong);
+}
+
+.ghost,
+.fileActions button {
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+}
+
+.ghost:hover,
+.fileActions button:hover {
+  border-color: #596574;
+}
+
+.session {
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.actions {
+  gap: 10px;
+}
+
+.toolbar {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.toolbar input {
+  max-width: 340px;
+}
+
+.counter {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.fileList {
+  display: grid;
+  gap: 10px;
+}
+
+.fileCard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 14px;
+  background: #10151b;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.fileMain {
+  gap: 12px;
+  min-width: 0;
+}
+
+.fileIcon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: rgba(63, 167, 255, 0.14);
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.fileMeta,
+.fileHash {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.fileHash {
+  margin-top: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.fileSide {
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-radius: 6px;
+  padding: 0 8px;
+  background: rgba(75, 212, 123, 0.14);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.badge.pending {
+  background: rgba(245, 184, 75, 0.14);
+  color: var(--warning);
+}
+
+.badge.inactive {
+  background: rgba(149, 160, 173, 0.14);
+  color: var(--muted);
+}
+
+.fileActions {
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.deleteButton {
+  color: #ff9ba0 !important;
+}
+
+@media (max-width: 820px) {
+  .topbar,
+  .grid,
+  .fileCard {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .panelHeader,
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .toolbar input {
+    max-width: none;
+  }
+
+  .fileSide {
+    align-items: stretch;
+  }
+
+  .fileActions {
+    justify-content: stretch;
+  }
+
+  .fileActions button {
+    flex: 1 1 130px;
+  }
+}

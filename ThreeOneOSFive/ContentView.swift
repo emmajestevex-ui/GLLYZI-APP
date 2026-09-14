@@ -89,6 +89,8 @@ struct ContentView: View {
             CleanerView()
         case .wallpapers:
             WallpaperLabView()
+        case .remoteContent:
+            RemoteContentView()
         }
     }
 
@@ -154,6 +156,7 @@ private extension AppSection {
         case .patches: return "tab.patches"
         case .cleaner: return "tab.cleaner"
         case .wallpapers: return "tab.wallpapers"
+        case .remoteContent: return "Remote"
         }
     }
 
@@ -164,12 +167,14 @@ private extension AppSection {
         case .patches: return "shippingbox.fill"
         case .cleaner: return "sparkles"
         case .wallpapers: return "photo.on.rectangle.angled"
+        case .remoteContent: return "icloud.and.arrow.down.fill"
         }
     }
 }
 
 private struct DashboardView: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var remoteContentStore: RemoteContentStore
     @Binding var cleanerEnabled: Bool
     @Binding var wallpapersEnabled: Bool
     let wallpapersSupported: Bool
@@ -211,10 +216,30 @@ private struct DashboardView: View {
                     Text("Built-in patches")
                 }
 
+                Section {
+                    RemoteContentDashboardRow()
+
+                    Button {
+                        remoteContentStore.syncIfPossible(force: true)
+                    } label: {
+                        Label("Check updates", systemImage: "arrow.clockwise.circle.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .disabled(remoteContentStore.isBusy)
+                } header: {
+                    Text("Remote files")
+                } footer: {
+                    Text("Published PC files sync inside GREEG APP only.")
+                }
+
             }
             .listStyle(.insetGrouped)
             .navigationBarTitleDisplayMode(.inline)
             .tint(AppTheme.accent)
+            .onAppear {
+                remoteContentStore.loadLocalState()
+            }
         }
     }
 
@@ -252,6 +277,46 @@ private struct DashboardView: View {
         }
     }
 
+}
+
+private struct RemoteContentDashboardRow: View {
+    @EnvironmentObject private var remoteContentStore: RemoteContentStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                AppRowIcon(
+                    systemName: remoteContentStore.isBusy ? "arrow.triangle.2.circlepath" : "icloud.fill",
+                    tint: Color(red: 0.26, green: 0.72, blue: 1.0),
+                    symbolSize: 16,
+                    frameSize: 32
+                )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(remoteContentStore.statusText)
+                        .font(.subheadline.weight(.semibold))
+                    Text(remoteContentStore.detailText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("v\(remoteContentStore.remoteVersion)")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(AppTheme.accent)
+                    Text(remoteContentStore.installedFiles.count == 1 ? "1 file" : "\(remoteContentStore.installedFiles.count) files")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if let progress = remoteContentStore.progress, remoteContentStore.isBusy {
+                ProgressView(value: progress)
+                    .tint(AppTheme.accent)
+            }
+        }
+        .padding(.vertical, 2)
+    }
 }
 
 private struct HomePatchRow: View {

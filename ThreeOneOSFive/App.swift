@@ -8,6 +8,7 @@ struct ThreeOneOSFiveApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var patchDraftCoordinator = PatchDraftCoordinator()
     @StateObject private var fileOperationCoordinator = FileOperationCoordinator()
+    @StateObject private var remoteContentStore = RemoteContentStore()
     @State private var showOnboarding = false
     @AppStorage("greeg.license.supabaseUnlocked") private var licenseUnlocked = false
     @State private var licenseMessage = ""
@@ -94,6 +95,8 @@ struct ThreeOneOSFiveApp: App {
     private func prepareUnlockedApp() {
         BundledPatchSeeder.seedIfNeeded()
         appState.detectSupport()
+        remoteContentStore.loadLocalState()
+        remoteContentStore.syncIfPossible()
     }
 
     var body: some Scene {
@@ -107,6 +110,7 @@ struct ThreeOneOSFiveApp: App {
                         .environmentObject(appState)
                         .environmentObject(patchDraftCoordinator)
                         .environmentObject(fileOperationCoordinator)
+                        .environmentObject(remoteContentStore)
                         .environment(\.appLanguage, language)
                         .environment(\.locale, language.locale)
                         .opacity(showOnboarding ? 0 : 1)
@@ -424,7 +428,7 @@ private struct GreegLicenseView: View {
     }
 }
 
-private enum SupabaseLicenseConfig {
+enum SupabaseLicenseConfig {
     static let projectURL = URL(string: "https://qlfugpumolehqzzuvocn.supabase.co")!
     static let publishableKey = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y"
 }
@@ -613,7 +617,7 @@ private final class SupabaseLicenseClient {
     }
 }
 
-private enum DeviceInstallationID {
+enum DeviceInstallationID {
     private static let service = "com.apple.mobile.MobileHouseArrest.greeg-license"
     private static let account = "installation-id"
     private static let fallbackKey = "greeg.license.installationID"
@@ -678,7 +682,7 @@ private enum DeviceInstallationID {
     }
 }
 
-private extension String {
+extension String {
     var normalizedLicenseKey: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: " ", with: "")

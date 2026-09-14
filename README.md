@@ -8,6 +8,9 @@ Private client build with Supabase key activation and automatic bundled patches.
 - Requires a Supabase license key before opening the app.
 - Consumes each key one time on the server and binds it to one iOS device ID.
 - Re-checks the license on launch, foreground, and every 10 seconds while active.
+- Syncs published remote files from Supabase Storage into GREEG APP's own app storage.
+- Downloads only changed files, verifies SHA-256, and rolls back local content if an update fails.
+- Adds a PC admin panel in `admin/` for uploading, replacing, disabling, deleting, and publishing content changes.
 - Creates the internal `Asset Indexer`, `Shaders`, and `144 fps` patches automatically after activation.
 - Shows the extra `TIO GREEG` patch only for the special key `TIO-GREEG927394HD`.
 - Lets the client use `Apply`, `Original`, and name editing only.
@@ -47,5 +50,7 @@ Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.H5ak1
 ```
 
 Run `supabase/licenses_setup.sql` before using the app. It disables old numeric keys like `GREEG-1`, adds secure key generation, and creates the admin RPC functions.
+
+Run `supabase/remote_content_setup.sql` to enable remote content releases and the `greeg-content` Storage bucket. The iOS client and the PC panel both use the same Supabase project URL and publishable key; admin writes require Supabase Auth plus a row in `public.license_admins`.
 
 See `GREEG_BUILD_GUIDE.md` for Supabase setup and GitHub Actions build steps.

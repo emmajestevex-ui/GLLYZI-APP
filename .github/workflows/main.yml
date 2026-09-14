@@ -65,3 +65,17 @@ jobs:
           path: GREEG_APP_unsigned.ipa
           if-no-files-found: error
           retention-days: 30
+
+      - name: Empaquetar panel admin
+        run: |
+          set -euo pipefail
+          zip -r GREEG_ADMIN_panel.zip admin supabase/remote_content_setup.sql
+          ls -lh GREEG_ADMIN_panel.zip
+
+      - name: Subir panel admin
+        uses: actions/upload-artifact@v4
+        with:
+          name: GREEG-admin-panel
+          path: GREEG_ADMIN_panel.zip
+          if-no-files-found: error
+          retention-days: 30

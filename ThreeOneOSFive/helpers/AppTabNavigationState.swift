@@ -6,6 +6,7 @@ enum AppSection: Int, CaseIterable, Identifiable {
     case patches
     case cleaner
     case wallpapers
+    case remoteContent
 
     var id: Int { rawValue }
 }
@@ -40,7 +41,7 @@ struct FeatureVisibility: Equatable {
     }
 
     var visibleSections: [AppSection] {
-        [.home, .patches]
+        [.home, .patches, .remoteContent]
     }
 
     func isVisible(_ section: AppSection) -> Bool {

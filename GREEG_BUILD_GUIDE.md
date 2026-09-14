@@ -69,6 +69,12 @@ Ejecuta este SQL en Supabase para activar la seguridad nueva:
 supabase/licenses_setup.sql
 ```
 
+Ejecuta tambien este SQL para activar el contenido remoto administrado desde PC:
+
+```text
+supabase/remote_content_setup.sql
+```
+
 El SQL nuevo funciona asi:
 
 - Si la key no existe, responde `Invalid key`.
@@ -90,7 +96,19 @@ where email = 'TU_EMAIL_AQUI';
 
 No pongas ninguna `secret key` ni `service_role` dentro de la app.
 
-## 3. Subir a GitHub
+## 3. Panel de PC para archivos / contenido
+
+El panel nuevo vive en:
+
+```text
+admin/index.html
+```
+
+Desde ahi puedes entrar con Supabase Auth, subir archivos nuevos, reemplazarlos, activar/desactivar, marcar eliminacion y pulsar `Publicar cambios`. La app iOS revisa el manifest publicado al abrir y tambien desde el boton `Check updates` en `Remote Files`.
+
+La sincronizacion descarga solo archivos cambiados, verifica SHA-256 antes de instalar y guarda respaldo local para restaurar si algo falla. Los archivos se guardan dentro del almacenamiento propio de GREEG APP.
+
+## 4. Subir a GitHub
 
 1. Crea un repositorio nuevo, por ejemplo `GREEG-APP`.
 2. No agregues README automatico.
@@ -110,7 +128,7 @@ GREEG-APP/
 └── GREEG_BUILD_GUIDE.md
 ```
 
-## 4. Compilar la IPA unsigned
+## 5. Compilar la IPA unsigned
 
 1. Entra al repositorio en GitHub.
 2. Abre `Actions`.
@@ -126,9 +144,17 @@ Dentro estara:
 GREEG-APP-unsigned.ipa
 ```
 
+El mismo run tambien sube el artifact:
+
+```text
+GREEG-admin-panel
+```
+
+Ese ZIP contiene el panel de PC y el SQL de contenido remoto.
+
 La IPA queda sin firmar para que despues uses tu metodo de firma autorizado.
 
-## 5. Cambios hechos
+## 6. Cambios hechos
 
 - Nombre visible cambiado a `greeg app`.
 - Pantalla de key en ingles.
@@ -139,5 +165,7 @@ La IPA queda sin firmar para que despues uses tu metodo de firma autorizado.
 - Importar, exportar, crear y editar reglas removidos de la UI.
 - `UIFileSharingEnabled` desactivado.
 - Supabase configurado para key de un solo uso, bloqueo remoto, pausa remota, expiracion y keys seguras generadas desde el panel admin.
+- Supabase configurado para releases de contenido remoto, manifest versionado, Storage con RLS y panel admin con Auth.
+- La app tiene un apartado `Remote Files` con progreso, estado y boton para buscar actualizaciones.
 
 Nota honesta: cualquier archivo dentro de una IPA puede ser extraido por alguien con conocimientos tecnicos. Este cambio evita que el cliente reciba el paquete en Files o lo exporte desde la app; no convierte la IPA en una caja imposible de inspeccionar.

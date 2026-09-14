@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GREEG APP Admin</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">GREEG APP</p>
+          <h1>Archivos / Contenido</h1>
+        </div>
+        <div class="session">
+          <span id="sessionEmail">Sin sesion</span>
+          <button id="signOutButton" class="ghost hidden" type="button">Salir</button>
+        </div>
+      </section>
+
+      <section id="loginPanel" class="panel narrow">
+        <h2>Entrar al panel</h2>
+        <p class="muted">Usa el correo admin de Supabase. No se usa ninguna service key en esta pagina.</p>
+        <form id="loginForm" class="form">
+          <label>
+            Correo
+            <input id="emailInput" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            Contrasena
+            <input id="passwordInput" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary" type="submit">Entrar</button>
+        </form>
+      </section>
+
+      <section id="adminPanel" class="grid hidden">
+        <aside class="panel">
+          <div class="panelHeader">
+            <div>
+              <h2 id="formTitle">Nuevo archivo</h2>
+              <p class="muted">Sube o reemplaza contenido propio de GREEG APP.</p>
+            </div>
+            <button id="newButton" class="ghost" type="button">Nuevo</button>
+          </div>
+
+          <form id="fileForm" class="form">
+            <input id="editingId" type="hidden" />
+            <label>
+              Nombre visible
+              <input id="nameInput" type="text" maxlength="80" placeholder="Ej. Banner principal" required />
+            </label>
+            <label>
+              Slug
+              <input id="slugInput" type="text" maxlength="80" placeholder="banner-principal" required />
+            </label>
+            <label>
+              Categoria
+              <select id="categoryInput">
+                <option value="files">files</option>
+                <option value="images">images</option>
+                <option value="configs">configs</option>
+                <option value="media">media</option>
+              </select>
+            </label>
+            <label>
+              Descripcion
+              <textarea id="descriptionInput" rows="3" placeholder="Nota interna opcional"></textarea>
+            </label>
+            <label>
+              Archivo
+              <input id="fileInput" type="file" required />
+            </label>
+            <button id="saveButton" class="primary" type="submit">Guardar cambio</button>
+          </form>
+        </aside>
+
+        <section class="panel">
+          <div class="panelHeader">
+            <div>
+              <h2>Publicacion</h2>
+              <p id="statusText" class="muted">Cargando...</p>
+            </div>
+            <div class="actions">
+              <button id="refreshButton" class="ghost" type="button">Actualizar</button>
+              <button id="publishButton" class="primary" type="button">Publicar cambios</button>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <input id="searchInput" type="search" placeholder="Buscar archivo..." />
+            <span id="fileCounter" class="counter">0 archivos</span>
+          </div>
+
+          <div id="fileList" class="fileList"></div>
+        </section>
+      </section>
+    </main>
+
+    <template id="fileTemplate">
+      <article class="fileCard">
+        <div class="fileMain">
+          <div class="fileIcon">FILE</div>
+          <div>
+            <h3></h3>
+            <p class="fileMeta"></p>
+            <p class="fileHash"></p>
+          </div>
+        </div>
+        <div class="fileSide">
+          <span class="badge"></span>
+          <div class="fileActions">
+            <button class="replaceButton" type="button">Reemplazar</button>
+            <button class="toggleButton" type="button"></button>
+            <button class="deleteButton" type="button">Eliminar</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
