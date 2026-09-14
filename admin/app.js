@@ -508,7 +508,11 @@ function adminErrorMessage(error) {
 }
 
 function isAllowedAdminEmail(email) {
-  return ["emmajestevex@gmail.com", "grego23500@gmail.com"].includes(email.trim().toLowerCase());
+  return [
+    "2008yashirchavez@gmail.com",
+    "emmajestevex@gmail.com",
+    "grego23500@gmail.com",
+  ].includes(email.trim().toLowerCase());
 }
 
 function withTimeout(promise, milliseconds, message) {
