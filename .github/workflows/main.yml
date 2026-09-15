@@ -23,6 +23,7 @@ jobs:
 
       - name: Compilar GREEG APP
         run: |
+          set -o pipefail
           xcodebuild \
             -project ThreeOneOSFive.xcodeproj \
             -scheme 3105 \
@@ -32,7 +33,16 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            build
+            build 2>&1 | tee xcodebuild.log
+
+      - name: Mostrar errores de Xcode
+        if: failure()
+        run: |
+          if [ -f xcodebuild.log ]; then
+            grep -Ei "error:|fatal error:" xcodebuild.log | tail -80 | while IFS= read -r line; do
+              printf '::error::%s\n' "$line"
+            done
+          fi
 
       - name: Buscar aplicación compilada
         run: |
