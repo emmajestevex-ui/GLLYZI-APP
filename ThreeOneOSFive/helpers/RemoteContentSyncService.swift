@@ -264,6 +264,7 @@ final class RemoteContentStore: ObservableObject {
 
             if plan.changed.isEmpty && plan.obsolete.isEmpty {
                 try saveLocalManifest(manifest)
+                BundledPatchSeeder.seedIfNeeded()
                 installedFiles = manifest.files
                 remoteVersion = manifest.version
                 progress = 1
@@ -307,6 +308,7 @@ final class RemoteContentStore: ObservableObject {
             }
 
             try saveLocalManifest(manifest)
+            BundledPatchSeeder.seedIfNeeded()
             installedFiles = manifest.files
             remoteVersion = manifest.version
             progress = 1
@@ -604,6 +606,62 @@ final class RemoteContentStore: ObservableObject {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
         return "\(formatter.string(from: Date()))-\(UUID().uuidString)"
+    }
+}
+
+enum RemoteContentLibrary {
+    static func loadManifest(fileManager: FileManager = .default) -> RemoteContentManifest? {
+        let url = manifestURL(fileManager: fileManager)
+        guard fileManager.fileExists(atPath: url.path),
+              let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+        return try? JSONDecoder().decode(RemoteContentManifest.self, from: data)
+    }
+
+    static func installedFile(matching relativePath: String, fileManager: FileManager = .default) -> (file: RemoteContentFile, url: URL)? {
+        let requestedPath = safeRelativePath(relativePath)
+        guard let file = loadManifest(fileManager: fileManager)?.files.first(where: {
+            safeRelativePath($0.localRelativePath) == requestedPath
+        }) else {
+            return nil
+        }
+
+        let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.localRelativePath)
+        guard fileManager.fileExists(atPath: url.path) else { return nil }
+        return (file, url)
+    }
+
+    private static func safeRelativePath(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "/")
+            .split(separator: "/", omittingEmptySubsequences: true)
+            .map(String.init)
+            .filter { $0 != "." && $0 != ".." }
+            .joined(separator: "/")
+            .lowercased()
+    }
+
+    private static func url(inside root: URL, relativePath: String) -> URL {
+        relativePath
+            .split(separator: "/", omittingEmptySubsequences: true)
+            .reduce(root) { partial, component in
+                partial.appendingPathComponent(String(component), isDirectory: false)
+            }
+    }
+
+    private static func storeRootURL(fileManager: FileManager) -> URL {
+        let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        return base.appendingPathComponent("GREEGRemoteContent", isDirectory: true)
+    }
+
+    private static func currentRootURL(fileManager: FileManager) -> URL {
+        storeRootURL(fileManager: fileManager).appendingPathComponent("current", isDirectory: true)
+    }
+
+    private static func manifestURL(fileManager: FileManager) -> URL {
+        storeRootURL(fileManager: fileManager).appendingPathComponent("manifest.json", isDirectory: false)
     }
 }
 

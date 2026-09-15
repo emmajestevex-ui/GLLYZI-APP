@@ -311,6 +311,10 @@ async function saveFile(event) {
     setStatus("Completa la ruta que va a reemplazar en GREEG APP.");
     return;
   }
+  if (!isCompleteTargetPath(targetPath)) {
+    setStatus("La ruta debe incluir carpeta y archivo. Usa una plantilla o escribe algo como patches/mi-archivo.bundle.");
+    return;
+  }
 
   setBusy(true, "Calculando SHA-256...");
   try {
@@ -628,6 +632,11 @@ function fallbackTargetPath(file) {
 
 function samePath(left, right) {
   return safeRelativePath(left).toLowerCase() === safeRelativePath(right).toLowerCase();
+}
+
+function isCompleteTargetPath(value) {
+  const parts = safeRelativePath(value).split("/").filter(Boolean);
+  return parts.length >= 2 && /\.[a-zA-Z0-9~+-]+$/.test(parts.at(-1) || "");
 }
 
 function escapeHTML(value) {

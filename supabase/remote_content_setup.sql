@@ -190,6 +190,10 @@ begin
         raise exception 'Invalid target path';
     end if;
 
+    if v_path !~ '/' or v_path !~ '\.[a-zA-Z0-9~+-]+$' then
+        raise exception 'Target path must include a folder and file name';
+    end if;
+
     return left(v_path, 180);
 end;
 $$;

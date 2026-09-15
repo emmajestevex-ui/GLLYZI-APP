@@ -183,14 +183,18 @@ enum BundledPatchSeeder {
     }
 
     private static func makeRule(_ spec: PayloadSpec, fileManager: FileManager) throws -> PatchRule {
-        let payloadURL = try payloadURL(for: spec, fileManager: fileManager)
+        let bundledPayloadURL = try payloadURL(for: spec, fileManager: fileManager)
+        let targetFilename = spec.targetFilename ?? bundledPayloadURL.lastPathComponent
+        let targetPath = spec.directory + "/" + targetFilename
+
+        let payloadURL = RemoteContentLibrary.installedFile(matching: targetPath, fileManager: fileManager)?.url
+            ?? bundledPayloadURL
         let data = try Data(contentsOf: payloadURL, options: .mappedIfSafe)
         guard !data.isEmpty else { throw SeedError.emptyPayload(payloadURL.lastPathComponent) }
-        let targetFilename = spec.targetFilename ?? payloadURL.lastPathComponent
 
         return PatchRule(
             bundleID: bundleID,
-            relativePath: spec.directory + "/" + targetFilename,
+            relativePath: targetPath,
             replacementFilename: payloadURL.lastPathComponent,
             replacementData: data
         )

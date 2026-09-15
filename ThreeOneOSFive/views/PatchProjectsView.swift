@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PatchProjectsView: View {
     @Environment(\.appLanguage) private var language
+    @EnvironmentObject private var remoteContentStore: RemoteContentStore
     @StateObject private var store = PatchProjectStore()
     @State private var searchText = ""
 
@@ -24,6 +25,20 @@ struct PatchProjectsView: View {
         }
     }
 
+    private var remotePatchFiles: [RemoteContentFile] {
+        remoteContentStore.installedFiles
+            .filter { file in
+                ["patches", "shaders", "configs"].contains(file.category.lowercased())
+            }
+            .filter { file in
+                let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !query.isEmpty else { return true }
+                return file.name.localizedCaseInsensitiveContains(query)
+                    || file.slug.localizedCaseInsensitiveContains(query)
+                    || file.localRelativePath.localizedCaseInsensitiveContains(query)
+            }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -35,7 +50,7 @@ struct PatchProjectsView: View {
                 Divider()
                 List {
                     Section {
-                        PatchListHeader(count: store.items.count)
+                        PatchListHeader(count: store.items.count + remotePatchFiles.count)
                     }
 
                     if store.items.isEmpty && !store.isBusy {
@@ -48,6 +63,14 @@ struct PatchProjectsView: View {
                         Section("Built-in patches") {
                             ForEach(filteredItems) { item in
                                 itemRow(item)
+                            }
+                        }
+                    }
+
+                    if !remotePatchFiles.isEmpty {
+                        Section("Remote updates") {
+                            ForEach(remotePatchFiles) { file in
+                                RemotePatchRow(file: file)
                             }
                         }
                     }
@@ -74,6 +97,7 @@ struct PatchProjectsView: View {
                 )
             }
             .onAppear {
+                remoteContentStore.loadLocalState()
                 BundledPatchSeeder.seedIfNeeded()
                 store.reload()
             }
@@ -200,6 +224,47 @@ private struct PatchProjectRow: View {
             } else if !item.isLocked {
                 Text(fileCount == 1 ? "1 file" : "\(fileCount) files")
                     .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct RemotePatchRow: View {
+    let file: RemoteContentFile
+
+    var body: some View {
+        HStack(spacing: 12) {
+            AppRowIcon(
+                systemName: "icloud.and.arrow.down.fill",
+                tint: Color(red: 0.26, green: 0.72, blue: 1.0),
+                symbolSize: 17,
+                frameSize: 34
+            )
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(file.name)
+                        .font(.body.weight(.semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                    Text("v\(file.version)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(AppTheme.accent)
+                }
+                Text(file.localRelativePath)
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 3) {
+                Text("Remote")
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(AppTheme.accent)
+                Text(file.displaySize)
+                    .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
         }
