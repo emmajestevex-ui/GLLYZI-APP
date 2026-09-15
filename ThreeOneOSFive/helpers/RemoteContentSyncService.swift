@@ -41,11 +41,8 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         version = (try? container.decode(Int.self, forKey: .version)) ?? 0
         category = ((try? container.decode(String.self, forKey: .category)) ?? "files").trimmingCharacters(in: .whitespacesAndNewlines)
         description = try? container.decodeIfPresent(String.self, forKey: .description)
-        if let decodedTargetPath = try? container.decodeIfPresent(String.self, forKey: .targetPath) {
-            targetPath = decodedTargetPath?.trimmingCharacters(in: .whitespacesAndNewlines)
-        } else {
-            targetPath = nil
-        }
+        targetPath = (try? container.decodeIfPresent(String.self, forKey: .targetPath))?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         fileName = ((try? container.decode(String.self, forKey: .fileName)) ?? slug).trimmingCharacters(in: .whitespacesAndNewlines)
         mimeType = try? container.decodeIfPresent(String.self, forKey: .mimeType)
         byteSize = (try? container.decode(Int64.self, forKey: .byteSize)) ?? 0
