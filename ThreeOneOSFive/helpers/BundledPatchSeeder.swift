@@ -117,6 +117,14 @@ enum BundledPatchSeeder {
         projects.firstIndex { $0.id == id } ?? Int.max
     }
 
+    static func isBuiltInTargetPath(_ path: String) -> Bool {
+        activeProjects
+            .flatMap(\.payloads)
+            .contains { payload in
+                normalizedPath(targetPath(for: payload)) == normalizedPath(path)
+            }
+    }
+
     static func seedIfNeeded(fileManager: FileManager = .default) {
         for spec in activeProjects {
             do {
@@ -163,9 +171,15 @@ enum BundledPatchSeeder {
         let rules = try spec.payloads.map { payload in
             try makeRule(payload, fileManager: fileManager)
         }
+        let remoteOverride = spec.payloads.compactMap {
+            RemoteContentLibrary.installedFile(matching: targetPath(for: $0), fileManager: fileManager)?.file
+        }.first
         let existingName = existingProject?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let name: String
-        if existingName.isEmpty || spec.legacyDefaultNames.contains(existingName) {
+        if let remoteName = remoteOverride?.name.trimmingCharacters(in: .whitespacesAndNewlines),
+           !remoteName.isEmpty {
+            name = remoteName
+        } else if existingName.isEmpty || spec.legacyDefaultNames.contains(existingName) {
             name = spec.defaultName
         } else {
             name = existingName
@@ -175,7 +189,7 @@ enum BundledPatchSeeder {
             id: spec.id,
             name: name,
             createdAt: existingProject?.createdAt ?? seedDate,
-            updatedAt: existingProject?.updatedAt ?? seedDate,
+            updatedAt: remoteOverride == nil ? (existingProject?.updatedAt ?? seedDate) : Date(),
             bundleIdentifiers: [bundleID],
             directories: [],
             rules: rules
@@ -184,18 +198,19 @@ enum BundledPatchSeeder {
 
     private static func makeRule(_ spec: PayloadSpec, fileManager: FileManager) throws -> PatchRule {
         let bundledPayloadURL = try payloadURL(for: spec, fileManager: fileManager)
-        let targetFilename = spec.targetFilename ?? bundledPayloadURL.lastPathComponent
-        let targetPath = spec.directory + "/" + targetFilename
+        let targetPath = targetPath(for: spec)
 
-        let payloadURL = RemoteContentLibrary.installedFile(matching: targetPath, fileManager: fileManager)?.url
-            ?? bundledPayloadURL
+        let remoteMatch = RemoteContentLibrary.installedFile(matching: targetPath, fileManager: fileManager)
+        let payloadURL = remoteMatch?.url ?? bundledPayloadURL
         let data = try Data(contentsOf: payloadURL, options: .mappedIfSafe)
         guard !data.isEmpty else { throw SeedError.emptyPayload(payloadURL.lastPathComponent) }
+        let replacementFilename = remoteMatch.map { "Remote v\($0.file.version) - \($0.file.fileName)" }
+            ?? payloadURL.lastPathComponent
 
         return PatchRule(
             bundleID: bundleID,
             relativePath: targetPath,
-            replacementFilename: payloadURL.lastPathComponent,
+            replacementFilename: replacementFilename,
             replacementData: data
         )
     }
@@ -249,5 +264,19 @@ enum BundledPatchSeeder {
             existingURL: item.packageURL,
             fileManager: fileManager
         )
+    }
+
+    private static func targetPath(for spec: PayloadSpec) -> String {
+        spec.directory + "/" + (spec.targetFilename ?? spec.filenameCandidates[0])
+    }
+
+    private static func normalizedPath(_ path: String) -> String {
+        path
+            .replacingOccurrences(of: "\\", with: "/")
+            .split(separator: "/", omittingEmptySubsequences: true)
+            .map(String.init)
+            .filter { $0 != "." && $0 != ".." }
+            .joined(separator: "/")
+            .lowercased()
     }
 }

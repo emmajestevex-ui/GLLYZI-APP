@@ -31,6 +31,9 @@ struct PatchProjectsView: View {
                 ["patches", "shaders", "configs"].contains(file.category.lowercased())
             }
             .filter { file in
+                !BundledPatchSeeder.isBuiltInTargetPath(file.localRelativePath)
+            }
+            .filter { file in
                 let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !query.isEmpty else { return true }
                 return file.name.localizedCaseInsensitiveContains(query)
