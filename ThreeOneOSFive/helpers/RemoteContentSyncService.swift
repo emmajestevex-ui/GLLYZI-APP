@@ -103,7 +103,7 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
             return cleanTargetPath
         }
 
-        [
+        return [
             Self.safeComponent(category, fallback: "files"),
             Self.safeComponent(slug, fallback: id),
             Self.safeComponent(fileName, fallback: "content.bin")
