@@ -209,6 +209,8 @@ create unique index if not exists remote_content_files_target_path_idx
 on public.remote_content_files (target_path)
 where deleted_at is null;
 
+drop function if exists public.admin_list_remote_content_files();
+
 create or replace function public.admin_list_remote_content_files()
 returns table (
     id uuid,
@@ -272,6 +274,7 @@ end;
 $$;
 
 drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid);
+drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid);
 
 create or replace function public.admin_upsert_remote_content_file(
     p_name text,
