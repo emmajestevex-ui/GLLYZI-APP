@@ -66,6 +66,7 @@ create table if not exists public.remote_content_files (
     name text not null,
     description text,
     category text not null default 'files',
+    target_path text not null,
     version integer not null default 1,
     storage_path text not null,
     file_name text not null,
@@ -80,6 +81,7 @@ create table if not exists public.remote_content_files (
     updated_at timestamptz not null default now(),
     check (version > 0),
     check (byte_size >= 0),
+    check (target_path <> ''),
     check (sha256 ~* '^[a-f0-9]{64}$')
 );
 
@@ -125,6 +127,7 @@ for all
 to authenticated
 using (
     bucket_id = 'greeg-content'
+    and name like 'content/%'
     and public.is_license_admin()
 )
 with check (
@@ -159,6 +162,53 @@ begin
 end;
 $$;
 
+create or replace function public.remote_content_safe_path(
+    p_value text,
+    p_category text default 'files',
+    p_file_name text default 'content.bin'
+)
+returns text
+language plpgsql
+immutable
+as $$
+declare
+    v_path text;
+begin
+    v_path := trim(coalesce(p_value, ''));
+    v_path := replace(v_path, E'\\', '/');
+    v_path := regexp_replace(v_path, '[^a-zA-Z0-9._/~+-]+', '-', 'g');
+    v_path := regexp_replace(v_path, '/+', '/', 'g');
+    v_path := trim(both '/' from v_path);
+
+    if v_path = '' then
+        v_path := public.remote_content_safe_slug(coalesce(p_category, 'files'), 'files')
+            || '/'
+            || public.remote_content_safe_slug(coalesce(p_file_name, 'content.bin'), 'content.bin');
+    end if;
+
+    if v_path = '' or v_path ~ '(^|/)\.\.(/|$)' then
+        raise exception 'Invalid target path';
+    end if;
+
+    return left(v_path, 180);
+end;
+$$;
+
+alter table public.remote_content_files
+add column if not exists target_path text;
+
+update public.remote_content_files
+set target_path = public.remote_content_safe_path(target_path, category, file_name)
+where target_path is null
+   or trim(target_path) = '';
+
+alter table public.remote_content_files
+alter column target_path set not null;
+
+create unique index if not exists remote_content_files_target_path_idx
+on public.remote_content_files (target_path)
+where deleted_at is null;
+
 create or replace function public.admin_list_remote_content_files()
 returns table (
     id uuid,
@@ -166,6 +216,7 @@ returns table (
     name text,
     description text,
     category text,
+    target_path text,
     version integer,
     storage_path text,
     file_name text,
@@ -195,6 +246,7 @@ begin
         f.name,
         f.description,
         f.category,
+        f.target_path,
         f.version,
         f.storage_path,
         f.file_name,
@@ -219,10 +271,13 @@ begin
 end;
 $$;
 
+drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid);
+
 create or replace function public.admin_upsert_remote_content_file(
     p_name text,
     p_slug text,
     p_category text,
+    p_target_path text,
     p_file_name text,
     p_mime_type text,
     p_byte_size bigint,
@@ -241,6 +296,7 @@ declare
     v_slug text := public.remote_content_safe_slug(p_slug, p_name);
     v_category text := public.remote_content_safe_slug(coalesce(p_category, 'files'), 'files');
     v_file_name text := nullif(trim(coalesce(p_file_name, '')), '');
+    v_target_path text := public.remote_content_safe_path(p_target_path, p_category, p_file_name);
     v_mime_type text := nullif(trim(coalesce(p_mime_type, '')), '');
     v_storage_path text := trim(coalesce(p_storage_path, ''));
     v_sha text := lower(trim(coalesce(p_sha256, '')));
@@ -273,7 +329,15 @@ begin
     into v_file
     from public.remote_content_files
     where (p_id is not null and id = p_id)
-       or (p_id is null and slug = v_slug)
+       or (p_id is null and (slug = v_slug or target_path = v_target_path))
+    order by
+        case
+            when p_id is not null and id = p_id then 0
+            when target_path = v_target_path then 1
+            when slug = v_slug then 2
+            else 3
+        end
+    limit 1
     for update;
 
     if found then
@@ -283,6 +347,7 @@ begin
             name = v_name,
             description = nullif(trim(coalesce(p_description, '')), ''),
             category = v_category,
+            target_path = v_target_path,
             version = v_file.version + 1,
             storage_path = v_storage_path,
             file_name = v_file_name,
@@ -300,6 +365,7 @@ begin
             name,
             description,
             category,
+            target_path,
             version,
             storage_path,
             file_name,
@@ -314,6 +380,7 @@ begin
             v_name,
             nullif(trim(coalesce(p_description, '')), ''),
             v_category,
+            v_target_path,
             1,
             v_storage_path,
             v_file_name,
@@ -431,6 +498,7 @@ begin
                 'name', f.name,
                 'description', f.description,
                 'category', f.category,
+                'target_path', f.target_path,
                 'version', f.version,
                 'storage_path', f.storage_path,
                 'file_name', f.file_name,
@@ -525,8 +593,9 @@ end;
 $$;
 
 revoke all on function public.remote_content_safe_slug(text, text) from public;
+revoke all on function public.remote_content_safe_path(text, text, text) from public;
 revoke all on function public.admin_list_remote_content_files() from public;
-revoke all on function public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid) from public;
+revoke all on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid) from public;
 revoke all on function public.admin_set_remote_content_active(uuid, boolean) from public;
 revoke all on function public.admin_delete_remote_content_file(uuid) from public;
 revoke all on function public.admin_publish_remote_content() from public;
@@ -534,7 +603,7 @@ revoke all on function public.get_remote_content_manifest(text, text) from publi
 
 grant execute on function public.admin_list_remote_content_files() to authenticated;
 grant execute on function public.is_license_admin() to authenticated;
-grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid) to authenticated;
+grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid) to authenticated;
 grant execute on function public.admin_set_remote_content_active(uuid, boolean) to authenticated;
 grant execute on function public.admin_delete_remote_content_file(uuid) to authenticated;
 grant execute on function public.admin_publish_remote_content() to authenticated;

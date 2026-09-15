@@ -9,6 +9,7 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
     let version: Int
     let category: String
     let description: String?
+    let targetPath: String?
     let fileName: String
     let mimeType: String?
     let byteSize: Int64
@@ -23,6 +24,7 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         case version
         case category
         case description
+        case targetPath = "target_path"
         case fileName = "file_name"
         case mimeType = "mime_type"
         case byteSize = "byte_size"
@@ -39,6 +41,11 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         version = (try? container.decode(Int.self, forKey: .version)) ?? 0
         category = ((try? container.decode(String.self, forKey: .category)) ?? "files").trimmingCharacters(in: .whitespacesAndNewlines)
         description = try? container.decodeIfPresent(String.self, forKey: .description)
+        if let decodedTargetPath = try? container.decodeIfPresent(String.self, forKey: .targetPath) {
+            targetPath = decodedTargetPath?.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            targetPath = nil
+        }
         fileName = ((try? container.decode(String.self, forKey: .fileName)) ?? slug).trimmingCharacters(in: .whitespacesAndNewlines)
         mimeType = try? container.decodeIfPresent(String.self, forKey: .mimeType)
         byteSize = (try? container.decode(Int64.self, forKey: .byteSize)) ?? 0
@@ -54,6 +61,7 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         version: Int,
         category: String,
         description: String?,
+        targetPath: String?,
         fileName: String,
         mimeType: String?,
         byteSize: Int64,
@@ -67,6 +75,7 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         self.version = version
         self.category = category
         self.description = description
+        self.targetPath = targetPath?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.fileName = fileName
         self.mimeType = mimeType
         self.byteSize = byteSize
@@ -83,6 +92,7 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         try container.encode(version, forKey: .version)
         try container.encode(category, forKey: .category)
         try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(targetPath, forKey: .targetPath)
         try container.encode(fileName, forKey: .fileName)
         try container.encodeIfPresent(mimeType, forKey: .mimeType)
         try container.encode(byteSize, forKey: .byteSize)
@@ -92,6 +102,10 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
     }
 
     var localRelativePath: String {
+        if let cleanTargetPath = Self.safeRelativePath(targetPath), !cleanTargetPath.isEmpty {
+            return cleanTargetPath
+        }
+
         [
             Self.safeComponent(category, fallback: "files"),
             Self.safeComponent(slug, fallback: id),
@@ -106,11 +120,24 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
     private static func safeComponent(_ value: String, fallback: String) -> String {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         let source = trimmed.isEmpty ? fallback : trimmed
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._"))
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~+"))
         let scalars = source.unicodeScalars.map { allowed.contains($0) ? Character($0) : "-" }
         let collapsed = String(scalars).replacingOccurrences(of: "--+", with: "-", options: .regularExpression)
         let clean = collapsed.trimmingCharacters(in: CharacterSet(charactersIn: ".-"))
         return clean.isEmpty ? "content" : clean
+    }
+
+    private static func safeRelativePath(_ value: String?) -> String? {
+        let parts = (value ?? "")
+            .replacingOccurrences(of: "\\", with: "/")
+            .split(separator: "/", omittingEmptySubsequences: true)
+            .map(String.init)
+            .filter { $0 != "." && $0 != ".." }
+            .map { safeComponent($0, fallback: "content") }
+            .filter { !$0.isEmpty }
+
+        guard !parts.isEmpty else { return nil }
+        return parts.joined(separator: "/")
     }
 }
 
@@ -359,6 +386,11 @@ final class RemoteContentStore: ObservableObject {
         let ids = manifest.files.map(\.id)
         guard Set(ids).count == ids.count else {
             throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate files.")
+        }
+
+        let paths = manifest.files.map(\.localRelativePath)
+        guard Set(paths).count == paths.count else {
+            throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate target paths.")
         }
     }
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Cache-Control" content="no-store" />
     <title>GREEG APP Admin</title>
-    <link rel="stylesheet" href="./styles.css?v=20260914-loginfix" />
+    <link rel="stylesheet" href="./styles.css?v=20260914-routes" />
   </head>
   <body>
     <main class="shell">
@@ -50,10 +50,15 @@
         <aside class="panel">
           <div class="panelHeader">
             <div>
-              <h2 id="formTitle">Nuevo archivo</h2>
-              <p class="muted">Sube o reemplaza contenido propio de GREEG APP.</p>
+              <h2 id="formTitle">Nuevo patch</h2>
+              <p class="muted">Elige una plantilla o crea una ruta nueva.</p>
             </div>
             <button id="newButton" class="ghost" type="button">Nuevo</button>
+          </div>
+
+          <div class="quickPanel">
+            <h3>Patches listos</h3>
+            <div id="presetList" class="presetList"></div>
           </div>
 
           <form id="fileForm" class="form">
@@ -70,17 +75,24 @@
               Categoria
               <select id="categoryInput">
                 <option value="files">files</option>
+                <option value="patches">patches</option>
                 <option value="images">images</option>
                 <option value="configs">configs</option>
                 <option value="media">media</option>
+                <option value="shaders">shaders</option>
               </select>
+            </label>
+            <label>
+              Ruta en GREEG APP
+              <input id="targetPathInput" type="text" maxlength="180" placeholder="patches/mi-patch.bundle" required />
+              <span class="fieldHint">Si usas la misma ruta otra vez, se reemplaza ese archivo en los iPhone.</span>
             </label>
             <label>
               Descripcion
               <textarea id="descriptionInput" rows="3" placeholder="Nota interna opcional"></textarea>
             </label>
             <label>
-              Archivo
+              Archivo nuevo o reemplazo
               <input id="fileInput" type="file" required />
             </label>
             <button id="saveButton" class="primary" type="submit">Guardar cambio</button>
@@ -116,6 +128,7 @@
           <div>
             <h3></h3>
             <p class="fileMeta"></p>
+            <p class="filePath"></p>
             <p class="fileHash"></p>
           </div>
         </div>
@@ -130,6 +143,6 @@
       </article>
     </template>
 
-    <script type="module" src="./app.js?v=20260914-loginfix"></script>
+    <script type="module" src="./app.js?v=20260914-routes"></script>
   </body>
 </html>

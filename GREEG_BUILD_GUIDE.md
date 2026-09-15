@@ -104,7 +104,7 @@ El panel nuevo vive en:
 admin/index.html
 ```
 
-Desde ahi puedes entrar con Supabase Auth, subir archivos nuevos, reemplazarlos, activar/desactivar, marcar eliminacion y pulsar `Publicar cambios`. La app iOS revisa el manifest publicado al abrir y tambien desde el boton `Check updates` en `Remote Files`.
+Desde ahi puedes entrar con Supabase Auth, elegir una plantilla como `Asset Indexer`, `Shaders` o `144 fps`, subir archivos nuevos, elegir la `Ruta en GREEG APP`, reemplazarlos, activar/desactivar, marcar eliminacion y pulsar `Publicar cambios`. Si guardas otro archivo con la misma ruta, el panel lo trata como reemplazo versionado. La app iOS revisa el manifest publicado al abrir y tambien desde el boton `Check updates` en `Remote Files`.
 
 La sincronizacion descarga solo archivos cambiados, verifica SHA-256 antes de instalar y guarda respaldo local para restaurar si algo falla. Los archivos se guardan dentro del almacenamiento propio de GREEG APP.
 

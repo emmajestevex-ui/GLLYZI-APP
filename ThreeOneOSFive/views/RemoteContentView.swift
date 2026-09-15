@@ -12,6 +12,7 @@ struct RemoteContentView: View {
                 || file.slug.localizedCaseInsensitiveContains(query)
                 || file.fileName.localizedCaseInsensitiveContains(query)
                 || file.category.localizedCaseInsensitiveContains(query)
+                || file.localRelativePath.localizedCaseInsensitiveContains(query)
         }
     }
 
@@ -174,7 +175,7 @@ private struct RemoteContentFileRow: View {
                         .foregroundColor(tint)
                 }
 
-                Text(file.fileName)
+                Text(file.localRelativePath)
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

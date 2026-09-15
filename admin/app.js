@@ -3,6 +3,34 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
+const SCRIPT_VERSION = "20260914-routes";
+
+const PATCH_PRESETS = [
+  {
+    key: "asset-indexer",
+    name: "Asset Indexer",
+    slug: "asset-indexer",
+    category: "patches",
+    description: "Avatar asset bundle",
+    targetPath: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D",
+  },
+  {
+    key: "shaders",
+    name: "Shaders",
+    slug: "shaders",
+    category: "shaders",
+    description: "Shader bundle",
+    targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
+  },
+  {
+    key: "fps-144",
+    name: "144 fps",
+    slug: "144-fps",
+    category: "configs",
+    description: "FPS preferences",
+    targetPath: "Library/Preferences/com.dts.freefireth.plist",
+  },
+];
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
@@ -12,7 +40,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 });
 
-window.__GREEG_ADMIN_READY = true;
+window.__GREEG_ADMIN_READY = SCRIPT_VERSION;
 
 const state = {
   files: [],
@@ -39,6 +67,7 @@ const els = {
   nameInput: $("#nameInput"),
   slugInput: $("#slugInput"),
   categoryInput: $("#categoryInput"),
+  targetPathInput: $("#targetPathInput"),
   descriptionInput: $("#descriptionInput"),
   fileInput: $("#fileInput"),
   saveButton: $("#saveButton"),
@@ -46,6 +75,7 @@ const els = {
   refreshButton: $("#refreshButton"),
   publishButton: $("#publishButton"),
   searchInput: $("#searchInput"),
+  presetList: $("#presetList"),
   fileCounter: $("#fileCounter"),
   statusText: $("#statusText"),
   fileList: $("#fileList"),
@@ -99,6 +129,13 @@ function bindEvents() {
     els.slugInput.dataset.touched = "true";
     els.slugInput.value = safeSlug(els.slugInput.value);
   });
+  els.categoryInput.addEventListener("change", suggestTargetPath);
+  els.fileInput.addEventListener("change", suggestTargetPath);
+  els.targetPathInput.addEventListener("input", () => {
+    els.targetPathInput.dataset.touched = "true";
+    els.targetPathInput.value = safeRelativePath(els.targetPathInput.value);
+  });
+  renderPresets();
 }
 
 async function signIn(event) {
@@ -265,14 +302,20 @@ async function saveFile(event) {
 
   const name = els.nameInput.value.trim();
   const slug = safeSlug(els.slugInput.value || name);
+  const targetPath = safeRelativePath(els.targetPathInput.value || `${els.categoryInput.value}/${file.name}`);
   if (!name || !slug) {
     setStatus("Completa nombre y slug.");
+    return;
+  }
+  if (!targetPath) {
+    setStatus("Completa la ruta que va a reemplazar en GREEG APP.");
     return;
   }
 
   setBusy(true, "Calculando SHA-256...");
   try {
     const hash = await sha256Hex(file);
+    let uploadedPath = "";
     const storagePath = `content/${crypto.randomUUID()}/${safeFileName(file.name)}`;
 
     setStatus("Subiendo archivo...");
@@ -285,6 +328,7 @@ async function saveFile(event) {
       });
 
     if (uploadError) throw uploadError;
+    uploadedPath = storagePath;
 
     setStatus("Guardando metadata...");
     const { error: rpcError } = await supabaseClient.rpc("admin_upsert_remote_content_file", {
@@ -292,6 +336,7 @@ async function saveFile(event) {
       p_name: name,
       p_slug: slug,
       p_category: els.categoryInput.value || "files",
+      p_target_path: targetPath,
       p_description: els.descriptionInput.value.trim() || null,
       p_file_name: file.name,
       p_mime_type: file.type || "application/octet-stream",
@@ -300,13 +345,18 @@ async function saveFile(event) {
       p_storage_path: storagePath,
     });
 
-    if (rpcError) throw rpcError;
+    if (rpcError) {
+      if (uploadedPath) {
+        await supabaseClient.storage.from(BUCKET).remove([uploadedPath]).catch(() => {});
+      }
+      throw rpcError;
+    }
 
     resetForm();
     await loadFiles();
     setStatus("Cambio guardado. Pulsa Publicar cambios cuando estes listo.");
   } catch (error) {
-    setStatus(error.message || String(error));
+    setStatus(adminErrorMessage(error));
   } finally {
     setBusy(false);
   }
@@ -322,7 +372,7 @@ async function toggleActive(file) {
   setBusy(false);
 
   if (error) {
-    setStatus(error.message);
+    setStatus(adminErrorMessage(error));
     return;
   }
 
@@ -341,7 +391,7 @@ async function deleteFile(file) {
   setBusy(false);
 
   if (error) {
-    setStatus(error.message);
+    setStatus(adminErrorMessage(error));
     return;
   }
 
@@ -355,7 +405,7 @@ async function publishChanges() {
   setBusy(false);
 
   if (error) {
-    setStatus(error.message);
+    setStatus(adminErrorMessage(error));
     return;
   }
 
@@ -370,6 +420,8 @@ function editFile(file) {
   els.slugInput.value = file.slug;
   els.slugInput.dataset.touched = "true";
   els.categoryInput.value = file.category || "files";
+  els.targetPathInput.value = file.target_path || fallbackTargetPath(file);
+  els.targetPathInput.dataset.touched = "true";
   els.descriptionInput.value = file.description || "";
   els.fileInput.value = "";
   els.saveButton.textContent = "Reemplazar archivo";
@@ -377,25 +429,83 @@ function editFile(file) {
 }
 
 function resetForm() {
-  els.formTitle.textContent = "Nuevo archivo";
+  els.formTitle.textContent = "Nuevo patch";
   els.fileForm.reset();
   els.editingId.value = "";
   delete els.slugInput.dataset.touched;
+  delete els.targetPathInput.dataset.touched;
   els.categoryInput.value = "files";
+  els.targetPathInput.value = "";
   els.saveButton.textContent = "Guardar cambio";
+}
+
+function applyPreset(preset) {
+  const existing = state.files.find((file) =>
+    samePath(file.target_path, preset.targetPath)
+      || safeSlug(file.slug) === preset.slug
+  );
+
+  if (existing) {
+    editFile(existing);
+    setStatus(`Editando ${existing.name}. Selecciona el archivo nuevo para reemplazar esa ruta.`);
+    return;
+  }
+
+  resetForm();
+  els.formTitle.textContent = `Nuevo ${preset.name}`;
+  els.nameInput.value = preset.name;
+  els.slugInput.value = preset.slug;
+  els.slugInput.dataset.touched = "true";
+  els.categoryInput.value = preset.category;
+  els.targetPathInput.value = safeRelativePath(preset.targetPath);
+  els.targetPathInput.dataset.touched = "true";
+  els.descriptionInput.value = preset.description;
+  els.saveButton.textContent = "Guardar patch";
+  els.fileInput.focus();
+  setStatus(`Listo para subir ${preset.name}. Esa ruta se reemplazara al publicar.`);
+}
+
+function suggestTargetPath() {
+  if (els.editingId.value || els.targetPathInput.dataset.touched) return;
+  const file = els.fileInput.files?.[0];
+  if (!file) return;
+  els.targetPathInput.value = safeRelativePath(`${els.categoryInput.value || "files"}/${file.name}`);
+}
+
+function renderPresets() {
+  if (!els.presetList) return;
+  els.presetList.replaceChildren();
+
+  for (const preset of PATCH_PRESETS) {
+    const existing = state.files.find((file) =>
+      samePath(file.target_path, preset.targetPath)
+        || safeSlug(file.slug) === preset.slug
+    );
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "presetButton";
+    button.innerHTML = `
+      <strong>${escapeHTML(preset.name)}</strong>
+      <span>${escapeHTML(existing ? `v${existing.version} listo para reemplazar` : "Crear / reemplazar")}</span>
+      <small>${escapeHTML(safeRelativePath(preset.targetPath))}</small>
+    `;
+    button.addEventListener("click", () => applyPreset(preset));
+    els.presetList.append(button);
+  }
 }
 
 function renderFiles() {
   const query = els.searchInput.value.trim().toLowerCase();
   const files = state.files.filter((file) => {
     if (!query) return true;
-    return [file.name, file.slug, file.file_name, file.category, file.description]
+    return [file.name, file.slug, file.file_name, file.target_path, file.category, file.description]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(query));
   });
 
   els.fileList.replaceChildren();
   els.fileCounter.textContent = `${files.length} ${files.length === 1 ? "archivo" : "archivos"}`;
+  renderPresets();
 
   if (!files.length) {
     const empty = document.createElement("p");
@@ -414,6 +524,7 @@ function renderFiles() {
       file.file_name,
       formatBytes(file.byte_size),
     ].join(" / ");
+    node.querySelector(".filePath").textContent = `Ruta: ${file.target_path || fallbackTargetPath(file)}`;
     node.querySelector(".fileHash").textContent = file.sha256;
 
     const badge = node.querySelector(".badge");
@@ -492,10 +603,13 @@ function adminErrorMessage(error) {
     return "El login funciono, pero ese correo aun no tiene permiso admin. Ejecuta supabase/remote_content_setup.sql en Supabase.";
   }
   if (/could not find the function|function .* does not exist|schema cache/i.test(message)) {
-    return "Falta activar el backend del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
+    return "Falta actualizar el backend del panel. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
   }
   if (/relation .* does not exist|remote_content/i.test(message)) {
     return "Faltan las tablas del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
+  }
+  if (/duplicate key|unique constraint|target_path|slug/i.test(message)) {
+    return "Ya existe un patch con esa ruta o slug. Usa Reemplazar en el patch existente.";
   }
   return message;
 }
@@ -506,6 +620,23 @@ function isAllowedAdminEmail(email) {
     "emmajestevex@gmail.com",
     "grego23500@gmail.com",
   ].includes(email.trim().toLowerCase());
+}
+
+function fallbackTargetPath(file) {
+  return safeRelativePath(`${file.category || "files"}/${file.slug || "content"}/${file.file_name || "content.bin"}`);
+}
+
+function samePath(left, right) {
+  return safeRelativePath(left).toLowerCase() === safeRelativePath(right).toLowerCase();
+}
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function withTimeout(promise, milliseconds, message) {
@@ -534,10 +665,23 @@ function safeSlug(value) {
     .slice(0, 80);
 }
 
+function safeRelativePath(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/[^a-zA-Z0-9._/~+-]+/g, "-")
+    .replace(/\/+/g, "/")
+    .split("/")
+    .filter((part) => part && part !== "." && part !== "..")
+    .map((part) => safeFileName(part))
+    .join("/")
+    .slice(0, 180);
+}
+
 function safeFileName(value) {
   const clean = String(value || "file.bin")
     .trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/[^a-zA-Z0-9._~+-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/^\.+|\.+$/g, "");
   return clean || "file.bin";
