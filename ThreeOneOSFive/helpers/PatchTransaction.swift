@@ -145,6 +145,16 @@ enum PatchTransaction {
             resolvedRules.append(ResolvedRule(rule: rule, containerRoot: root, target: target))
         }
 
+        if !resolvedRules.isEmpty && resolvedRules.allSatisfy({ resolved in
+            guard fileManager.fileExists(atPath: resolved.target.path),
+                  let currentDigest = try? digestFile(resolved.target) else {
+                return false
+            }
+            return currentDigest == digest(resolved.rule.replacementData)
+        }) {
+            throw PatchPackageError.alreadyApplied
+        }
+
         let transactionID = UUID()
         let transactionDirectory = backupRoot
             .appendingPathComponent(project.id.uuidString, isDirectory: true)

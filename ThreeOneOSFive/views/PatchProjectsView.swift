@@ -1,3 +1,4 @@
+import CryptoKit
 import SwiftUI
 
 struct PatchProjectsView: View {
@@ -571,6 +572,13 @@ private struct PatchRuleSummary: View {
         rule.relativePath.split(separator: "/").last.map(String.init) ?? rule.relativePath
     }
 
+    private var replacementFingerprint: String {
+        SHA256.hash(data: rule.replacementData)
+            .prefix(6)
+            .map { String(format: "%02x", $0) }
+            .joined()
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(targetFilename)
@@ -584,6 +592,10 @@ private struct PatchRuleSummary: View {
                 .font(.caption.weight(.medium))
                 .foregroundColor(style.tint)
                 .lineLimit(2)
+            Text("\(rule.replacementData.count) bytes - SHA \(replacementFingerprint)")
+                .font(.caption2.monospaced())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
         .padding(.vertical, 4)
     }

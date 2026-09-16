@@ -146,6 +146,7 @@ enum PatchPackageError: Error, Equatable {
     case keychainFailed
     case targetAppUnavailable(String)
     case symbolicLinkUnsupported
+    case alreadyApplied
     case applyFailed
     case restoreFailed
     case invalidImportLink
@@ -166,6 +167,7 @@ extension PatchPackageError: LocalizedError {
         case .keychainFailed: return "patch.error.keychain"
         case .targetAppUnavailable: return "patch.error.app_unavailable"
         case .symbolicLinkUnsupported: return "patch.error.symlink"
+        case .alreadyApplied: return "patch.error.already_applied"
         case .applyFailed: return "patch.error.apply"
         case .restoreFailed: return "patch.error.restore"
         case .invalidImportLink: return "patch.error.invalid_import_link"
