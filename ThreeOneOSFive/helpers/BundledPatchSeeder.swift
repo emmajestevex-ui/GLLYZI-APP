@@ -170,12 +170,13 @@ enum BundledPatchSeeder {
     }
 
     static func isBuiltInRemoteFile(_ file: RemoteContentFile) -> Bool {
+        let requestedBundle = normalizedBundleID(file.targetBundleID)
         let requestedSlug = normalizedSlug(file.slug)
         return projects
             .contains { spec in
                 spec.payloads.contains { payload in
                     let slugMatches = payload.remoteSlugs.map(normalizedSlug).contains(requestedSlug)
-                    return slugMatches
+                    return slugMatches && normalizedBundleID(spec.bundleID) == requestedBundle
                 }
             }
     }
@@ -430,16 +431,6 @@ enum BundledPatchSeeder {
 
     private static func targetPath(for spec: PayloadSpec) -> String {
         spec.directory + "/" + (spec.targetFilename ?? spec.filenameCandidates[0])
-    }
-
-    private static func normalizedPath(_ path: String) -> String {
-        path
-            .replacingOccurrences(of: "\\", with: "/")
-            .split(separator: "/", omittingEmptySubsequences: true)
-            .map(String.init)
-            .filter { $0 != "." && $0 != ".." }
-            .joined(separator: "/")
-            .lowercased()
     }
 
     private static func normalizedBundleID(_ value: String?) -> String {

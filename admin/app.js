@@ -3,18 +3,51 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-final-ffmax-asset";
+const SCRIPT_VERSION = "20260916-asset-route-picker";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
+const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
+const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
+const ASSET_VARIANTS = {
+  pen: {
+    label: "Asset PEN - FF Max",
+    targetBundle: FREE_FIRE_MAX_BUNDLE,
+    targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D`,
+  },
+  h5: {
+    label: "Asset H5 - FF Normal",
+    targetBundle: DEFAULT_TARGET_BUNDLE,
+    targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D`,
+  },
+};
 
 const PATCH_PRESETS = [
   {
-    key: "asset-indexer-ff-max",
+    key: "asset-indexer",
     name: "Asset Indexer",
     slug: "asset-indexer-ff-max",
     category: "patches",
-    description: "Avatar asset bundle for Free Fire Max",
-    targetBundle: "com.dts.freefiremax",
-    targetPath: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D",
+    description: "Avatar asset bundle",
+    targetBundle: FREE_FIRE_MAX_BUNDLE,
+    rules: [
+      {
+        label: ASSET_VARIANTS.pen.label,
+        slug: "asset-indexer-ff-max",
+        category: "patches",
+        description: "Avatar asset bundle for Free Fire Max",
+        targetBundle: ASSET_VARIANTS.pen.targetBundle,
+        targetPath: ASSET_VARIANTS.pen.targetPath,
+        assetVariant: "pen",
+      },
+      {
+        label: ASSET_VARIANTS.h5.label,
+        slug: "asset-indexer",
+        category: "patches",
+        description: "Avatar asset bundle for Free Fire normal",
+        targetBundle: ASSET_VARIANTS.h5.targetBundle,
+        targetPath: ASSET_VARIANTS.h5.targetPath,
+        assetVariant: "h5",
+      },
+    ],
   },
   {
     key: "shaders",
@@ -40,7 +73,7 @@ const PATCH_PRESETS = [
     slug: "aimbot-drag-ff-max",
     category: "patches",
     description: "Patch with Assembly-CSharp-patch.bytes and localConfig.json",
-    targetBundle: "com.dts.freefiremax",
+    targetBundle: FREE_FIRE_MAX_BUNDLE,
     rules: [
       {
         label: "Assembly-CSharp-patch.bytes",
@@ -96,6 +129,8 @@ const els = {
   slugInput: $("#slugInput"),
   categoryInput: $("#categoryInput"),
   targetBundleInput: $("#targetBundleInput"),
+  assetVariantLabel: $("#assetVariantLabel"),
+  assetVariantInput: $("#assetVariantInput"),
   targetPathInput: $("#targetPathInput"),
   descriptionInput: $("#descriptionInput"),
   fileInput: $("#fileInput"),
@@ -159,10 +194,17 @@ function bindEvents() {
     els.slugInput.value = safeSlug(els.slugInput.value);
   });
   els.categoryInput.addEventListener("change", suggestTargetPath);
+  els.targetBundleInput.addEventListener("change", () => {
+    updateAssetVariantVisibility();
+  });
+  els.assetVariantInput.addEventListener("change", () => {
+    applyAssetVariant(els.assetVariantInput.value);
+  });
   els.fileInput.addEventListener("change", suggestTargetPath);
   els.targetPathInput.addEventListener("input", () => {
     els.targetPathInput.dataset.touched = "true";
     els.targetPathInput.value = safeRelativePath(els.targetPathInput.value);
+    updateAssetVariantVisibility();
   });
   renderPresets();
 }
@@ -331,8 +373,11 @@ async function saveFile(event) {
 
   const name = els.nameInput.value.trim();
   const slug = safeSlug(els.slugInput.value || name);
-  const targetBundle = safeTargetBundle(els.targetBundleInput.value);
-  const targetPath = safeRelativePath(els.targetPathInput.value || `${els.categoryInput.value}/${file.name}`);
+  const selectedAssetVariant = els.assetVariantLabel.classList.contains("hidden")
+    ? null
+    : ASSET_VARIANTS[els.assetVariantInput.value];
+  const targetBundle = safeTargetBundle(selectedAssetVariant?.targetBundle || els.targetBundleInput.value);
+  const targetPath = safeRelativePath(selectedAssetVariant?.targetPath || els.targetPathInput.value || `${els.categoryInput.value}/${file.name}`);
   if (!name || !slug) {
     setStatus("Completa nombre y slug.");
     return;
@@ -435,9 +480,8 @@ async function deleteFile(file) {
 
 async function disablePreset(preset) {
   if (!state.session || state.busy) return;
-  const bundle = safeTargetBundle(preset.targetBundle);
   const rules = presetRules(preset);
-  const ok = confirm(`Quitar "${preset.name}" completo de ${bundle} en la proxima publicacion?`);
+  const ok = confirm(`Quitar "${preset.name}" completo en la proxima publicacion?`);
   if (!ok) return;
 
   setBusy(true, "Preparando eliminacion...");
@@ -447,7 +491,7 @@ async function disablePreset(preset) {
       p_name: preset.name,
       p_slug: rule.slug,
       p_category: rule.category || preset.category || "patches",
-      p_target_bundle: bundle,
+      p_target_bundle: ruleTargetBundle(preset, rule),
       p_target_path: safeRelativePath(rule.targetPath),
       p_description: rule.description || preset.description || null,
     });
@@ -492,6 +536,7 @@ function editFile(file) {
   els.targetBundleInput.value = safeTargetBundle(file.target_bundle);
   els.targetPathInput.value = file.target_path || fallbackTargetPath(file);
   els.targetPathInput.dataset.touched = "true";
+  updateAssetVariantVisibility();
   els.descriptionInput.value = file.description || "";
   els.fileInput.value = "";
   els.saveButton.textContent = "Reemplazar archivo";
@@ -507,6 +552,7 @@ function resetForm() {
   els.categoryInput.value = "files";
   els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
   els.targetPathInput.value = "";
+  updateAssetVariantVisibility();
   els.saveButton.textContent = "Guardar cambio";
 }
 
@@ -524,9 +570,13 @@ function applyPreset(preset, selectedRule = null) {
   els.slugInput.value = rule.slug;
   els.slugInput.dataset.touched = "true";
   els.categoryInput.value = rule.category || preset.category || "patches";
-  els.targetBundleInput.value = safeTargetBundle(preset.targetBundle);
+  els.targetBundleInput.value = ruleTargetBundle(preset, rule);
   els.targetPathInput.value = safeRelativePath(rule.targetPath);
   els.targetPathInput.dataset.touched = "true";
+  if (rule.assetVariant) {
+    els.assetVariantInput.value = rule.assetVariant;
+  }
+  updateAssetVariantVisibility();
   els.descriptionInput.value = rule.description || preset.description || "";
   els.fileInput.value = "";
   els.saveButton.textContent = existing ? "Reemplazar archivo" : "Guardar patch";
@@ -539,6 +589,28 @@ function suggestTargetPath() {
   const file = els.fileInput.files?.[0];
   if (!file) return;
   els.targetPathInput.value = safeRelativePath(`${els.categoryInput.value || "files"}/${file.name}`);
+  updateAssetVariantVisibility();
+}
+
+function applyAssetVariant(value) {
+  const variant = ASSET_VARIANTS[value] || ASSET_VARIANTS.pen;
+  els.targetBundleInput.value = safeTargetBundle(variant.targetBundle);
+  els.targetPathInput.value = safeRelativePath(variant.targetPath);
+  els.targetPathInput.dataset.touched = "true";
+  els.categoryInput.value = "patches";
+  updateAssetVariantVisibility();
+}
+
+function updateAssetVariantVisibility() {
+  const variantKey = assetVariantKeyForPath(els.targetPathInput.value);
+  const shouldShow = variantKey !== null
+    || safeSlug(els.slugInput.value).includes("asset-indexer")
+    || /asset\s*indexer/i.test(els.nameInput.value);
+
+  els.assetVariantLabel.classList.toggle("hidden", !shouldShow);
+  if (variantKey) {
+    els.assetVariantInput.value = variantKey;
+  }
 }
 
 function renderPresets() {
@@ -651,12 +723,29 @@ function presetRules(preset) {
 
 function sameTarget(file, preset, rule) {
   return samePath(file.target_path, rule.targetPath)
-    && safeTargetBundle(file.target_bundle) === safeTargetBundle(preset.targetBundle);
+    && safeTargetBundle(file.target_bundle) === ruleTargetBundle(preset, rule);
+}
+
+function ruleTargetBundle(preset, rule) {
+  return safeTargetBundle(rule?.targetBundle || preset?.targetBundle);
+}
+
+function assetVariantKeyForPath(value) {
+  const target = safeRelativePath(value).toLowerCase();
+  if (!target) return null;
+  for (const [key, variant] of Object.entries(ASSET_VARIANTS)) {
+    if (target === safeRelativePath(variant.targetPath).toLowerCase()) {
+      return key;
+    }
+  }
+  if (target.includes("assetindexer.penojqaq")) return "pen";
+  if (target.includes("assetindexer.h5ak1jm1eck")) return "h5";
+  return null;
 }
 
 function safeTargetBundle(value) {
   const clean = String(value || DEFAULT_TARGET_BUNDLE).trim().toLowerCase();
-  if (clean === "com.dts.freefiremax") return clean;
+  if (clean === FREE_FIRE_MAX_BUNDLE) return clean;
   return DEFAULT_TARGET_BUNDLE;
 }
 

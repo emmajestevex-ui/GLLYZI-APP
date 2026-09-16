@@ -663,6 +663,7 @@ enum RemoteContentLibrary {
             guard $0.isAvailable else { return false }
             if !requestedSlugs.isEmpty {
                 return requestedSlugs.contains(safeSlug($0.slug))
+                    && safeBundleID($0.targetBundleID) == requestedBundle
             }
             return safeBundleID($0.targetBundleID) == requestedBundle
                 && safeRelativePath($0.localRelativePath) == requestedPath
@@ -688,6 +689,7 @@ enum RemoteContentLibrary {
             guard !$0.isAvailable else { return false }
             if !requestedSlugs.isEmpty {
                 return requestedSlugs.contains(safeSlug($0.slug))
+                    && safeBundleID($0.targetBundleID) == requestedBundle
             }
             return safeBundleID($0.targetBundleID) == requestedBundle
                 && safeRelativePath($0.localRelativePath) == requestedPath
