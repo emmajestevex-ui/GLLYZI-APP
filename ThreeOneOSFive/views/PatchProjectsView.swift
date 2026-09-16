@@ -31,7 +31,7 @@ struct PatchProjectsView: View {
                 ["patches", "shaders", "configs"].contains(file.category.lowercased())
             }
             .filter { file in
-                !BundledPatchSeeder.isBuiltInTargetPath(file.localRelativePath)
+                !BundledPatchSeeder.isBuiltInTarget(bundleID: file.targetBundle, path: file.localRelativePath)
             }
             .filter { file in
                 let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -165,7 +165,7 @@ private struct PatchListHeader: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("GREEG client")
                     .font(.headline)
-                Text("Asset Indexer, Shaders, and 144 fps")
+                Text("Asset Indexer, Shaders, 144 fps, and Max")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

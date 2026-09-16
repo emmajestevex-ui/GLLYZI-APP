@@ -66,6 +66,7 @@ create table if not exists public.remote_content_files (
     name text not null,
     description text,
     category text not null default 'files',
+    target_bundle text not null default 'com.dts.freefireth',
     target_path text not null,
     version integer not null default 1,
     storage_path text not null,
@@ -81,6 +82,7 @@ create table if not exists public.remote_content_files (
     updated_at timestamptz not null default now(),
     check (version > 0),
     check (byte_size >= 0),
+    check (target_bundle <> ''),
     check (target_path <> ''),
     check (sha256 ~* '^[a-f0-9]{64}$')
 );
@@ -198,8 +200,34 @@ begin
 end;
 $$;
 
+create or replace function public.remote_content_safe_bundle(p_value text)
+returns text
+language plpgsql
+immutable
+as $$
+declare
+    v_bundle text;
+begin
+    v_bundle := lower(trim(coalesce(p_value, 'com.dts.freefireth')));
+
+    if v_bundle not in ('com.dts.freefireth', 'com.dts.freefiremax') then
+        raise exception 'Invalid target bundle';
+    end if;
+
+    return v_bundle;
+end;
+$$;
+
 alter table public.remote_content_files
 add column if not exists target_path text;
+
+alter table public.remote_content_files
+add column if not exists target_bundle text;
+
+update public.remote_content_files
+set target_bundle = public.remote_content_safe_bundle(target_bundle)
+where target_bundle is null
+   or trim(target_bundle) = '';
 
 update public.remote_content_files
 set target_path = public.remote_content_safe_path(target_path, category, file_name)
@@ -209,8 +237,14 @@ where target_path is null
 alter table public.remote_content_files
 alter column target_path set not null;
 
-create unique index if not exists remote_content_files_target_path_idx
-on public.remote_content_files (target_path)
+alter table public.remote_content_files
+alter column target_bundle set default 'com.dts.freefireth',
+alter column target_bundle set not null;
+
+drop index if exists public.remote_content_files_target_path_idx;
+
+create unique index if not exists remote_content_files_target_bundle_path_idx
+on public.remote_content_files (target_bundle, target_path)
 where deleted_at is null;
 
 drop function if exists public.admin_list_remote_content_files();
@@ -222,6 +256,7 @@ returns table (
     name text,
     description text,
     category text,
+    target_bundle text,
     target_path text,
     version integer,
     storage_path text,
@@ -252,6 +287,7 @@ begin
         f.name,
         f.description,
         f.category,
+        f.target_bundle,
         f.target_path,
         f.version,
         f.storage_path,
@@ -279,11 +315,13 @@ $$;
 
 drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid);
 drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid);
+drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid);
 
 create or replace function public.admin_upsert_remote_content_file(
     p_name text,
     p_slug text,
     p_category text,
+    p_target_bundle text,
     p_target_path text,
     p_file_name text,
     p_mime_type text,
@@ -302,6 +340,7 @@ declare
     v_name text := nullif(trim(coalesce(p_name, '')), '');
     v_slug text := public.remote_content_safe_slug(p_slug, p_name);
     v_category text := public.remote_content_safe_slug(coalesce(p_category, 'files'), 'files');
+    v_target_bundle text := public.remote_content_safe_bundle(p_target_bundle);
     v_file_name text := nullif(trim(coalesce(p_file_name, '')), '');
     v_target_path text := public.remote_content_safe_path(p_target_path, p_category, p_file_name);
     v_mime_type text := nullif(trim(coalesce(p_mime_type, '')), '');
@@ -336,11 +375,11 @@ begin
     into v_file
     from public.remote_content_files
     where (p_id is not null and id = p_id)
-       or (p_id is null and (slug = v_slug or target_path = v_target_path))
+       or (p_id is null and (slug = v_slug or (target_bundle = v_target_bundle and target_path = v_target_path)))
     order by
         case
             when p_id is not null and id = p_id then 0
-            when target_path = v_target_path then 1
+            when target_bundle = v_target_bundle and target_path = v_target_path then 1
             when slug = v_slug then 2
             else 3
         end
@@ -354,6 +393,7 @@ begin
             name = v_name,
             description = nullif(trim(coalesce(p_description, '')), ''),
             category = v_category,
+            target_bundle = v_target_bundle,
             target_path = v_target_path,
             version = v_file.version + 1,
             storage_path = v_storage_path,
@@ -372,6 +412,7 @@ begin
             name,
             description,
             category,
+            target_bundle,
             target_path,
             version,
             storage_path,
@@ -387,6 +428,7 @@ begin
             v_name,
             nullif(trim(coalesce(p_description, '')), ''),
             v_category,
+            v_target_bundle,
             v_target_path,
             1,
             v_storage_path,
@@ -403,6 +445,110 @@ begin
     return jsonb_build_object(
         'success', true,
         'message', 'File saved. Publish changes when ready.',
+        'file', to_jsonb(v_file)
+    );
+end;
+$$;
+
+create or replace function public.admin_disable_remote_content_target(
+    p_name text,
+    p_slug text,
+    p_category text,
+    p_target_bundle text,
+    p_target_path text,
+    p_description text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_name text := nullif(trim(coalesce(p_name, '')), '');
+    v_slug text := public.remote_content_safe_slug(p_slug, p_name);
+    v_category text := public.remote_content_safe_slug(coalesce(p_category, 'patches'), 'patches');
+    v_target_bundle text := public.remote_content_safe_bundle(p_target_bundle);
+    v_target_path text := public.remote_content_safe_path(p_target_path, p_category, 'disabled.bin');
+    v_file public.remote_content_files%rowtype;
+begin
+    if not public.is_license_admin() then
+        raise exception 'Not authorized';
+    end if;
+
+    if v_name is null then
+        raise exception 'Name is required';
+    end if;
+
+    select *
+    into v_file
+    from public.remote_content_files
+    where slug = v_slug
+       or (target_bundle = v_target_bundle and target_path = v_target_path)
+    order by
+        case
+            when target_bundle = v_target_bundle and target_path = v_target_path then 0
+            when slug = v_slug then 1
+            else 2
+        end
+    limit 1
+    for update;
+
+    if found then
+        update public.remote_content_files
+        set
+            slug = v_slug,
+            name = v_name,
+            description = nullif(trim(coalesce(p_description, '')), ''),
+            category = v_category,
+            target_bundle = v_target_bundle,
+            target_path = v_target_path,
+            version = v_file.version + 1,
+            is_active = false,
+            deleted_at = now(),
+            updated_at = now()
+        where id = v_file.id
+        returning * into v_file;
+    else
+        insert into public.remote_content_files (
+            slug,
+            name,
+            description,
+            category,
+            target_bundle,
+            target_path,
+            version,
+            storage_path,
+            file_name,
+            mime_type,
+            byte_size,
+            sha256,
+            is_active,
+            deleted_at,
+            created_by
+        )
+        values (
+            v_slug,
+            v_name,
+            nullif(trim(coalesce(p_description, '')), ''),
+            v_category,
+            v_target_bundle,
+            v_target_path,
+            1,
+            'content/tombstone/empty',
+            'removed.txt',
+            'text/plain',
+            0,
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            false,
+            now(),
+            auth.uid()
+        )
+        returning * into v_file;
+    end if;
+
+    return jsonb_build_object(
+        'success', true,
+        'message', 'Target marked for removal. Publish changes when ready.',
         'file', to_jsonb(v_file)
     );
 end;
@@ -505,6 +651,7 @@ begin
                 'name', f.name,
                 'description', f.description,
                 'category', f.category,
+                'target_bundle', f.target_bundle,
                 'target_path', f.target_path,
                 'version', f.version,
                 'storage_path', f.storage_path,
@@ -512,6 +659,8 @@ begin
                 'mime_type', f.mime_type,
                 'byte_size', f.byte_size,
                 'sha256', lower(f.sha256),
+                'is_active', f.is_active,
+                'deleted_at', f.deleted_at,
                 'published_at', v_published_at
             )
             order by f.category, f.name, f.id
@@ -519,9 +668,7 @@ begin
         '[]'::jsonb
     )
     into v_files
-    from public.remote_content_files f
-    where f.deleted_at is null
-      and f.is_active = true;
+    from public.remote_content_files f;
 
     v_manifest := jsonb_build_object(
         'success', true,
@@ -601,17 +748,20 @@ $$;
 
 revoke all on function public.remote_content_safe_slug(text, text) from public;
 revoke all on function public.remote_content_safe_path(text, text, text) from public;
+revoke all on function public.remote_content_safe_bundle(text) from public;
 revoke all on function public.admin_list_remote_content_files() from public;
-revoke all on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid) from public;
+revoke all on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid) from public;
 revoke all on function public.admin_set_remote_content_active(uuid, boolean) from public;
 revoke all on function public.admin_delete_remote_content_file(uuid) from public;
+revoke all on function public.admin_disable_remote_content_target(text, text, text, text, text, text) from public;
 revoke all on function public.admin_publish_remote_content() from public;
 revoke all on function public.get_remote_content_manifest(text, text) from public;
 
 grant execute on function public.admin_list_remote_content_files() to authenticated;
 grant execute on function public.is_license_admin() to authenticated;
-grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid) to authenticated;
+grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid) to authenticated;
 grant execute on function public.admin_set_remote_content_active(uuid, boolean) to authenticated;
 grant execute on function public.admin_delete_remote_content_file(uuid) to authenticated;
+grant execute on function public.admin_disable_remote_content_target(text, text, text, text, text, text) to authenticated;
 grant execute on function public.admin_publish_remote_content() to authenticated;
 grant execute on function public.get_remote_content_manifest(text, text) to anon, authenticated;

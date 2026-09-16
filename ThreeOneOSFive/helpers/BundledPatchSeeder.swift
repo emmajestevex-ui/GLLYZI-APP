@@ -6,6 +6,7 @@ enum BundledPatchSeeder {
         let defaultName: String
         let legacyDefaultNames: Set<String>
         let requiredCapability: String?
+        let bundleID: String
         let payloads: [PayloadSpec]
 
         init(
@@ -13,12 +14,14 @@ enum BundledPatchSeeder {
             defaultName: String,
             legacyDefaultNames: Set<String>,
             requiredCapability: String? = nil,
+            bundleID: String = "com.dts.freefireth",
             payloads: [PayloadSpec]
         ) {
             self.id = id
             self.defaultName = defaultName
             self.legacyDefaultNames = legacyDefaultNames
             self.requiredCapability = requiredCapability
+            self.bundleID = bundleID
             self.payloads = payloads
         }
     }
@@ -40,7 +43,6 @@ enum BundledPatchSeeder {
         case emptyPayload(String)
     }
 
-    private static let bundleID = "com.dts.freefireth"
     private static let payloadDirectoryName = "BundledPatchPayloads"
     private static let seedDate = Date(timeIntervalSince1970: 0)
 
@@ -86,6 +88,26 @@ enum BundledPatchSeeder {
             ]
         ),
         ProjectSpec(
+            id: UUID(uuidString: "A55E0005-3105-4A55-9001-00000000BEEF")!,
+            defaultName: "Aimbot Drag FF Max",
+            legacyDefaultNames: [],
+            bundleID: "com.dts.freefiremax",
+            payloads: [
+                PayloadSpec(
+                    directory: "Documents",
+                    filenameCandidates: [
+                        "Assembly-CSharp-patch.bytes"
+                    ]
+                ),
+                PayloadSpec(
+                    directory: "Documents",
+                    filenameCandidates: [
+                        "localConfig.json"
+                    ]
+                )
+            ]
+        ),
+        ProjectSpec(
             id: UUID(uuidString: "A55E0004-3105-4A55-9001-00000000BEEF")!,
             defaultName: "TIO GREEG",
             legacyDefaultNames: [],
@@ -104,6 +126,14 @@ enum BundledPatchSeeder {
 
     private static var activeProjects: [ProjectSpec] {
         projects.filter { spec in
+            if spec.payloads.contains(where: {
+                RemoteContentLibrary.isBuiltInDisabled(
+                    bundleID: spec.bundleID,
+                    relativePath: targetPath(for: $0)
+                )
+            }) {
+                return false
+            }
             guard let capability = spec.requiredCapability else { return true }
             return LicenseEntitlements.has(capability)
         }
@@ -117,11 +147,14 @@ enum BundledPatchSeeder {
         projects.firstIndex { $0.id == id } ?? Int.max
     }
 
-    static func isBuiltInTargetPath(_ path: String) -> Bool {
-        activeProjects
-            .flatMap(\.payloads)
-            .contains { payload in
-                normalizedPath(targetPath(for: payload)) == normalizedPath(path)
+    static func isBuiltInTarget(bundleID: String?, path: String) -> Bool {
+        let requestedBundle = normalizedBundleID(bundleID)
+        return projects
+            .contains { spec in
+                normalizedBundleID(spec.bundleID) == requestedBundle
+                    && spec.payloads.contains { payload in
+                        normalizedPath(targetPath(for: payload)) == normalizedPath(path)
+                    }
             }
     }
 
@@ -169,10 +202,14 @@ enum BundledPatchSeeder {
         fileManager: FileManager
     ) throws -> PatchProject {
         let rules = try spec.payloads.map { payload in
-            try makeRule(payload, fileManager: fileManager)
+            try makeRule(payload, bundleID: spec.bundleID, fileManager: fileManager)
         }
         let remoteOverride = spec.payloads.compactMap {
-            RemoteContentLibrary.installedFile(matching: targetPath(for: $0), fileManager: fileManager)?.file
+            RemoteContentLibrary.installedFile(
+                matching: targetPath(for: $0),
+                bundleID: spec.bundleID,
+                fileManager: fileManager
+            )?.file
         }.first
         let existingName = existingProject?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let name: String
@@ -190,17 +227,21 @@ enum BundledPatchSeeder {
             name: name,
             createdAt: existingProject?.createdAt ?? seedDate,
             updatedAt: remoteOverride == nil ? (existingProject?.updatedAt ?? seedDate) : Date(),
-            bundleIdentifiers: [bundleID],
+            bundleIdentifiers: [spec.bundleID],
             directories: [],
             rules: rules
         )
     }
 
-    private static func makeRule(_ spec: PayloadSpec, fileManager: FileManager) throws -> PatchRule {
+    private static func makeRule(_ spec: PayloadSpec, bundleID: String, fileManager: FileManager) throws -> PatchRule {
         let bundledPayloadURL = try payloadURL(for: spec, fileManager: fileManager)
         let targetPath = targetPath(for: spec)
 
-        let remoteMatch = RemoteContentLibrary.installedFile(matching: targetPath, fileManager: fileManager)
+        let remoteMatch = RemoteContentLibrary.installedFile(
+            matching: targetPath,
+            bundleID: bundleID,
+            fileManager: fileManager
+        )
         let payloadURL = remoteMatch?.url ?? bundledPayloadURL
         let data = try Data(contentsOf: payloadURL, options: .mappedIfSafe)
         guard !data.isEmpty else { throw SeedError.emptyPayload(payloadURL.lastPathComponent) }
@@ -278,5 +319,10 @@ enum BundledPatchSeeder {
             .filter { $0 != "." && $0 != ".." }
             .joined(separator: "/")
             .lowercased()
+    }
+
+    private static func normalizedBundleID(_ value: String?) -> String {
+        let clean = (value ?? "com.dts.freefireth").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return clean.isEmpty ? "com.dts.freefireth" : clean
     }
 }

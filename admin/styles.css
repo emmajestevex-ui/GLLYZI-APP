@@ -157,6 +157,13 @@ h3 {
   gap: 8px;
 }
 
+.presetItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
 .presetButton {
   display: grid;
   gap: 4px;
@@ -170,7 +177,18 @@ h3 {
   border-radius: 8px;
 }
 
-.presetButton:hover {
+.presetRemoveButton {
+  width: 78px;
+  min-height: 70px;
+  color: #ff9ea3;
+  background: #10151b;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-weight: 900;
+}
+
+.presetButton:hover,
+.presetRemoveButton:hover {
   border-color: var(--accent-strong);
 }
 

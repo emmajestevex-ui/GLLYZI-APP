@@ -3,7 +3,8 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260914-routes";
+const SCRIPT_VERSION = "20260915-bundles";
+const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 
 const PATCH_PRESETS = [
   {
@@ -12,6 +13,7 @@ const PATCH_PRESETS = [
     slug: "asset-indexer",
     category: "patches",
     description: "Avatar asset bundle",
+    targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D",
   },
   {
@@ -20,6 +22,7 @@ const PATCH_PRESETS = [
     slug: "shaders",
     category: "shaders",
     description: "Shader bundle",
+    targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
   },
   {
@@ -28,7 +31,26 @@ const PATCH_PRESETS = [
     slug: "144-fps",
     category: "configs",
     description: "FPS preferences",
+    targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Library/Preferences/com.dts.freefireth.plist",
+  },
+  {
+    key: "aimbot-drag-ff-max-assembly",
+    name: "Aimbot Drag FF Max",
+    slug: "aimbot-drag-ff-max-assembly",
+    category: "patches",
+    description: "Assembly patch for Free Fire Max",
+    targetBundle: "com.dts.freefiremax",
+    targetPath: "Documents/Assembly-CSharp-patch.bytes",
+  },
+  {
+    key: "aimbot-drag-ff-max-config",
+    name: "Aimbot Drag FF Max Config",
+    slug: "aimbot-drag-ff-max-config",
+    category: "configs",
+    description: "localConfig.json for Free Fire Max",
+    targetBundle: "com.dts.freefiremax",
+    targetPath: "Documents/localConfig.json",
   },
 ];
 
@@ -67,6 +89,7 @@ const els = {
   nameInput: $("#nameInput"),
   slugInput: $("#slugInput"),
   categoryInput: $("#categoryInput"),
+  targetBundleInput: $("#targetBundleInput"),
   targetPathInput: $("#targetPathInput"),
   descriptionInput: $("#descriptionInput"),
   fileInput: $("#fileInput"),
@@ -302,6 +325,7 @@ async function saveFile(event) {
 
   const name = els.nameInput.value.trim();
   const slug = safeSlug(els.slugInput.value || name);
+  const targetBundle = safeTargetBundle(els.targetBundleInput.value);
   const targetPath = safeRelativePath(els.targetPathInput.value || `${els.categoryInput.value}/${file.name}`);
   if (!name || !slug) {
     setStatus("Completa nombre y slug.");
@@ -340,6 +364,7 @@ async function saveFile(event) {
       p_name: name,
       p_slug: slug,
       p_category: els.categoryInput.value || "files",
+      p_target_bundle: targetBundle,
       p_target_path: targetPath,
       p_description: els.descriptionInput.value.trim() || null,
       p_file_name: file.name,
@@ -402,6 +427,32 @@ async function deleteFile(file) {
   await loadFiles();
 }
 
+async function disablePreset(preset) {
+  if (!state.session || state.busy) return;
+  const bundle = safeTargetBundle(preset.targetBundle);
+  const ok = confirm(`Quitar "${preset.name}" de ${bundle} en la proxima publicacion?`);
+  if (!ok) return;
+
+  setBusy(true, "Preparando eliminacion...");
+  const { error } = await supabaseClient.rpc("admin_disable_remote_content_target", {
+    p_name: preset.name,
+    p_slug: preset.slug,
+    p_category: preset.category || "patches",
+    p_target_bundle: bundle,
+    p_target_path: safeRelativePath(preset.targetPath),
+    p_description: preset.description || null,
+  });
+  setBusy(false);
+
+  if (error) {
+    setStatus(adminErrorMessage(error));
+    return;
+  }
+
+  await loadFiles();
+  setStatus(`"${preset.name}" quedo marcado para quitarse. Pulsa Publicar cambios.`);
+}
+
 async function publishChanges() {
   if (!state.session || state.busy) return;
   setBusy(true, "Publicando manifest...");
@@ -424,6 +475,7 @@ function editFile(file) {
   els.slugInput.value = file.slug;
   els.slugInput.dataset.touched = "true";
   els.categoryInput.value = file.category || "files";
+  els.targetBundleInput.value = safeTargetBundle(file.target_bundle);
   els.targetPathInput.value = file.target_path || fallbackTargetPath(file);
   els.targetPathInput.dataset.touched = "true";
   els.descriptionInput.value = file.description || "";
@@ -439,13 +491,14 @@ function resetForm() {
   delete els.slugInput.dataset.touched;
   delete els.targetPathInput.dataset.touched;
   els.categoryInput.value = "files";
+  els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
   els.targetPathInput.value = "";
   els.saveButton.textContent = "Guardar cambio";
 }
 
 function applyPreset(preset) {
   const existing = state.files.find((file) =>
-    samePath(file.target_path, preset.targetPath)
+    sameTarget(file, preset)
       || safeSlug(file.slug) === preset.slug
   );
 
@@ -461,6 +514,7 @@ function applyPreset(preset) {
   els.slugInput.value = preset.slug;
   els.slugInput.dataset.touched = "true";
   els.categoryInput.value = preset.category;
+  els.targetBundleInput.value = safeTargetBundle(preset.targetBundle);
   els.targetPathInput.value = safeRelativePath(preset.targetPath);
   els.targetPathInput.dataset.touched = "true";
   els.descriptionInput.value = preset.description;
@@ -482,19 +536,28 @@ function renderPresets() {
 
   for (const preset of PATCH_PRESETS) {
     const existing = state.files.find((file) =>
-      samePath(file.target_path, preset.targetPath)
+      sameTarget(file, preset)
         || safeSlug(file.slug) === preset.slug
     );
+    const item = document.createElement("div");
+    item.className = "presetItem";
     const button = document.createElement("button");
     button.type = "button";
     button.className = "presetButton";
     button.innerHTML = `
       <strong>${escapeHTML(preset.name)}</strong>
       <span>${escapeHTML(existing ? `v${existing.version} listo para reemplazar` : "Crear / reemplazar")}</span>
+      <small>${escapeHTML(safeTargetBundle(preset.targetBundle))}</small>
       <small>${escapeHTML(safeRelativePath(preset.targetPath))}</small>
     `;
     button.addEventListener("click", () => applyPreset(preset));
-    els.presetList.append(button);
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "presetRemoveButton";
+    removeButton.textContent = existing?.deleted_at ? "Por quitar" : "Quitar";
+    removeButton.addEventListener("click", () => disablePreset(preset));
+    item.append(button, removeButton);
+    els.presetList.append(item);
   }
 }
 
@@ -502,7 +565,7 @@ function renderFiles() {
   const query = els.searchInput.value.trim().toLowerCase();
   const files = state.files.filter((file) => {
     if (!query) return true;
-    return [file.name, file.slug, file.file_name, file.target_path, file.category, file.description]
+    return [file.name, file.slug, file.file_name, file.target_bundle, file.target_path, file.category, file.description]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(query));
   });
@@ -525,6 +588,7 @@ function renderFiles() {
     node.querySelector(".fileMeta").textContent = [
       file.category || "files",
       `v${file.version}`,
+      file.target_bundle || DEFAULT_TARGET_BUNDLE,
       file.file_name,
       formatBytes(file.byte_size),
     ].join(" / ");
@@ -544,6 +608,17 @@ function renderFiles() {
 
     els.fileList.append(node);
   }
+}
+
+function sameTarget(file, preset) {
+  return samePath(file.target_path, preset.targetPath)
+    && safeTargetBundle(file.target_bundle) === safeTargetBundle(preset.targetBundle);
+}
+
+function safeTargetBundle(value) {
+  const clean = String(value || DEFAULT_TARGET_BUNDLE).trim().toLowerCase();
+  if (clean === "com.dts.freefiremax") return clean;
+  return DEFAULT_TARGET_BUNDLE;
 }
 
 function badgeLabel(file) {

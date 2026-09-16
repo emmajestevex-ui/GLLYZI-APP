@@ -9,12 +9,15 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
     let version: Int
     let category: String
     let description: String?
+    let targetBundle: String?
     let targetPath: String?
     let fileName: String
     let mimeType: String?
     let byteSize: Int64
     let sha256: String
     let storagePath: String
+    let isActive: Bool
+    let deletedAt: String?
     let publishedAt: String?
 
     enum CodingKeys: String, CodingKey {
@@ -24,12 +27,15 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         case version
         case category
         case description
+        case targetBundle = "target_bundle"
         case targetPath = "target_path"
         case fileName = "file_name"
         case mimeType = "mime_type"
         case byteSize = "byte_size"
         case sha256
         case storagePath = "storage_path"
+        case isActive = "is_active"
+        case deletedAt = "deleted_at"
         case publishedAt = "published_at"
     }
 
@@ -41,6 +47,9 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         version = (try? container.decode(Int.self, forKey: .version)) ?? 0
         category = ((try? container.decode(String.self, forKey: .category)) ?? "files").trimmingCharacters(in: .whitespacesAndNewlines)
         description = try? container.decodeIfPresent(String.self, forKey: .description)
+        targetBundle = (try? container.decodeIfPresent(String.self, forKey: .targetBundle))?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
         targetPath = (try? container.decodeIfPresent(String.self, forKey: .targetPath))?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         fileName = ((try? container.decode(String.self, forKey: .fileName)) ?? slug).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -48,6 +57,8 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         byteSize = (try? container.decode(Int64.self, forKey: .byteSize)) ?? 0
         sha256 = ((try? container.decode(String.self, forKey: .sha256)) ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         storagePath = ((try? container.decode(String.self, forKey: .storagePath)) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        isActive = (try? container.decode(Bool.self, forKey: .isActive)) ?? true
+        deletedAt = try? container.decodeIfPresent(String.self, forKey: .deletedAt)
         publishedAt = try? container.decodeIfPresent(String.self, forKey: .publishedAt)
     }
 
@@ -58,12 +69,15 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         version: Int,
         category: String,
         description: String?,
+        targetBundle: String?,
         targetPath: String?,
         fileName: String,
         mimeType: String?,
         byteSize: Int64,
         sha256: String,
         storagePath: String,
+        isActive: Bool = true,
+        deletedAt: String? = nil,
         publishedAt: String?
     ) {
         self.id = id
@@ -72,12 +86,15 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         self.version = version
         self.category = category
         self.description = description
+        self.targetBundle = targetBundle?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         self.targetPath = targetPath?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.fileName = fileName
         self.mimeType = mimeType
         self.byteSize = byteSize
         self.sha256 = sha256.lowercased()
         self.storagePath = storagePath
+        self.isActive = isActive
+        self.deletedAt = deletedAt
         self.publishedAt = publishedAt
     }
 
@@ -89,12 +106,15 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         try container.encode(version, forKey: .version)
         try container.encode(category, forKey: .category)
         try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(targetBundle, forKey: .targetBundle)
         try container.encodeIfPresent(targetPath, forKey: .targetPath)
         try container.encode(fileName, forKey: .fileName)
         try container.encodeIfPresent(mimeType, forKey: .mimeType)
         try container.encode(byteSize, forKey: .byteSize)
         try container.encode(sha256, forKey: .sha256)
         try container.encode(storagePath, forKey: .storagePath)
+        try container.encode(isActive, forKey: .isActive)
+        try container.encodeIfPresent(deletedAt, forKey: .deletedAt)
         try container.encodeIfPresent(publishedAt, forKey: .publishedAt)
     }
 
@@ -112,6 +132,15 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
 
     var displaySize: String {
         ByteCountFormatter.string(fromByteCount: byteSize, countStyle: .file)
+    }
+
+    var targetBundleID: String {
+        let clean = (targetBundle ?? "com.dts.freefireth").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return clean.isEmpty ? "com.dts.freefireth" : clean
+    }
+
+    var isAvailable: Bool {
+        isActive && deletedAt == nil
     }
 
     private static func safeComponent(_ value: String, fallback: String) -> String {
@@ -234,7 +263,7 @@ final class RemoteContentStore: ObservableObject {
             remoteVersion = 0
             return
         }
-        installedFiles = manifest.files
+        installedFiles = manifest.files.filter(\.isAvailable)
         remoteVersion = manifest.version
     }
 
@@ -265,13 +294,13 @@ final class RemoteContentStore: ObservableObject {
             if plan.changed.isEmpty && plan.obsolete.isEmpty {
                 try saveLocalManifest(manifest)
                 BundledPatchSeeder.seedIfNeeded()
-                installedFiles = manifest.files
+                installedFiles = manifest.files.filter(\.isAvailable)
                 remoteVersion = manifest.version
                 progress = 1
                 statusText = "Up to date"
                 detailText = manifest.files.isEmpty
                     ? "No published remote files yet."
-                    : "\(manifest.files.count) remote file(s) installed."
+                    : "\(installedFiles.count) remote file(s) installed."
                 lastChecked = Date()
                 isBusy = false
                 return
@@ -309,7 +338,7 @@ final class RemoteContentStore: ObservableObject {
 
             try saveLocalManifest(manifest)
             BundledPatchSeeder.seedIfNeeded()
-            installedFiles = manifest.files
+            installedFiles = manifest.files.filter(\.isAvailable)
             remoteVersion = manifest.version
             progress = 1
             statusText = "Content updated"
@@ -372,7 +401,7 @@ final class RemoteContentStore: ObservableObject {
             throw RemoteContentSyncError.server(manifest.message.isEmpty ? "Remote content unavailable." : manifest.message)
         }
 
-        for file in manifest.files {
+        for file in manifest.files where file.isAvailable {
             guard !file.id.isEmpty,
                   !file.slug.isEmpty,
                   !file.fileName.isEmpty,
@@ -387,18 +416,20 @@ final class RemoteContentStore: ObservableObject {
             throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate files.")
         }
 
-        let paths = manifest.files.map(\.localRelativePath)
+        let paths = manifest.files.filter(\.isAvailable).map { "\($0.targetBundleID):\($0.localRelativePath)" }
         guard Set(paths).count == paths.count else {
             throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate target paths.")
         }
     }
 
     private func makePlan(remote: RemoteContentManifest, local: RemoteContentManifest?) throws -> SyncPlan {
-        let localByID = Dictionary(uniqueKeysWithValues: (local?.files ?? []).map { ($0.id, $0) })
-        let remoteIDs = Set(remote.files.map(\.id))
+        let remoteFiles = remote.files.filter(\.isAvailable)
+        let localFiles = (local?.files ?? []).filter(\.isAvailable)
+        let localByID = Dictionary(uniqueKeysWithValues: localFiles.map { ($0.id, $0) })
+        let remoteIDs = Set(remoteFiles.map(\.id))
         var changed: [RemoteContentFile] = []
 
-        for file in remote.files {
+        for file in remoteFiles {
             let installed = localByID[file.id]
             let targetURL = localURL(for: file)
             let metadataChanged = installed?.version != file.version
@@ -418,7 +449,7 @@ final class RemoteContentStore: ObservableObject {
             }
         }
 
-        let obsolete = (local?.files ?? []).filter { !remoteIDs.contains($0.id) }
+        let obsolete = localFiles.filter { !remoteIDs.contains($0.id) }
         return SyncPlan(changed: changed, obsolete: obsolete)
     }
 
@@ -461,7 +492,7 @@ final class RemoteContentStore: ObservableObject {
         try fileManager.createDirectory(at: currentRootURL, withIntermediateDirectories: true)
         let previousByID = Dictionary(uniqueKeysWithValues: (previousManifest?.files ?? []).map { ($0.id, $0) })
 
-        for file in manifest.files {
+        for file in manifest.files where file.isAvailable {
             guard let stagedURL = stagedDownloads[file.id] else { continue }
             let destinationURL = localURL(for: file)
             try fileManager.createDirectory(at: destinationURL.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -619,10 +650,17 @@ enum RemoteContentLibrary {
         return try? JSONDecoder().decode(RemoteContentManifest.self, from: data)
     }
 
-    static func installedFile(matching relativePath: String, fileManager: FileManager = .default) -> (file: RemoteContentFile, url: URL)? {
+    static func installedFile(
+        matching relativePath: String,
+        bundleID: String = "com.dts.freefireth",
+        fileManager: FileManager = .default
+    ) -> (file: RemoteContentFile, url: URL)? {
         let requestedPath = safeRelativePath(relativePath)
+        let requestedBundle = safeBundleID(bundleID)
         guard let file = loadManifest(fileManager: fileManager)?.files.first(where: {
-            safeRelativePath($0.localRelativePath) == requestedPath
+            $0.isAvailable
+                && safeBundleID($0.targetBundleID) == requestedBundle
+                && safeRelativePath($0.localRelativePath) == requestedPath
         }) else {
             return nil
         }
@@ -630,6 +668,20 @@ enum RemoteContentLibrary {
         let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.localRelativePath)
         guard fileManager.fileExists(atPath: url.path) else { return nil }
         return (file, url)
+    }
+
+    static func isBuiltInDisabled(
+        bundleID: String = "com.dts.freefireth",
+        relativePath: String,
+        fileManager: FileManager = .default
+    ) -> Bool {
+        let requestedBundle = safeBundleID(bundleID)
+        let requestedPath = safeRelativePath(relativePath)
+        return loadManifest(fileManager: fileManager)?.files.contains(where: {
+            !$0.isAvailable
+                && safeBundleID($0.targetBundleID) == requestedBundle
+                && safeRelativePath($0.localRelativePath) == requestedPath
+        }) ?? false
     }
 
     private static func safeRelativePath(_ value: String) -> String {
@@ -640,6 +692,11 @@ enum RemoteContentLibrary {
             .filter { $0 != "." && $0 != ".." }
             .joined(separator: "/")
             .lowercased()
+    }
+
+    private static func safeBundleID(_ value: String) -> String {
+        let clean = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return clean.isEmpty ? "com.dts.freefireth" : clean
     }
 
     private static func url(inside root: URL, relativePath: String) -> URL {

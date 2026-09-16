@@ -15,12 +15,14 @@ En Windows tambien puedes abrir `admin/start-panel.cmd`; eso levanta el panel en
 
 ## Crear o reemplazar un patch
 
-1. Toca una plantilla en `Patches listos`, por ejemplo `Asset Indexer`, `Shaders` o `144 fps`.
-2. El panel llena nombre, categoria, slug y `Ruta en GREEG APP`.
+1. Toca una plantilla en `Patches listos`, por ejemplo `Asset Indexer`, `Shaders`, `144 fps` o `Aimbot Drag FF Max`.
+2. El panel llena nombre, categoria, slug, `App destino` y `Ruta en GREEG APP`.
 3. Selecciona el archivo nuevo desde tu PC.
 4. Pulsa `Guardar cambio`.
 5. Pulsa `Publicar cambios`.
 
-Para editar uno ya publicado, pulsa `Reemplazar` en la tarjeta del patch o vuelve a tocar la misma plantilla. Si usas la misma `Ruta en GREEG APP`, el iPhone descarga solo el archivo cambiado y reemplaza esa copia local despues de verificar el SHA-256.
+Para editar uno ya publicado, pulsa `Reemplazar` en la tarjeta del patch o vuelve a tocar la misma plantilla. Si usas la misma combinacion de `App destino` y `Ruta en GREEG APP`, el iPhone descarga solo el archivo cambiado y reemplaza esa copia local despues de verificar el SHA-256.
+
+Para quitar un patch integrado, pulsa `Quitar` en su plantilla y despues `Publicar cambios`. La app lo oculta despues de buscar actualizaciones. Para traerlo de vuelta, vuelve a tocar la plantilla, sube un archivo nuevo y publica.
 
 La app iOS usa la misma publishable key y descarga solo los archivos publicados que cambien. No se incluye ninguna `service_role` ni secret key en este panel.
