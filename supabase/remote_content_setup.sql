@@ -242,8 +242,9 @@ alter column target_bundle set default 'com.dts.freefireth',
 alter column target_bundle set not null;
 
 drop index if exists public.remote_content_files_target_path_idx;
+drop index if exists public.remote_content_files_target_bundle_path_idx;
 
-create unique index if not exists remote_content_files_target_bundle_path_idx
+create index if not exists remote_content_files_target_bundle_path_idx
 on public.remote_content_files (target_bundle, target_path)
 where deleted_at is null;
 
@@ -316,6 +317,7 @@ $$;
 drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, bigint, text, text, text, uuid);
 drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, text, bigint, text, text, text, uuid);
 drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid);
+drop function if exists public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid, boolean);
 
 create or replace function public.admin_upsert_remote_content_file(
     p_name text,
@@ -329,7 +331,8 @@ create or replace function public.admin_upsert_remote_content_file(
     p_sha256 text,
     p_storage_path text,
     p_description text default null,
-    p_id uuid default null
+    p_id uuid default null,
+    p_force_new boolean default false
 )
 returns jsonb
 language plpgsql
@@ -347,6 +350,8 @@ declare
     v_storage_path text := trim(coalesce(p_storage_path, ''));
     v_sha text := lower(trim(coalesce(p_sha256, '')));
     v_file public.remote_content_files%rowtype;
+    v_base_slug text;
+    v_suffix integer := 2;
 begin
     if not public.is_license_admin() then
         raise exception 'Not authorized';
@@ -371,20 +376,22 @@ begin
         raise exception 'Invalid storage path';
     end if;
 
-    select *
-    into v_file
-    from public.remote_content_files
-    where (p_id is not null and id = p_id)
-       or (p_id is null and (slug = v_slug or (target_bundle = v_target_bundle and target_path = v_target_path)))
-    order by
-        case
-            when p_id is not null and id = p_id then 0
-            when target_bundle = v_target_bundle and target_path = v_target_path then 1
-            when slug = v_slug then 2
-            else 3
-        end
-    limit 1
-    for update;
+    if p_id is not null then
+        select *
+        into v_file
+        from public.remote_content_files
+        where id = p_id
+        limit 1
+        for update;
+    elsif not coalesce(p_force_new, false) then
+        select *
+        into v_file
+        from public.remote_content_files
+        where slug = v_slug
+        order by updated_at desc
+        limit 1
+        for update;
+    end if;
 
     if found then
         update public.remote_content_files
@@ -407,6 +414,18 @@ begin
         where id = v_file.id
         returning * into v_file;
     else
+        v_base_slug := v_slug;
+        while exists (
+            select 1
+            from public.remote_content_files
+            where slug = v_slug
+        ) loop
+            v_slug := left(v_base_slug, greatest(1, 80 - length('-' || v_suffix::text)))
+                || '-'
+                || v_suffix::text;
+            v_suffix := v_suffix + 1;
+        end loop;
+
         insert into public.remote_content_files (
             slug,
             name,
@@ -750,7 +769,7 @@ revoke all on function public.remote_content_safe_slug(text, text) from public;
 revoke all on function public.remote_content_safe_path(text, text, text) from public;
 revoke all on function public.remote_content_safe_bundle(text) from public;
 revoke all on function public.admin_list_remote_content_files() from public;
-revoke all on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid) from public;
+revoke all on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid, boolean) from public;
 revoke all on function public.admin_set_remote_content_active(uuid, boolean) from public;
 revoke all on function public.admin_delete_remote_content_file(uuid) from public;
 revoke all on function public.admin_disable_remote_content_target(text, text, text, text, text, text) from public;
@@ -759,7 +778,7 @@ revoke all on function public.get_remote_content_manifest(text, text) from publi
 
 grant execute on function public.admin_list_remote_content_files() to authenticated;
 grant execute on function public.is_license_admin() to authenticated;
-grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid) to authenticated;
+grant execute on function public.admin_upsert_remote_content_file(text, text, text, text, text, text, text, bigint, text, text, text, uuid, boolean) to authenticated;
 grant execute on function public.admin_set_remote_content_active(uuid, boolean) to authenticated;
 grant execute on function public.admin_delete_remote_content_file(uuid) to authenticated;
 grant execute on function public.admin_disable_remote_content_target(text, text, text, text, text, text) to authenticated;

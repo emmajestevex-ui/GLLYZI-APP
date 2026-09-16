@@ -130,6 +130,14 @@ struct RemoteContentFile: Codable, Identifiable, Equatable {
         ].joined(separator: "/")
     }
 
+    var cacheRelativePath: String {
+        [
+            "_files",
+            Self.safeComponent(id, fallback: slug),
+            Self.safeComponent(fileName, fallback: "content.bin")
+        ].joined(separator: "/")
+    }
+
     var displaySize: String {
         ByteCountFormatter.string(fromByteCount: byteSize, countStyle: .file)
     }
@@ -416,9 +424,9 @@ final class RemoteContentStore: ObservableObject {
             throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate files.")
         }
 
-        let paths = manifest.files.filter(\.isAvailable).map { "\($0.targetBundleID):\($0.localRelativePath)" }
-        guard Set(paths).count == paths.count else {
-            throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate target paths.")
+        let cachePaths = manifest.files.filter(\.isAvailable).map(\.cacheRelativePath)
+        guard Set(cachePaths).count == cachePaths.count else {
+            throw RemoteContentSyncError.invalidManifest("Remote manifest contains duplicate cache paths.")
         }
     }
 
@@ -435,7 +443,7 @@ final class RemoteContentStore: ObservableObject {
             let metadataChanged = installed?.version != file.version
                 || installed?.sha256 != file.sha256
                 || installed?.storagePath != file.storagePath
-                || installed?.localRelativePath != file.localRelativePath
+                || installed?.cacheRelativePath != file.cacheRelativePath
             let missing = !FileManager.default.fileExists(atPath: targetURL.path)
             let digestChanged: Bool
             if !missing && !metadataChanged {
@@ -467,7 +475,7 @@ final class RemoteContentStore: ObservableObject {
             throw RemoteContentSyncError.server("Could not download \(file.name).")
         }
 
-        let stagedURL = url(inside: stagingRoot, relativePath: file.localRelativePath)
+        let stagedURL = url(inside: stagingRoot, relativePath: file.cacheRelativePath)
         try FileManager.default.createDirectory(
             at: stagedURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
@@ -500,7 +508,7 @@ final class RemoteContentStore: ObservableObject {
             try fileManager.moveItem(at: stagedURL, to: destinationURL)
 
             if let previous = previousByID[file.id],
-               previous.localRelativePath != file.localRelativePath {
+               previous.cacheRelativePath != file.cacheRelativePath {
                 try? fileManager.removeItem(at: localURL(for: previous))
             }
         }
@@ -576,7 +584,7 @@ final class RemoteContentStore: ObservableObject {
     }
 
     private func localURL(for file: RemoteContentFile) -> URL {
-        url(inside: currentRootURL, relativePath: file.localRelativePath)
+        url(inside: currentRootURL, relativePath: file.cacheRelativePath)
     }
 
     private func objectURL(for storagePath: String) throws -> URL {
@@ -671,7 +679,7 @@ enum RemoteContentLibrary {
             return nil
         }
 
-        let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.localRelativePath)
+        let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.cacheRelativePath)
         guard fileManager.fileExists(atPath: url.path) else { return nil }
         return (file, url)
     }
@@ -700,7 +708,7 @@ enum RemoteContentLibrary {
         for file: RemoteContentFile,
         fileManager: FileManager = .default
     ) -> URL? {
-        let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.localRelativePath)
+        let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.cacheRelativePath)
         return fileManager.fileExists(atPath: url.path) ? url : nil
     }
 

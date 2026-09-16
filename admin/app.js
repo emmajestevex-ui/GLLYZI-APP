@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-asset-route-picker";
+const SCRIPT_VERSION = "20260916-force-new-patches";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -423,6 +423,7 @@ async function saveFile(event) {
       p_byte_size: file.size,
       p_sha256: hash,
       p_storage_path: storagePath,
+      p_force_new: !els.editingId.value,
     });
 
     if (rpcError) {
@@ -810,7 +811,7 @@ function adminErrorMessage(error) {
     return "El login funciono, pero ese correo aun no tiene permiso admin. Ejecuta supabase/remote_content_setup.sql en Supabase.";
   }
   if (/could not find the function|function .* does not exist|schema cache/i.test(message)) {
-    return "Falta actualizar el backend del panel. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
+    return "Falta actualizar el backend para crear patches duplicados. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
   }
   if (/relation .* does not exist|remote_content/i.test(message)) {
     return "Faltan las tablas del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
