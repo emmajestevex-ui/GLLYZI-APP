@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-new-means-new";
+const SCRIPT_VERSION = "20260916-create-new-stable";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -410,6 +410,7 @@ async function saveFile(event) {
     uploadedPath = storagePath;
 
     setStatus("Guardando metadata...");
+    const isReplacing = Boolean(els.editingId.value);
     const { error: rpcError } = await supabaseClient.rpc("admin_upsert_remote_content_file", {
       p_id: els.editingId.value || null,
       p_name: name,
@@ -423,7 +424,7 @@ async function saveFile(event) {
       p_byte_size: file.size,
       p_sha256: hash,
       p_storage_path: storagePath,
-      p_force_new: !els.editingId.value,
+      p_force_new: !isReplacing,
     });
 
     if (rpcError) {
@@ -435,9 +436,14 @@ async function saveFile(event) {
 
     resetForm();
     await loadFiles();
-    setStatus("Cambio guardado. Pulsa Publicar cambios cuando estes listo.");
+    setStatus(isReplacing
+      ? "Patch reemplazado. Pulsa Publicar cambios cuando estes listo."
+      : "Patch nuevo creado. Pulsa Publicar cambios cuando estes listo."
+    );
   } catch (error) {
-    setStatus(adminErrorMessage(error));
+    const message = adminErrorMessage(error);
+    setStatus(message);
+    window.alert(message);
   } finally {
     setBusy(false);
   }
@@ -554,7 +560,8 @@ function resetForm() {
   els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
   els.targetPathInput.value = "";
   updateAssetVariantVisibility();
-  els.saveButton.textContent = "Guardar cambio";
+  els.saveButton.textContent = "Crear patch nuevo";
+  setStatus("Modo nuevo: se creara otro patch, no se reemplazara uno publicado.");
 }
 
 function applyPreset(preset, selectedRule = null) {
@@ -617,7 +624,11 @@ function renderPresets() {
   for (const preset of PATCH_PRESETS) {
     const rules = presetRules(preset);
     const matches = rules.map((rule) =>
-      state.files.find((file) => sameTarget(file, preset, rule) || safeSlug(file.slug) === rule.slug)
+      state.files.find((file) =>
+        !file.deleted_at
+          && file.is_active
+          && (sameTarget(file, preset, rule) || safeSlug(file.slug) === rule.slug)
+      )
     );
     const completed = matches.filter(Boolean).length;
     const deleted = matches.some((file) => file?.deleted_at);
@@ -809,11 +820,14 @@ function adminErrorMessage(error) {
   if (/could not find the function|function .* does not exist|schema cache/i.test(message)) {
     return "Falta actualizar el backend para crear patches duplicados. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
   }
+  if (/duplicate key|unique constraint|target_path|target_bundle_path/i.test(message)) {
+    return "Supabase todavia esta bloqueando rutas duplicadas. Ejecuta supabase/remote_content_setup.sql en Supabase una vez, refresca el panel y vuelve a guardar.";
+  }
   if (/relation .* does not exist|remote_content/i.test(message)) {
     return "Faltan las tablas del panel. Ejecuta supabase/remote_content_setup.sql en Supabase.";
   }
-  if (/duplicate key|unique constraint|target_path|slug/i.test(message)) {
-    return "Ya existe un patch con esa ruta o slug. Usa Reemplazar en el patch existente.";
+  if (/slug/i.test(message) && /duplicate|unique/i.test(message)) {
+    return "Ya existe un slug igual. El backend actualizado lo corrige automaticamente; ejecuta supabase/remote_content_setup.sql y refresca.";
   }
   return message;
 }
