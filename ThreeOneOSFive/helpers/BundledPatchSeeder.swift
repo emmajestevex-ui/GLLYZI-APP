@@ -1,6 +1,34 @@
 import Foundation
 
 enum BundledPatchSeeder {
+    enum AssetIndexerVariant: String, CaseIterable, Identifiable {
+        case pen
+        case h5
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .pen: return "PEN"
+            case .h5: return "H5"
+            }
+        }
+
+        var bundleID: String {
+            switch self {
+            case .pen: return "com.dts.freefiremax"
+            case .h5: return "com.dts.freefireth"
+            }
+        }
+
+        var filename: String {
+            switch self {
+            case .pen: return "assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D"
+            case .h5: return "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D"
+            }
+        }
+    }
+
     private struct ProjectSpec {
         let id: UUID
         let defaultName: String
@@ -53,18 +81,22 @@ enum BundledPatchSeeder {
     private static let payloadDirectoryName = "BundledPatchPayloads"
     private static let seedDate = Date(timeIntervalSince1970: 0)
     private static let remotePatchCategories: Set<String> = ["patches", "shaders", "configs"]
+    private static let assetIndexerProjectID = UUID(uuidString: "A55E0001-3105-4A55-9001-00000000BEEF")!
+    private static let assetIndexerVariantKey = "greeg.assetIndexerVariant"
+    private static let assetIndexerDirectory = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar"
 
     private static let projects = [
         ProjectSpec(
-            id: UUID(uuidString: "A55E0001-3105-4A55-9001-00000000BEEF")!,
+            id: assetIndexerProjectID,
             defaultName: "Asset Indexer",
             legacyDefaultNames: ["asse"],
             bundleID: "com.dts.freefiremax",
             payloads: [
                 PayloadSpec(
-                    directory: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar",
+                    directory: assetIndexerDirectory,
                     filenameCandidates: [
-                        "assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D"
+                        AssetIndexerVariant.pen.filename,
+                        AssetIndexerVariant.h5.filename
                     ],
                     remoteSlugs: ["asset-indexer-ff-max"]
                 ),
@@ -143,7 +175,7 @@ enum BundledPatchSeeder {
         projects.filter { spec in
             if spec.payloads.contains(where: {
                 RemoteContentLibrary.isBuiltInDisabled(
-                    bundleID: spec.bundleID,
+                    bundleID: effectiveBundleID(for: spec),
                     relativePath: targetPath(for: $0),
                     slugs: $0.remoteSlugs
                 )
@@ -167,6 +199,20 @@ enum BundledPatchSeeder {
             return projects.count + index
         }
         return Int.max
+    }
+
+    static var selectedAssetIndexerVariant: AssetIndexerVariant {
+        let raw = UserDefaults.standard.string(forKey: assetIndexerVariantKey) ?? AssetIndexerVariant.pen.rawValue
+        return AssetIndexerVariant(rawValue: raw) ?? .pen
+    }
+
+    static func setAssetIndexerVariant(_ variant: AssetIndexerVariant, fileManager: FileManager = .default) {
+        UserDefaults.standard.set(variant.rawValue, forKey: assetIndexerVariantKey)
+        seedIfNeeded(fileManager: fileManager)
+    }
+
+    static func isAssetIndexerProject(_ project: PatchProject) -> Bool {
+        project.id == assetIndexerProjectID
     }
 
     static func isBuiltInRemoteFile(_ file: RemoteContentFile) -> Bool {
@@ -229,11 +275,11 @@ enum BundledPatchSeeder {
             RemoteContentLibrary.installedFile(
                 matching: targetPath(for: $0),
                 slugs: $0.remoteSlugs,
-                bundleID: spec.bundleID,
+                bundleID: effectiveBundleID(for: spec),
                 fileManager: fileManager
             )?.file
         }.first
-        let effectiveBundleID = remoteOverride?.targetBundleID ?? spec.bundleID
+        let effectiveBundleID = remoteOverride?.targetBundleID ?? effectiveBundleID(for: spec)
         let rules = try spec.payloads.map { payload in
             try makeRule(payload, fallbackBundleID: effectiveBundleID, fileManager: fileManager)
         }
@@ -292,7 +338,16 @@ enum BundledPatchSeeder {
             throw SeedError.missingPayload(spec.filenameCandidates[0])
         }
 
-        for filename in spec.filenameCandidates {
+        let candidates: [String]
+        if spec.directory == assetIndexerDirectory,
+           spec.filenameCandidates.contains(AssetIndexerVariant.pen.filename) {
+            candidates = [selectedAssetIndexerVariant.filename]
+                + spec.filenameCandidates.filter { $0 != selectedAssetIndexerVariant.filename }
+        } else {
+            candidates = spec.filenameCandidates
+        }
+
+        for filename in candidates {
             let candidate = payloadRoot.appendingPathComponent(filename, isDirectory: false)
             if fileManager.fileExists(atPath: candidate.path) {
                 return candidate
@@ -430,7 +485,15 @@ enum BundledPatchSeeder {
     }
 
     private static func targetPath(for spec: PayloadSpec) -> String {
+        if spec.directory == assetIndexerDirectory,
+           spec.filenameCandidates.contains(AssetIndexerVariant.pen.filename) {
+            return spec.directory + "/" + selectedAssetIndexerVariant.filename
+        }
         spec.directory + "/" + (spec.targetFilename ?? spec.filenameCandidates[0])
+    }
+
+    private static func effectiveBundleID(for spec: ProjectSpec) -> String {
+        spec.id == assetIndexerProjectID ? selectedAssetIndexerVariant.bundleID : spec.bundleID
     }
 
     private static func normalizedBundleID(_ value: String?) -> String {

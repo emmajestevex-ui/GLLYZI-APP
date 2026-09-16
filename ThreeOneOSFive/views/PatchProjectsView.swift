@@ -315,6 +315,7 @@ private struct PatchProjectDetailView: View {
     @State private var isWorking = false
     @State private var showNameEditor = false
     @State private var actionAlert: PatchStoreAlert?
+    @State private var assetVariant = BundledPatchSeeder.selectedAssetIndexerVariant
 
     private var item: PatchLibraryItem? {
         store.items.first(where: { $0.id == projectID })
@@ -354,6 +355,25 @@ private struct PatchProjectDetailView: View {
                     Text(language.text("patch.target_bundle"))
                 }
 
+                if BundledPatchSeeder.isAssetIndexerProject(project) {
+                    Section {
+                        Picker("Asset", selection: $assetVariant) {
+                            ForEach(BundledPatchSeeder.AssetIndexerVariant.allCases) { variant in
+                                Text(variant.label).tag(variant)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: assetVariant) { newValue in
+                            BundledPatchSeeder.setAssetIndexerVariant(newValue)
+                            store.reload()
+                        }
+                    } header: {
+                        Text("Asset Indexer")
+                    } footer: {
+                        Text("PEN usa Free Fire Max. H5 usa Free Fire normal.")
+                    }
+                }
+
                 Section {
                     ForEach(project.rules) { rule in
                         PatchRuleSummary(rule: rule, style: detailStyle)
@@ -384,6 +404,9 @@ private struct PatchProjectDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(item?.project?.name ?? language.text("patch.title"))
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            assetVariant = BundledPatchSeeder.selectedAssetIndexerVariant
+        }
         .toolbar {
             if isWorking {
                 ToolbarItem(placement: .navigationBarTrailing) {
