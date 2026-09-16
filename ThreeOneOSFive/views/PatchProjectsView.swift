@@ -26,20 +26,7 @@ struct PatchProjectsView: View {
     }
 
     private var remotePatchFiles: [RemoteContentFile] {
-        remoteContentStore.installedFiles
-            .filter { file in
-                ["patches", "shaders", "configs"].contains(file.category.lowercased())
-            }
-            .filter { file in
-                !BundledPatchSeeder.isBuiltInRemoteFile(file)
-            }
-            .filter { file in
-                let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !query.isEmpty else { return true }
-                return file.name.localizedCaseInsensitiveContains(query)
-                    || file.slug.localizedCaseInsensitiveContains(query)
-                    || file.localRelativePath.localizedCaseInsensitiveContains(query)
-            }
+        []
     }
 
     var body: some View {

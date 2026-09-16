@@ -661,8 +661,8 @@ enum RemoteContentLibrary {
         let requestedSlugs = Set(slugs.map(safeSlug))
         guard let file = loadManifest(fileManager: fileManager)?.files.first(where: {
             guard $0.isAvailable else { return false }
-            if requestedSlugs.contains(safeSlug($0.slug)) {
-                return true
+            if !requestedSlugs.isEmpty {
+                return requestedSlugs.contains(safeSlug($0.slug))
             }
             return safeBundleID($0.targetBundleID) == requestedBundle
                 && safeRelativePath($0.localRelativePath) == requestedPath
@@ -686,12 +686,20 @@ enum RemoteContentLibrary {
         let requestedSlugs = Set(slugs.map(safeSlug))
         return loadManifest(fileManager: fileManager)?.files.contains(where: {
             guard !$0.isAvailable else { return false }
-            if requestedSlugs.contains(safeSlug($0.slug)) {
-                return true
+            if !requestedSlugs.isEmpty {
+                return requestedSlugs.contains(safeSlug($0.slug))
             }
             return safeBundleID($0.targetBundleID) == requestedBundle
                 && safeRelativePath($0.localRelativePath) == requestedPath
         }) ?? false
+    }
+
+    static func localFileURL(
+        for file: RemoteContentFile,
+        fileManager: FileManager = .default
+    ) -> URL? {
+        let url = url(inside: currentRootURL(fileManager: fileManager), relativePath: file.localRelativePath)
+        return fileManager.fileExists(atPath: url.path) ? url : nil
     }
 
     private static func safeRelativePath(_ value: String) -> String {

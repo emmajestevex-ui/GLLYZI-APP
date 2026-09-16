@@ -52,6 +52,7 @@ enum BundledPatchSeeder {
 
     private static let payloadDirectoryName = "BundledPatchPayloads"
     private static let seedDate = Date(timeIntervalSince1970: 0)
+    private static let remotePatchCategories: Set<String> = ["patches", "shaders", "configs"]
 
     private static let projects = [
         ProjectSpec(
@@ -155,24 +156,26 @@ enum BundledPatchSeeder {
     }
 
     static var projectIDs: Set<UUID> {
-        Set(activeProjects.map { $0.id })
+        Set(activeProjects.map { $0.id }).union(remoteProjectIDs())
     }
 
     static func sortRank(for id: UUID) -> Int {
-        projects.firstIndex { $0.id == id } ?? Int.max
+        if let index = projects.firstIndex(where: { $0.id == id }) {
+            return index
+        }
+        if let index = sortedRemoteProjectIDs().firstIndex(of: id) {
+            return projects.count + index
+        }
+        return Int.max
     }
 
     static func isBuiltInRemoteFile(_ file: RemoteContentFile) -> Bool {
-        let requestedBundle = normalizedBundleID(file.targetBundle)
-        let requestedPath = normalizedPath(file.localRelativePath)
         let requestedSlug = normalizedSlug(file.slug)
         return projects
             .contains { spec in
                 spec.payloads.contains { payload in
                     let slugMatches = payload.remoteSlugs.map(normalizedSlug).contains(requestedSlug)
-                    let targetMatches = normalizedBundleID(spec.bundleID) == requestedBundle
-                        && normalizedPath(targetPath(for: payload)) == requestedPath
-                    return slugMatches || targetMatches
+                    return slugMatches
                 }
             }
     }
@@ -190,6 +193,7 @@ enum BundledPatchSeeder {
                 log("patch: bundled patch \(spec.defaultName) could not be prepared: \(error.localizedDescription)")
             }
         }
+        seedRemoteProjects(fileManager: fileManager)
     }
 
     private static func seed(_ spec: ProjectSpec, fileManager: FileManager) throws {
@@ -328,6 +332,100 @@ enum BundledPatchSeeder {
             existingURL: item.packageURL,
             fileManager: fileManager
         )
+    }
+
+    private static func seedRemoteProjects(fileManager: FileManager) {
+        let remoteFiles = standaloneRemotePatchFiles(fileManager: fileManager)
+        guard !remoteFiles.isEmpty else { return }
+        let existingItems = PatchProjectLibrary.load(fileManager: fileManager)
+
+        for file in remoteFiles {
+            guard let projectID = remoteProjectID(for: file),
+                  let payloadURL = RemoteContentLibrary.localFileURL(for: file, fileManager: fileManager) else {
+                continue
+            }
+
+            do {
+                let existingItem = existingItems.first { $0.id == projectID }
+                let project = try makeRemoteProject(
+                    from: file,
+                    projectID: projectID,
+                    payloadURL: payloadURL,
+                    existingProject: existingItem?.project
+                )
+                if let existingItem {
+                    try refreshExistingPackage(existingItem, with: project, fileManager: fileManager)
+                } else {
+                    let encoded = try PatchPackageCodec.encodeLegacyV1(project: project, password: nil)
+                    _ = try PatchProjectLibrary.save(
+                        data: encoded.data,
+                        projectName: project.name,
+                        fileManager: fileManager
+                    )
+                }
+                try? PatchWorkspaceService.deleteWorkspace(projectID: projectID, fileManager: fileManager)
+                log("patch: remote patch \(project.name) is ready")
+            } catch {
+                log("patch: remote patch \(file.name) could not be prepared: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private static func makeRemoteProject(
+        from file: RemoteContentFile,
+        projectID: UUID,
+        payloadURL: URL,
+        existingProject: PatchProject?
+    ) throws -> PatchProject {
+        let data = try Data(contentsOf: payloadURL, options: .mappedIfSafe)
+        guard !data.isEmpty else { throw SeedError.emptyPayload(payloadURL.lastPathComponent) }
+        let remoteName = file.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let projectName = remoteName.isEmpty ? file.fileName : remoteName
+
+        return PatchProject(
+            id: projectID,
+            name: projectName,
+            createdAt: existingProject?.createdAt ?? seedDate,
+            updatedAt: Date(),
+            bundleIdentifiers: [file.targetBundleID],
+            directories: [],
+            rules: [
+                PatchRule(
+                    bundleID: file.targetBundleID,
+                    relativePath: file.localRelativePath,
+                    replacementFilename: "Remote v\(file.version) - \(file.fileName)",
+                    replacementData: data
+                )
+            ]
+        )
+    }
+
+    private static func remoteProjectIDs(fileManager: FileManager = .default) -> Set<UUID> {
+        Set(standaloneRemotePatchFiles(fileManager: fileManager).compactMap(remoteProjectID))
+    }
+
+    private static func sortedRemoteProjectIDs(fileManager: FileManager = .default) -> [UUID] {
+        standaloneRemotePatchFiles(fileManager: fileManager)
+            .sorted {
+                let leftPublishedAt = $0.publishedAt ?? ""
+                let rightPublishedAt = $1.publishedAt ?? ""
+                if leftPublishedAt != rightPublishedAt { return leftPublishedAt < rightPublishedAt }
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+            .compactMap(remoteProjectID)
+    }
+
+    private static func standaloneRemotePatchFiles(fileManager: FileManager) -> [RemoteContentFile] {
+        RemoteContentLibrary.loadManifest(fileManager: fileManager)?.files.filter { file in
+            file.isAvailable
+                && remotePatchCategories.contains(file.category.lowercased())
+                && !isBuiltInRemoteFile(file)
+                && RemoteContentLibrary.localFileURL(for: file, fileManager: fileManager) != nil
+        } ?? []
+    }
+
+    private static func remoteProjectID(for file: RemoteContentFile) -> UUID? {
+        UUID(uuidString: file.id)
     }
 
     private static func targetPath(for spec: PayloadSpec) -> String {
