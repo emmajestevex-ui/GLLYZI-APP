@@ -1,6 +1,35 @@
 import Foundation
 
 enum BundledPatchSeeder {
+    enum TargetBundleChoice: String, CaseIterable, Identifiable {
+        case freeFireMax
+        case freeFireTH
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .freeFireMax: return "Free Fire Max"
+            case .freeFireTH: return "Free Fire TH"
+            }
+        }
+
+        var bundleID: String {
+            switch self {
+            case .freeFireMax: return "com.dts.freefiremax"
+            case .freeFireTH: return "com.dts.freefireth"
+            }
+        }
+
+        init?(bundleID: String) {
+            switch BundledPatchSeeder.normalizedBundleID(bundleID) {
+            case "com.dts.freefiremax": self = .freeFireMax
+            case "com.dts.freefireth": self = .freeFireTH
+            default: return nil
+            }
+        }
+    }
+
     enum AssetIndexerVariant: String, CaseIterable, Identifiable {
         case pen
         case h5
@@ -83,6 +112,8 @@ enum BundledPatchSeeder {
     private static let remotePatchCategories: Set<String> = ["patches", "shaders", "configs"]
     private static let assetIndexerProjectID = UUID(uuidString: "A55E0001-3105-4A55-9001-00000000BEEF")!
     private static let assetIndexerVariantKey = "greeg.assetIndexerVariant"
+    private static let remoteAssetIndexerVariantPrefix = "greeg.remoteAssetIndexerVariant."
+    private static let remoteTargetBundlePrefix = "greeg.remoteTargetBundle."
     private static let assetIndexerDirectory = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar"
 
     private static let projects = [
@@ -211,8 +242,66 @@ enum BundledPatchSeeder {
         seedIfNeeded(fileManager: fileManager)
     }
 
+    static func setAssetIndexerVariant(
+        _ variant: AssetIndexerVariant,
+        for projectID: UUID,
+        fileManager: FileManager = .default
+    ) {
+        if projectID == assetIndexerProjectID {
+            setAssetIndexerVariant(variant, fileManager: fileManager)
+        } else {
+            UserDefaults.standard.set(variant.rawValue, forKey: remoteAssetIndexerVariantKey(for: projectID))
+            UserDefaults.standard.set(variant.bundleID, forKey: remoteTargetBundleKey(for: projectID))
+            seedIfNeeded(fileManager: fileManager)
+        }
+    }
+
     static func isAssetIndexerProject(_ project: PatchProject) -> Bool {
         project.id == assetIndexerProjectID
+    }
+
+    static func hasAssetIndexerRule(_ project: PatchProject) -> Bool {
+        project.id == assetIndexerProjectID || project.rules.contains { isAssetIndexerPath($0.relativePath) }
+    }
+
+    static func selectedAssetIndexerVariant(for project: PatchProject) -> AssetIndexerVariant {
+        if project.id == assetIndexerProjectID {
+            return selectedAssetIndexerVariant
+        }
+        if let override = remoteAssetIndexerVariantOverride(for: project.id) {
+            return override
+        }
+        if let bundleID = project.rules.first?.bundleID,
+           normalizedBundleID(bundleID) == AssetIndexerVariant.pen.bundleID {
+            return .pen
+        }
+        if let bundleID = project.rules.first?.bundleID,
+           normalizedBundleID(bundleID) == AssetIndexerVariant.h5.bundleID {
+            return .h5
+        }
+        if project.rules.contains(where: { $0.relativePath.localizedCaseInsensitiveContains(AssetIndexerVariant.pen.filename) }) {
+            return .pen
+        }
+        return .h5
+    }
+
+    static func canOverrideTargetBundle(_ project: PatchProject) -> Bool {
+        !hasAssetIndexerRule(project) && !project.rules.isEmpty
+    }
+
+    static func selectedTargetBundle(for project: PatchProject) -> TargetBundleChoice {
+        targetBundleOverride(for: project.id)
+            ?? TargetBundleChoice(bundleID: project.allBundleIdentifiers.first ?? "")
+            ?? .freeFireTH
+    }
+
+    static func setTargetBundle(
+        _ choice: TargetBundleChoice,
+        for projectID: UUID,
+        fileManager: FileManager = .default
+    ) {
+        UserDefaults.standard.set(choice.bundleID, forKey: remoteTargetBundleKey(for: projectID))
+        seedIfNeeded(fileManager: fileManager)
     }
 
     static func isBuiltInRemoteFile(_ file: RemoteContentFile) -> Bool {
@@ -438,18 +527,25 @@ enum BundledPatchSeeder {
         guard !data.isEmpty else { throw SeedError.emptyPayload(payloadURL.lastPathComponent) }
         let remoteName = file.name.trimmingCharacters(in: .whitespacesAndNewlines)
         let projectName = remoteName.isEmpty ? file.fileName : remoteName
+        let assetVariant = effectiveRemoteAssetVariant(for: file, projectID: projectID)
+        let effectiveBundleID = assetVariant?.bundleID
+            ?? targetBundleOverride(for: projectID)?.bundleID
+            ?? file.targetBundleID
+        let effectivePath = assetVariant.map {
+            assetIndexerDirectory + "/" + $0.filename
+        } ?? file.localRelativePath
 
         return PatchProject(
             id: projectID,
             name: projectName,
             createdAt: existingProject?.createdAt ?? seedDate,
             updatedAt: Date(),
-            bundleIdentifiers: [file.targetBundleID],
+            bundleIdentifiers: [effectiveBundleID],
             directories: [],
             rules: [
                 PatchRule(
-                    bundleID: file.targetBundleID,
-                    relativePath: file.localRelativePath,
+                    bundleID: effectiveBundleID,
+                    relativePath: effectivePath,
                     replacementFilename: "Remote v\(file.version) - \(file.fileName)",
                     replacementData: data
                 )
@@ -495,6 +591,53 @@ enum BundledPatchSeeder {
 
     private static func effectiveBundleID(for spec: ProjectSpec) -> String {
         return spec.id == assetIndexerProjectID ? selectedAssetIndexerVariant.bundleID : spec.bundleID
+    }
+
+    private static func effectiveRemoteAssetVariant(
+        for file: RemoteContentFile,
+        projectID: UUID
+    ) -> AssetIndexerVariant? {
+        guard isAssetIndexerPath(file.localRelativePath) else { return nil }
+        if let override = remoteAssetIndexerVariantOverride(for: projectID) {
+            return override
+        }
+        if normalizedBundleID(file.targetBundleID) == AssetIndexerVariant.pen.bundleID {
+            return .pen
+        }
+        if normalizedBundleID(file.targetBundleID) == AssetIndexerVariant.h5.bundleID {
+            return .h5
+        }
+        if file.localRelativePath.localizedCaseInsensitiveContains(AssetIndexerVariant.pen.filename) {
+            return .pen
+        }
+        return .h5
+    }
+
+    private static func targetBundleOverride(for projectID: UUID) -> TargetBundleChoice? {
+        guard let raw = UserDefaults.standard.string(forKey: remoteTargetBundleKey(for: projectID)) else {
+            return nil
+        }
+        return TargetBundleChoice(bundleID: raw)
+    }
+
+    private static func remoteAssetIndexerVariantOverride(for projectID: UUID) -> AssetIndexerVariant? {
+        guard let raw = UserDefaults.standard.string(forKey: remoteAssetIndexerVariantKey(for: projectID)) else {
+            return nil
+        }
+        return AssetIndexerVariant(rawValue: raw)
+    }
+
+    private static func remoteTargetBundleKey(for projectID: UUID) -> String {
+        remoteTargetBundlePrefix + projectID.uuidString
+    }
+
+    private static func remoteAssetIndexerVariantKey(for projectID: UUID) -> String {
+        remoteAssetIndexerVariantPrefix + projectID.uuidString
+    }
+
+    private static func isAssetIndexerPath(_ value: String) -> Bool {
+        value.localizedCaseInsensitiveContains("/assetindexer.")
+            || value.localizedCaseInsensitiveContains("assetindexer.")
     }
 
     private static func normalizedBundleID(_ value: String?) -> String {

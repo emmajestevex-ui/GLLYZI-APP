@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Cache-Control" content="no-store" />
     <title>GREEG APP Admin</title>
-    <link rel="stylesheet" href="./styles.css?v=20260916-create-new-stable" />
+    <link rel="stylesheet" href="./styles.css?v=20260916-target-fixes" />
   </head>
   <body>
     <main class="shell">
@@ -100,7 +100,7 @@
             <label>
               Ruta en GREEG APP
               <input id="targetPathInput" type="text" maxlength="180" placeholder="patches/mi-patch.bundle" required />
-              <span class="fieldHint">Elige la app destino y la ruta exacta. Si usas la misma combinacion otra vez, se reemplaza ese archivo.</span>
+              <span class="fieldHint">Elige la app destino y la ruta exacta. Con Nuevo se crea otro patch; con Reemplazar se actualiza solo el elegido.</span>
             </label>
             <label>
               Descripcion
@@ -158,6 +158,6 @@
       </article>
     </template>
 
-    <script type="module" src="./app.js?v=20260916-create-new-stable"></script>
+    <script type="module" src="./app.js?v=20260916-target-fixes"></script>
   </body>
 </html>

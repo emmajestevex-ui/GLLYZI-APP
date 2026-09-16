@@ -317,6 +317,7 @@ private struct PatchProjectDetailView: View {
     @State private var showNameEditor = false
     @State private var actionAlert: PatchStoreAlert?
     @State private var assetVariant = BundledPatchSeeder.selectedAssetIndexerVariant
+    @State private var targetBundleChoice = BundledPatchSeeder.TargetBundleChoice.freeFireTH
 
     private var item: PatchLibraryItem? {
         store.items.first(where: { $0.id == projectID })
@@ -356,7 +357,7 @@ private struct PatchProjectDetailView: View {
                     Text(language.text("patch.target_bundle"))
                 }
 
-                if BundledPatchSeeder.isAssetIndexerProject(project) {
+                if BundledPatchSeeder.hasAssetIndexerRule(project) {
                     Section {
                         Picker("Asset", selection: assetVariantBinding) {
                             ForEach(BundledPatchSeeder.AssetIndexerVariant.allCases) { variant in
@@ -368,6 +369,19 @@ private struct PatchProjectDetailView: View {
                         Text("Asset Indexer")
                     } footer: {
                         Text("PEN usa Free Fire Max. H5 usa Free Fire normal.")
+                    }
+                } else if BundledPatchSeeder.canOverrideTargetBundle(project) {
+                    Section {
+                        Picker("App", selection: targetBundleBinding) {
+                            ForEach(BundledPatchSeeder.TargetBundleChoice.allCases) { choice in
+                                Text(choice.label).tag(choice)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    } header: {
+                        Text("Target App")
+                    } footer: {
+                        Text("Elige donde se va a escribir este patch antes de tocar Apply.")
                     }
                 }
 
@@ -402,7 +416,10 @@ private struct PatchProjectDetailView: View {
         .navigationTitle(item?.project?.name ?? language.text("patch.title"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            assetVariant = BundledPatchSeeder.selectedAssetIndexerVariant
+            if let project = item?.project {
+                assetVariant = BundledPatchSeeder.selectedAssetIndexerVariant(for: project)
+                targetBundleChoice = BundledPatchSeeder.selectedTargetBundle(for: project)
+            }
         }
         .toolbar {
             if isWorking {
@@ -460,7 +477,19 @@ private struct PatchProjectDetailView: View {
             get: { assetVariant },
             set: { newValue in
                 assetVariant = newValue
-                BundledPatchSeeder.setAssetIndexerVariant(newValue)
+                targetBundleChoice = BundledPatchSeeder.TargetBundleChoice(bundleID: newValue.bundleID) ?? targetBundleChoice
+                BundledPatchSeeder.setAssetIndexerVariant(newValue, for: projectID)
+                store.reload()
+            }
+        )
+    }
+
+    private var targetBundleBinding: Binding<BundledPatchSeeder.TargetBundleChoice> {
+        Binding(
+            get: { targetBundleChoice },
+            set: { newValue in
+                targetBundleChoice = newValue
+                BundledPatchSeeder.setTargetBundle(newValue, for: projectID)
                 store.reload()
             }
         )

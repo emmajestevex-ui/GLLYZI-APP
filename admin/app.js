@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-create-new-stable";
+const SCRIPT_VERSION = "20260916-target-fixes";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -56,7 +56,24 @@ const PATCH_PRESETS = [
     category: "shaders",
     description: "Shader bundle",
     targetBundle: DEFAULT_TARGET_BUNDLE,
-    targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
+    rules: [
+      {
+        label: "Shaders - FF Normal",
+        slug: "shaders",
+        category: "shaders",
+        description: "Shader bundle for Free Fire normal",
+        targetBundle: DEFAULT_TARGET_BUNDLE,
+        targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
+      },
+      {
+        label: "Shaders - FF Max",
+        slug: "shaders-ff-max",
+        category: "shaders",
+        description: "Shader bundle for Free Fire Max",
+        targetBundle: FREE_FIRE_MAX_BUNDLE,
+        targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
+      },
+    ],
   },
   {
     key: "fps-144",
@@ -194,9 +211,7 @@ function bindEvents() {
     els.slugInput.value = safeSlug(els.slugInput.value);
   });
   els.categoryInput.addEventListener("change", suggestTargetPath);
-  els.targetBundleInput.addEventListener("change", () => {
-    updateAssetVariantVisibility();
-  });
+  els.targetBundleInput.addEventListener("change", syncAssetVariantWithTargetBundle);
   els.assetVariantInput.addEventListener("change", () => {
     applyAssetVariant(els.assetVariantInput.value);
   });
@@ -605,16 +620,36 @@ function applyAssetVariant(value) {
   updateAssetVariantVisibility();
 }
 
+function syncAssetVariantWithTargetBundle() {
+  if (shouldShowAssetVariant()) {
+    const nextVariant = safeTargetBundle(els.targetBundleInput.value) === FREE_FIRE_MAX_BUNDLE
+      ? "pen"
+      : "h5";
+    els.assetVariantInput.value = nextVariant;
+    applyAssetVariant(nextVariant);
+    return;
+  }
+  updateAssetVariantVisibility();
+}
+
 function updateAssetVariantVisibility() {
   const variantKey = assetVariantKeyForPath(els.targetPathInput.value);
-  const shouldShow = variantKey !== null
-    || safeSlug(els.slugInput.value).includes("asset-indexer")
-    || /asset\s*indexer/i.test(els.nameInput.value);
+  const shouldShow = shouldShowAssetVariant(variantKey);
 
   els.assetVariantLabel.classList.toggle("hidden", !shouldShow);
   if (variantKey) {
     els.assetVariantInput.value = variantKey;
+  } else if (shouldShow) {
+    els.assetVariantInput.value = safeTargetBundle(els.targetBundleInput.value) === FREE_FIRE_MAX_BUNDLE
+      ? "pen"
+      : "h5";
   }
+}
+
+function shouldShowAssetVariant(variantKey = assetVariantKeyForPath(els.targetPathInput.value)) {
+  return variantKey !== null
+    || safeSlug(els.slugInput.value).includes("asset-indexer")
+    || /asset\s*indexer/i.test(els.nameInput.value);
 }
 
 function renderPresets() {
@@ -643,14 +678,14 @@ function renderPresets() {
       return `
         <button class="presetRuleButton" type="button" data-rule="${index}">
           <span>${escapeHTML(label)} <b>${escapeHTML(stateLabel)}</b></span>
-          <small>${escapeHTML(safeRelativePath(rule.targetPath))}</small>
+          <small>${escapeHTML(ruleTargetBundle(preset, rule))} / ${escapeHTML(safeRelativePath(rule.targetPath))}</small>
         </button>
       `;
     }).join("");
     card.innerHTML = `
       <strong>${escapeHTML(preset.name)}</strong>
       <span>${escapeHTML(rules.length > 1 ? `${completed}/${rules.length} reglas listas` : (completed ? `v${matches[0]?.version} listo para reemplazar` : "Crear / reemplazar"))}</span>
-      <small>${escapeHTML(safeTargetBundle(preset.targetBundle))}</small>
+      <small>${escapeHTML(rules.length > 1 ? "varias apps/rutas" : safeTargetBundle(preset.targetBundle))}</small>
       <div class="presetRules">${ruleRows}</div>
     `;
     card.querySelectorAll(".presetRuleButton").forEach((button) => {
