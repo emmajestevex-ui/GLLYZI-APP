@@ -652,15 +652,20 @@ enum RemoteContentLibrary {
 
     static func installedFile(
         matching relativePath: String,
+        slugs: Set<String> = [],
         bundleID: String = "com.dts.freefireth",
         fileManager: FileManager = .default
     ) -> (file: RemoteContentFile, url: URL)? {
         let requestedPath = safeRelativePath(relativePath)
         let requestedBundle = safeBundleID(bundleID)
+        let requestedSlugs = Set(slugs.map(safeSlug))
         guard let file = loadManifest(fileManager: fileManager)?.files.first(where: {
             $0.isAvailable
                 && safeBundleID($0.targetBundleID) == requestedBundle
-                && safeRelativePath($0.localRelativePath) == requestedPath
+                && (
+                    safeRelativePath($0.localRelativePath) == requestedPath
+                        || requestedSlugs.contains(safeSlug($0.slug))
+                )
         }) else {
             return nil
         }
@@ -673,14 +678,19 @@ enum RemoteContentLibrary {
     static func isBuiltInDisabled(
         bundleID: String = "com.dts.freefireth",
         relativePath: String,
+        slugs: Set<String> = [],
         fileManager: FileManager = .default
     ) -> Bool {
         let requestedBundle = safeBundleID(bundleID)
         let requestedPath = safeRelativePath(relativePath)
+        let requestedSlugs = Set(slugs.map(safeSlug))
         return loadManifest(fileManager: fileManager)?.files.contains(where: {
             !$0.isAvailable
                 && safeBundleID($0.targetBundleID) == requestedBundle
-                && safeRelativePath($0.localRelativePath) == requestedPath
+                && (
+                    safeRelativePath($0.localRelativePath) == requestedPath
+                        || requestedSlugs.contains(safeSlug($0.slug))
+                )
         }) ?? false
     }
 
@@ -697,6 +707,10 @@ enum RemoteContentLibrary {
     private static func safeBundleID(_ value: String) -> String {
         let clean = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return clean.isEmpty ? "com.dts.freefireth" : clean
+    }
+
+    private static func safeSlug(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
     private static func url(inside root: URL, relativePath: String) -> URL {

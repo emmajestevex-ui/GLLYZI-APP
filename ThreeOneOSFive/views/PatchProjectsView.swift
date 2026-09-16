@@ -31,7 +31,7 @@ struct PatchProjectsView: View {
                 ["patches", "shaders", "configs"].contains(file.category.lowercased())
             }
             .filter { file in
-                !BundledPatchSeeder.isBuiltInTarget(bundleID: file.targetBundle, path: file.localRelativePath)
+                !BundledPatchSeeder.isBuiltInRemoteFile(file)
             }
             .filter { file in
                 let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)

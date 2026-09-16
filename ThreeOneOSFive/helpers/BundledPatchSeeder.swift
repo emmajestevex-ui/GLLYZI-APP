@@ -30,11 +30,18 @@ enum BundledPatchSeeder {
         let directory: String
         let filenameCandidates: [String]
         let targetFilename: String?
+        let remoteSlugs: Set<String>
 
-        init(directory: String, filenameCandidates: [String], targetFilename: String? = nil) {
+        init(
+            directory: String,
+            filenameCandidates: [String],
+            targetFilename: String? = nil,
+            remoteSlugs: Set<String> = []
+        ) {
             self.directory = directory
             self.filenameCandidates = filenameCandidates
             self.targetFilename = targetFilename
+            self.remoteSlugs = remoteSlugs
         }
     }
 
@@ -56,7 +63,8 @@ enum BundledPatchSeeder {
                     directory: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar",
                     filenameCandidates: [
                         "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D"
-                    ]
+                    ],
+                    remoteSlugs: ["asset-indexer"]
                 ),
             ]
         ),
@@ -70,7 +78,8 @@ enum BundledPatchSeeder {
                     filenameCandidates: [
                         "shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
                         "shaders.HPt9DZviTSXL9hpGW9QNOMig-NLA~3D"
-                    ]
+                    ],
+                    remoteSlugs: ["shaders"]
                 )
             ]
         ),
@@ -83,7 +92,8 @@ enum BundledPatchSeeder {
                     directory: "Library/Preferences",
                     filenameCandidates: [
                         "com.dts.freefireth.plist"
-                    ]
+                    ],
+                    remoteSlugs: ["144-fps"]
                 )
             ]
         ),
@@ -97,13 +107,15 @@ enum BundledPatchSeeder {
                     directory: "Documents",
                     filenameCandidates: [
                         "Assembly-CSharp-patch.bytes"
-                    ]
+                    ],
+                    remoteSlugs: ["aimbot-drag-ff-max-assembly"]
                 ),
                 PayloadSpec(
                     directory: "Documents",
                     filenameCandidates: [
                         "localConfig.json"
-                    ]
+                    ],
+                    remoteSlugs: ["aimbot-drag-ff-max-config"]
                 )
             ]
         ),
@@ -118,7 +130,8 @@ enum BundledPatchSeeder {
                     filenameCandidates: [
                         "assetindexer.tio-greeg927394hd"
                     ],
-                    targetFilename: "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D"
+                    targetFilename: "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D",
+                    remoteSlugs: ["tio-greeg"]
                 )
             ]
         )
@@ -129,7 +142,8 @@ enum BundledPatchSeeder {
             if spec.payloads.contains(where: {
                 RemoteContentLibrary.isBuiltInDisabled(
                     bundleID: spec.bundleID,
-                    relativePath: targetPath(for: $0)
+                    relativePath: targetPath(for: $0),
+                    slugs: $0.remoteSlugs
                 )
             }) {
                 return false
@@ -147,13 +161,16 @@ enum BundledPatchSeeder {
         projects.firstIndex { $0.id == id } ?? Int.max
     }
 
-    static func isBuiltInTarget(bundleID: String?, path: String) -> Bool {
-        let requestedBundle = normalizedBundleID(bundleID)
+    static func isBuiltInRemoteFile(_ file: RemoteContentFile) -> Bool {
+        let requestedBundle = normalizedBundleID(file.targetBundle)
+        let requestedPath = normalizedPath(file.localRelativePath)
+        let requestedSlug = normalizedSlug(file.slug)
         return projects
             .contains { spec in
                 normalizedBundleID(spec.bundleID) == requestedBundle
                     && spec.payloads.contains { payload in
-                        normalizedPath(targetPath(for: payload)) == normalizedPath(path)
+                        normalizedPath(targetPath(for: payload)) == requestedPath
+                            || payload.remoteSlugs.map(normalizedSlug).contains(requestedSlug)
                     }
             }
     }
@@ -207,6 +224,7 @@ enum BundledPatchSeeder {
         let remoteOverride = spec.payloads.compactMap {
             RemoteContentLibrary.installedFile(
                 matching: targetPath(for: $0),
+                slugs: $0.remoteSlugs,
                 bundleID: spec.bundleID,
                 fileManager: fileManager
             )?.file
@@ -239,6 +257,7 @@ enum BundledPatchSeeder {
 
         let remoteMatch = RemoteContentLibrary.installedFile(
             matching: targetPath,
+            slugs: spec.remoteSlugs,
             bundleID: bundleID,
             fileManager: fileManager
         )
@@ -324,5 +343,9 @@ enum BundledPatchSeeder {
     private static func normalizedBundleID(_ value: String?) -> String {
         let clean = (value ?? "com.dts.freefireth").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return clean.isEmpty ? "com.dts.freefireth" : clean
+    }
+
+    private static func normalizedSlug(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 }
