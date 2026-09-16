@@ -219,9 +219,6 @@ enum BundledPatchSeeder {
         existingProject: PatchProject?,
         fileManager: FileManager
     ) throws -> PatchProject {
-        let rules = try spec.payloads.map { payload in
-            try makeRule(payload, bundleID: spec.bundleID, fileManager: fileManager)
-        }
         let remoteOverride = spec.payloads.compactMap {
             RemoteContentLibrary.installedFile(
                 matching: targetPath(for: $0),
@@ -230,6 +227,10 @@ enum BundledPatchSeeder {
                 fileManager: fileManager
             )?.file
         }.first
+        let effectiveBundleID = remoteOverride?.targetBundleID ?? spec.bundleID
+        let rules = try spec.payloads.map { payload in
+            try makeRule(payload, fallbackBundleID: effectiveBundleID, fileManager: fileManager)
+        }
         let existingName = existingProject?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let name: String
         if let remoteName = remoteOverride?.name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -246,20 +247,20 @@ enum BundledPatchSeeder {
             name: name,
             createdAt: existingProject?.createdAt ?? seedDate,
             updatedAt: remoteOverride == nil ? (existingProject?.updatedAt ?? seedDate) : Date(),
-            bundleIdentifiers: [spec.bundleID],
+            bundleIdentifiers: [effectiveBundleID],
             directories: [],
             rules: rules
         )
     }
 
-    private static func makeRule(_ spec: PayloadSpec, bundleID: String, fileManager: FileManager) throws -> PatchRule {
+    private static func makeRule(_ spec: PayloadSpec, fallbackBundleID: String, fileManager: FileManager) throws -> PatchRule {
         let bundledPayloadURL = try payloadURL(for: spec, fileManager: fileManager)
         let targetPath = targetPath(for: spec)
 
         let remoteMatch = RemoteContentLibrary.installedFile(
             matching: targetPath,
             slugs: spec.remoteSlugs,
-            bundleID: bundleID,
+            bundleID: fallbackBundleID,
             fileManager: fileManager
         )
         let payloadURL = remoteMatch?.url ?? bundledPayloadURL
@@ -267,9 +268,10 @@ enum BundledPatchSeeder {
         guard !data.isEmpty else { throw SeedError.emptyPayload(payloadURL.lastPathComponent) }
         let replacementFilename = remoteMatch.map { "Remote v\($0.file.version) - \($0.file.fileName)" }
             ?? payloadURL.lastPathComponent
+        let effectiveBundleID = remoteMatch?.file.targetBundleID ?? fallbackBundleID
 
         return PatchRule(
-            bundleID: bundleID,
+            bundleID: effectiveBundleID,
             relativePath: targetPath,
             replacementFilename: replacementFilename,
             replacementData: data
