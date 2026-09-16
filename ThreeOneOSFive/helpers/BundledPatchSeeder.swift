@@ -63,7 +63,7 @@ enum BundledPatchSeeder {
                 PayloadSpec(
                     directory: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar",
                     filenameCandidates: [
-                        "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D"
+                        "assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D"
                     ],
                     remoteSlugs: ["asset-indexer-ff-max"]
                 ),
@@ -131,7 +131,7 @@ enum BundledPatchSeeder {
                     filenameCandidates: [
                         "assetindexer.tio-greeg927394hd"
                     ],
-                    targetFilename: "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D",
+                    targetFilename: "assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D",
                     remoteSlugs: ["tio-greeg"]
                 )
             ]
