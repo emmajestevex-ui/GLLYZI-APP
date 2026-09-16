@@ -98,6 +98,21 @@ enum BundledPatchSeeder {
             ]
         ),
         ProjectSpec(
+            id: UUID(uuidString: "A55E0006-3105-4A55-9001-00000000BEEF")!,
+            defaultName: "Asset Indexer FF Max",
+            legacyDefaultNames: [],
+            bundleID: "com.dts.freefiremax",
+            payloads: [
+                PayloadSpec(
+                    directory: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar",
+                    filenameCandidates: [
+                        "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D"
+                    ],
+                    remoteSlugs: ["asset-indexer-ff-max"]
+                ),
+            ]
+        ),
+        ProjectSpec(
             id: UUID(uuidString: "A55E0005-3105-4A55-9001-00000000BEEF")!,
             defaultName: "Aimbot Drag FF Max",
             legacyDefaultNames: [],

@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260915-preset-repair";
+const SCRIPT_VERSION = "20260915-ffmax-asset";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 
 const PATCH_PRESETS = [
@@ -14,6 +14,15 @@ const PATCH_PRESETS = [
     category: "patches",
     description: "Avatar asset bundle",
     targetBundle: DEFAULT_TARGET_BUNDLE,
+    targetPath: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D",
+  },
+  {
+    key: "asset-indexer-ff-max",
+    name: "Asset Indexer FF Max",
+    slug: "asset-indexer-ff-max",
+    category: "patches",
+    description: "Avatar asset bundle for Free Fire Max",
+    targetBundle: "com.dts.freefiremax",
     targetPath: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D",
   },
   {
