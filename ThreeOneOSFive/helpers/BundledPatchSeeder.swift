@@ -490,11 +490,11 @@ enum BundledPatchSeeder {
            spec.filenameCandidates.contains(AssetIndexerVariant.pen.filename) {
             return spec.directory + "/" + selectedAssetIndexerVariant.filename
         }
-        spec.directory + "/" + (spec.targetFilename ?? spec.filenameCandidates[0])
+        return spec.directory + "/" + (spec.targetFilename ?? spec.filenameCandidates[0])
     }
 
     private static func effectiveBundleID(for spec: ProjectSpec) -> String {
-        spec.id == assetIndexerProjectID ? selectedAssetIndexerVariant.bundleID : spec.bundleID
+        return spec.id == assetIndexerProjectID ? selectedAssetIndexerVariant.bundleID : spec.bundleID
     }
 
     private static func normalizedBundleID(_ value: String?) -> String {
