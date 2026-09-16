@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260915-bundles";
+const SCRIPT_VERSION = "20260915-grouped-presets";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 
 const PATCH_PRESETS = [
@@ -35,22 +35,28 @@ const PATCH_PRESETS = [
     targetPath: "Library/Preferences/com.dts.freefireth.plist",
   },
   {
-    key: "aimbot-drag-ff-max-assembly",
+    key: "aimbot-drag-ff-max",
     name: "Aimbot Drag FF Max",
-    slug: "aimbot-drag-ff-max-assembly",
+    slug: "aimbot-drag-ff-max",
     category: "patches",
-    description: "Assembly patch for Free Fire Max",
+    description: "Patch with Assembly-CSharp-patch.bytes and localConfig.json",
     targetBundle: "com.dts.freefiremax",
-    targetPath: "Documents/Assembly-CSharp-patch.bytes",
-  },
-  {
-    key: "aimbot-drag-ff-max-config",
-    name: "Aimbot Drag FF Max Config",
-    slug: "aimbot-drag-ff-max-config",
-    category: "configs",
-    description: "localConfig.json for Free Fire Max",
-    targetBundle: "com.dts.freefiremax",
-    targetPath: "Documents/localConfig.json",
+    rules: [
+      {
+        label: "Assembly-CSharp-patch.bytes",
+        slug: "aimbot-drag-ff-max-assembly",
+        category: "patches",
+        description: "Assembly patch for Free Fire Max",
+        targetPath: "Documents/Assembly-CSharp-patch.bytes",
+      },
+      {
+        label: "localConfig.json",
+        slug: "aimbot-drag-ff-max-config",
+        category: "configs",
+        description: "localConfig.json for Free Fire Max",
+        targetPath: "Documents/localConfig.json",
+      },
+    ],
   },
 ];
 
@@ -430,27 +436,35 @@ async function deleteFile(file) {
 async function disablePreset(preset) {
   if (!state.session || state.busy) return;
   const bundle = safeTargetBundle(preset.targetBundle);
-  const ok = confirm(`Quitar "${preset.name}" de ${bundle} en la proxima publicacion?`);
+  const rules = presetRules(preset);
+  const ok = confirm(`Quitar "${preset.name}" completo de ${bundle} en la proxima publicacion?`);
   if (!ok) return;
 
   setBusy(true, "Preparando eliminacion...");
-  const { error } = await supabaseClient.rpc("admin_disable_remote_content_target", {
-    p_name: preset.name,
-    p_slug: preset.slug,
-    p_category: preset.category || "patches",
-    p_target_bundle: bundle,
-    p_target_path: safeRelativePath(preset.targetPath),
-    p_description: preset.description || null,
-  });
+  let firstError = null;
+  for (const rule of rules) {
+    const { error } = await supabaseClient.rpc("admin_disable_remote_content_target", {
+      p_name: preset.name,
+      p_slug: rule.slug,
+      p_category: rule.category || preset.category || "patches",
+      p_target_bundle: bundle,
+      p_target_path: safeRelativePath(rule.targetPath),
+      p_description: rule.description || preset.description || null,
+    });
+    if (error) {
+      firstError = error;
+      break;
+    }
+  }
   setBusy(false);
 
-  if (error) {
-    setStatus(adminErrorMessage(error));
+  if (firstError) {
+    setStatus(adminErrorMessage(firstError));
     return;
   }
 
   await loadFiles();
-  setStatus(`"${preset.name}" quedo marcado para quitarse. Pulsa Publicar cambios.`);
+  setStatus(`"${preset.name}" completo quedo marcado para quitarse. Pulsa Publicar cambios.`);
 }
 
 async function publishChanges() {
@@ -496,10 +510,11 @@ function resetForm() {
   els.saveButton.textContent = "Guardar cambio";
 }
 
-function applyPreset(preset) {
+function applyPreset(preset, selectedRule = null) {
+  const rule = selectedRule || presetRules(preset)[0];
   const existing = state.files.find((file) =>
-    sameTarget(file, preset)
-      || safeSlug(file.slug) === preset.slug
+    sameTarget(file, preset, rule)
+      || safeSlug(file.slug) === rule.slug
   );
 
   if (existing) {
@@ -511,16 +526,16 @@ function applyPreset(preset) {
   resetForm();
   els.formTitle.textContent = `Nuevo ${preset.name}`;
   els.nameInput.value = preset.name;
-  els.slugInput.value = preset.slug;
+  els.slugInput.value = rule.slug;
   els.slugInput.dataset.touched = "true";
-  els.categoryInput.value = preset.category;
+  els.categoryInput.value = rule.category || preset.category || "patches";
   els.targetBundleInput.value = safeTargetBundle(preset.targetBundle);
-  els.targetPathInput.value = safeRelativePath(preset.targetPath);
+  els.targetPathInput.value = safeRelativePath(rule.targetPath);
   els.targetPathInput.dataset.touched = "true";
-  els.descriptionInput.value = preset.description;
+  els.descriptionInput.value = rule.description || preset.description || "";
   els.saveButton.textContent = "Guardar patch";
   els.fileInput.focus();
-  setStatus(`Listo para subir ${preset.name}. Esa ruta se reemplazara al publicar.`);
+  setStatus(`Listo para subir ${rule.label || preset.name}. Esa regla se reemplazara al publicar.`);
 }
 
 function suggestTargetPath() {
@@ -535,28 +550,43 @@ function renderPresets() {
   els.presetList.replaceChildren();
 
   for (const preset of PATCH_PRESETS) {
-    const existing = state.files.find((file) =>
-      sameTarget(file, preset)
-        || safeSlug(file.slug) === preset.slug
+    const rules = presetRules(preset);
+    const matches = rules.map((rule) =>
+      state.files.find((file) => sameTarget(file, preset, rule) || safeSlug(file.slug) === rule.slug)
     );
+    const completed = matches.filter(Boolean).length;
+    const deleted = matches.some((file) => file?.deleted_at);
     const item = document.createElement("div");
     item.className = "presetItem";
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "presetButton";
-    button.innerHTML = `
+    const card = document.createElement("div");
+    card.className = "presetButton";
+    const ruleRows = rules.map((rule, index) => {
+      const existing = matches[index];
+      const label = rule.label || rule.targetPath;
+      const stateLabel = existing ? `v${existing.version}` : "subir";
+      return `
+        <button class="presetRuleButton" type="button" data-rule="${index}">
+          <span>${escapeHTML(label)} <b>${escapeHTML(stateLabel)}</b></span>
+          <small>${escapeHTML(safeRelativePath(rule.targetPath))}</small>
+        </button>
+      `;
+    }).join("");
+    card.innerHTML = `
       <strong>${escapeHTML(preset.name)}</strong>
-      <span>${escapeHTML(existing ? `v${existing.version} listo para reemplazar` : "Crear / reemplazar")}</span>
+      <span>${escapeHTML(rules.length > 1 ? `${completed}/${rules.length} reglas listas` : (completed ? `v${matches[0]?.version} listo para reemplazar` : "Crear / reemplazar"))}</span>
       <small>${escapeHTML(safeTargetBundle(preset.targetBundle))}</small>
-      <small>${escapeHTML(safeRelativePath(preset.targetPath))}</small>
+      <div class="presetRules">${ruleRows}</div>
     `;
-    button.addEventListener("click", () => applyPreset(preset));
+    card.querySelectorAll(".presetRuleButton").forEach((button) => {
+      const index = Number(button.dataset.rule || "0");
+      button.addEventListener("click", () => applyPreset(preset, rules[index]));
+    });
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "presetRemoveButton";
-    removeButton.textContent = existing?.deleted_at ? "Por quitar" : "Quitar";
+    removeButton.textContent = deleted ? "Por quitar" : "Quitar";
     removeButton.addEventListener("click", () => disablePreset(preset));
-    item.append(button, removeButton);
+    item.append(card, removeButton);
     els.presetList.append(item);
   }
 }
@@ -610,8 +640,21 @@ function renderFiles() {
   }
 }
 
-function sameTarget(file, preset) {
-  return samePath(file.target_path, preset.targetPath)
+function presetRules(preset) {
+  if (Array.isArray(preset.rules) && preset.rules.length) {
+    return preset.rules;
+  }
+  return [{
+    label: preset.name,
+    slug: preset.slug,
+    category: preset.category,
+    description: preset.description,
+    targetPath: preset.targetPath,
+  }];
+}
+
+function sameTarget(file, preset, rule) {
+  return samePath(file.target_path, rule.targetPath)
     && safeTargetBundle(file.target_bundle) === safeTargetBundle(preset.targetBundle);
 }
 
