@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-force-new-patches";
+const SCRIPT_VERSION = "20260916-new-means-new";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -559,14 +559,10 @@ function resetForm() {
 
 function applyPreset(preset, selectedRule = null) {
   const rule = selectedRule || presetRules(preset)[0];
-  const existing = state.files.find((file) =>
-    sameTarget(file, preset, rule)
-      || safeSlug(file.slug) === rule.slug
-  );
 
   resetForm();
-  els.formTitle.textContent = existing ? `Reparar/Reemplazar v${existing.version}` : `Nuevo ${preset.name}`;
-  els.editingId.value = existing?.id || "";
+  els.formTitle.textContent = `Nuevo ${preset.name}`;
+  els.editingId.value = "";
   els.nameInput.value = preset.name;
   els.slugInput.value = rule.slug;
   els.slugInput.dataset.touched = "true";
@@ -580,9 +576,9 @@ function applyPreset(preset, selectedRule = null) {
   updateAssetVariantVisibility();
   els.descriptionInput.value = rule.description || preset.description || "";
   els.fileInput.value = "";
-  els.saveButton.textContent = existing ? "Reemplazar archivo" : "Guardar patch";
+  els.saveButton.textContent = "Crear patch nuevo";
   els.fileInput.focus();
-  setStatus(`Listo para subir ${rule.label || preset.name}. Se guardara con la app y ruta correctas de esta plantilla.`);
+  setStatus(`Listo para crear un patch nuevo de ${rule.label || preset.name}. No reemplazara los publicados.`);
 }
 
 function suggestTargetPath() {
