@@ -363,7 +363,7 @@ private struct PatchProjectDetailView: View {
                             }
                         }
                         .pickerStyle(.segmented)
-                        .onChange(of: assetVariant) { newValue in
+                        .onChange(of: assetVariant) { _, newValue in
                             BundledPatchSeeder.setAssetIndexerVariant(newValue)
                             store.reload()
                         }
