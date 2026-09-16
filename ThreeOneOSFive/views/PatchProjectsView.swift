@@ -357,16 +357,12 @@ private struct PatchProjectDetailView: View {
 
                 if BundledPatchSeeder.isAssetIndexerProject(project) {
                     Section {
-                        Picker("Asset", selection: $assetVariant) {
+                        Picker("Asset", selection: assetVariantBinding) {
                             ForEach(BundledPatchSeeder.AssetIndexerVariant.allCases) { variant in
                                 Text(variant.label).tag(variant)
                             }
                         }
                         .pickerStyle(.segmented)
-                        .onChange(of: assetVariant) { _, newValue in
-                            BundledPatchSeeder.setAssetIndexerVariant(newValue)
-                            store.reload()
-                        }
                     } header: {
                         Text("Asset Indexer")
                     } footer: {
@@ -456,6 +452,17 @@ private struct PatchProjectDetailView: View {
                 messageKey: "patch.error.invalid_project"
             )
         }
+    }
+
+    private var assetVariantBinding: Binding<BundledPatchSeeder.AssetIndexerVariant> {
+        Binding(
+            get: { assetVariant },
+            set: { newValue in
+                assetVariant = newValue
+                BundledPatchSeeder.setAssetIndexerVariant(newValue)
+                store.reload()
+            }
+        )
     }
 
     private func actionLabel(_ key: String, subtitle: String, systemImage: String) -> some View {

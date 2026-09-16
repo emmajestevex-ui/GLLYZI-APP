@@ -271,15 +271,16 @@ enum BundledPatchSeeder {
         existingProject: PatchProject?,
         fileManager: FileManager
     ) throws -> PatchProject {
+        let baseBundleID = effectiveBundleID(for: spec)
         let remoteOverride = spec.payloads.compactMap {
             RemoteContentLibrary.installedFile(
                 matching: targetPath(for: $0),
                 slugs: $0.remoteSlugs,
-                bundleID: effectiveBundleID(for: spec),
+                bundleID: baseBundleID,
                 fileManager: fileManager
             )?.file
         }.first
-        let effectiveBundleID = remoteOverride?.targetBundleID ?? effectiveBundleID(for: spec)
+        let effectiveBundleID = remoteOverride?.targetBundleID ?? baseBundleID
         let rules = try spec.payloads.map { payload in
             try makeRule(payload, fallbackBundleID: effectiveBundleID, fileManager: fileManager)
         }
