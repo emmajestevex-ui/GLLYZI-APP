@@ -167,11 +167,12 @@ enum BundledPatchSeeder {
         let requestedSlug = normalizedSlug(file.slug)
         return projects
             .contains { spec in
-                normalizedBundleID(spec.bundleID) == requestedBundle
-                    && spec.payloads.contains { payload in
-                        normalizedPath(targetPath(for: payload)) == requestedPath
-                            || payload.remoteSlugs.map(normalizedSlug).contains(requestedSlug)
-                    }
+                spec.payloads.contains { payload in
+                    let slugMatches = payload.remoteSlugs.map(normalizedSlug).contains(requestedSlug)
+                    let targetMatches = normalizedBundleID(spec.bundleID) == requestedBundle
+                        && normalizedPath(targetPath(for: payload)) == requestedPath
+                    return slugMatches || targetMatches
+                }
             }
     }
 

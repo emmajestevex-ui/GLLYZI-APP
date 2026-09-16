@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260915-grouped-presets";
+const SCRIPT_VERSION = "20260915-preset-repair";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 
 const PATCH_PRESETS = [
@@ -517,14 +517,9 @@ function applyPreset(preset, selectedRule = null) {
       || safeSlug(file.slug) === rule.slug
   );
 
-  if (existing) {
-    editFile(existing);
-    setStatus(`Editando ${existing.name}. Selecciona el archivo nuevo para reemplazar esa ruta.`);
-    return;
-  }
-
   resetForm();
-  els.formTitle.textContent = `Nuevo ${preset.name}`;
+  els.formTitle.textContent = existing ? `Reparar/Reemplazar v${existing.version}` : `Nuevo ${preset.name}`;
+  els.editingId.value = existing?.id || "";
   els.nameInput.value = preset.name;
   els.slugInput.value = rule.slug;
   els.slugInput.dataset.touched = "true";
@@ -533,9 +528,10 @@ function applyPreset(preset, selectedRule = null) {
   els.targetPathInput.value = safeRelativePath(rule.targetPath);
   els.targetPathInput.dataset.touched = "true";
   els.descriptionInput.value = rule.description || preset.description || "";
-  els.saveButton.textContent = "Guardar patch";
+  els.fileInput.value = "";
+  els.saveButton.textContent = existing ? "Reemplazar archivo" : "Guardar patch";
   els.fileInput.focus();
-  setStatus(`Listo para subir ${rule.label || preset.name}. Esa regla se reemplazara al publicar.`);
+  setStatus(`Listo para subir ${rule.label || preset.name}. Se guardara con la app y ruta correctas de esta plantilla.`);
 }
 
 function suggestTargetPath() {

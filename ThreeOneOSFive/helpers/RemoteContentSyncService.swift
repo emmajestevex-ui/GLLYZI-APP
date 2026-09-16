@@ -660,12 +660,12 @@ enum RemoteContentLibrary {
         let requestedBundle = safeBundleID(bundleID)
         let requestedSlugs = Set(slugs.map(safeSlug))
         guard let file = loadManifest(fileManager: fileManager)?.files.first(where: {
-            $0.isAvailable
-                && safeBundleID($0.targetBundleID) == requestedBundle
-                && (
-                    safeRelativePath($0.localRelativePath) == requestedPath
-                        || requestedSlugs.contains(safeSlug($0.slug))
-                )
+            guard $0.isAvailable else { return false }
+            if requestedSlugs.contains(safeSlug($0.slug)) {
+                return true
+            }
+            return safeBundleID($0.targetBundleID) == requestedBundle
+                && safeRelativePath($0.localRelativePath) == requestedPath
         }) else {
             return nil
         }
@@ -685,12 +685,12 @@ enum RemoteContentLibrary {
         let requestedPath = safeRelativePath(relativePath)
         let requestedSlugs = Set(slugs.map(safeSlug))
         return loadManifest(fileManager: fileManager)?.files.contains(where: {
-            !$0.isAvailable
-                && safeBundleID($0.targetBundleID) == requestedBundle
-                && (
-                    safeRelativePath($0.localRelativePath) == requestedPath
-                        || requestedSlugs.contains(safeSlug($0.slug))
-                )
+            guard !$0.isAvailable else { return false }
+            if requestedSlugs.contains(safeSlug($0.slug)) {
+                return true
+            }
+            return safeBundleID($0.targetBundleID) == requestedBundle
+                && safeRelativePath($0.localRelativePath) == requestedPath
         }) ?? false
     }
 
