@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-target-fixes";
+const SCRIPT_VERSION = "20260916-u6-asset-target";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -14,9 +14,9 @@ const ASSET_VARIANTS = {
     targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D`,
   },
   h5: {
-    label: "Asset H5 - FF Normal",
+    label: "Asset U6 - FF Normal",
     targetBundle: DEFAULT_TARGET_BUNDLE,
-    targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D`,
+    targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.U6ZffmRlJ3n3cXvYGAqz58~3D`,
   },
 };
 
@@ -782,6 +782,7 @@ function assetVariantKeyForPath(value) {
     }
   }
   if (target.includes("assetindexer.penojqaq")) return "pen";
+  if (target.includes("assetindexer.u6zff")) return "h5";
   if (target.includes("assetindexer.h5ak1jm1eck")) return "h5";
   return null;
 }

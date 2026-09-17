@@ -53,7 +53,7 @@ enum BundledPatchSeeder {
         var filename: String {
             switch self {
             case .pen: return "assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D"
-            case .h5: return "assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D"
+            case .h5: return "assetindexer.U6ZffmRlJ3n3cXvYGAqz58~3D"
             }
         }
     }
