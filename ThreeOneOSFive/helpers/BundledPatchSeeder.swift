@@ -645,6 +645,9 @@ enum BundledPatchSeeder {
     private static func sortedRemoteProjectIDs(fileManager: FileManager = .default) -> [UUID] {
         standaloneRemotePatchFiles(fileManager: fileManager)
             .sorted {
+                let leftPriority = remoteDisplayPriority(for: $0.name)
+                let rightPriority = remoteDisplayPriority(for: $1.name)
+                if leftPriority != rightPriority { return leftPriority < rightPriority }
                 let leftPublishedAt = $0.publishedAt ?? ""
                 let rightPublishedAt = $1.publishedAt ?? ""
                 if leftPublishedAt != rightPublishedAt { return leftPublishedAt < rightPublishedAt }
@@ -738,6 +741,13 @@ enum BundledPatchSeeder {
 
     private static func normalizedSlug(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private static func remoteDisplayPriority(for name: String) -> Int {
+        let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.contains("aimbot drag") { return 10 }
+        if normalized.contains("aimbot cuello") { return 20 }
+        return 100
     }
 
     private static func remoteSlugMatches(_ actual: String, expected: String) -> Bool {
