@@ -351,6 +351,8 @@ enum BundledPatchSeeder {
     }
 
     static func seedIfNeeded(fileManager: FileManager = .default) {
+        removeBuiltInRemoteDuplicates(fileManager: fileManager)
+
         for spec in activeProjects {
             do {
                 try seed(spec, fileManager: fileManager)
@@ -364,6 +366,25 @@ enum BundledPatchSeeder {
             }
         }
         seedRemoteProjects(fileManager: fileManager)
+    }
+
+    private static func removeBuiltInRemoteDuplicates(fileManager: FileManager) {
+        guard let manifest = RemoteContentLibrary.loadManifest(fileManager: fileManager) else { return }
+        let groupedRemoteIDs = Set(manifest.files.compactMap { file -> UUID? in
+            guard file.isAvailable, isBuiltInRemoteFile(file) else { return nil }
+            return remoteProjectID(for: file)
+        })
+        guard !groupedRemoteIDs.isEmpty else { return }
+
+        for item in PatchProjectLibrary.load(fileManager: fileManager)
+            where groupedRemoteIDs.contains(item.id) {
+            do {
+                try PatchProjectLibrary.delete(item, fileManager: fileManager)
+                log("patch: removed duplicate remote file patch \(item.id.uuidString)")
+            } catch {
+                log("patch: duplicate remote file patch \(item.id.uuidString) could not be removed: \(error.localizedDescription)")
+            }
+        }
     }
 
     private static func seed(_ spec: ProjectSpec, fileManager: FileManager) throws {
