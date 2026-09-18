@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260916-u6-correct-target";
+const SCRIPT_VERSION = "20260918-only-esp-ffth";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -83,6 +83,40 @@ const PATCH_PRESETS = [
     description: "FPS preferences",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Library/Preferences/com.dts.freefireth.plist",
+  },
+  {
+    key: "only-esp-ffth",
+    name: "Only Esp FFTH",
+    slug: "only-esp-ffth",
+    category: "patches",
+    description: "Only Esp patch for Free Fire TH",
+    targetBundle: DEFAULT_TARGET_BUNDLE,
+    rules: [
+      {
+        label: "Assembly-CSharp-patch.bytes",
+        slug: "only-esp-ffth-assembly",
+        category: "patches",
+        description: "Assembly patch for Free Fire TH",
+        targetBundle: DEFAULT_TARGET_BUNDLE,
+        targetPath: "Documents/Assembly-CSharp-patch.bytes",
+      },
+      {
+        label: "GameBand-Fix.json",
+        slug: "only-esp-ffth-gameband",
+        category: "configs",
+        description: "GameBand fix for Free Fire TH",
+        targetBundle: DEFAULT_TARGET_BUNDLE,
+        targetPath: "Documents/GameBand-Fix.json",
+      },
+      {
+        label: "localConfig.json",
+        slug: "only-esp-ffth-config",
+        category: "configs",
+        description: "localConfig for Free Fire TH",
+        targetBundle: DEFAULT_TARGET_BUNDLE,
+        targetPath: "Documents/localConfig.json",
+      },
+    ],
   },
   {
     key: "aimbot-drag-ff-max",

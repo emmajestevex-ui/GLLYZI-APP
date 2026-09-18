@@ -163,6 +163,38 @@ enum BundledPatchSeeder {
             ]
         ),
         ProjectSpec(
+            id: UUID(uuidString: "A55E0006-3105-4A55-9001-00000000BEEF")!,
+            defaultName: "Only Esp FFTH",
+            legacyDefaultNames: [],
+            bundleID: "com.dts.freefireth",
+            payloads: [
+                PayloadSpec(
+                    directory: "Documents",
+                    filenameCandidates: [
+                        "only-esp-ffth-Assembly-CSharp-patch.bytes"
+                    ],
+                    targetFilename: "Assembly-CSharp-patch.bytes",
+                    remoteSlugs: ["only-esp-ffth-assembly"]
+                ),
+                PayloadSpec(
+                    directory: "Documents",
+                    filenameCandidates: [
+                        "only-esp-ffth-GameBand-Fix.json"
+                    ],
+                    targetFilename: "GameBand-Fix.json",
+                    remoteSlugs: ["only-esp-ffth-gameband"]
+                ),
+                PayloadSpec(
+                    directory: "Documents",
+                    filenameCandidates: [
+                        "only-esp-ffth-localConfig.json"
+                    ],
+                    targetFilename: "localConfig.json",
+                    remoteSlugs: ["only-esp-ffth-config"]
+                )
+            ]
+        ),
+        ProjectSpec(
             id: UUID(uuidString: "A55E0005-3105-4A55-9001-00000000BEEF")!,
             defaultName: "Aimbot Drag FF Max",
             legacyDefaultNames: [],
