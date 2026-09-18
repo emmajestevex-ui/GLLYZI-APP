@@ -173,24 +173,21 @@ enum BundledPatchSeeder {
                     filenameCandidates: [
                         "only-esp-ffth-Assembly-CSharp-patch.bytes"
                     ],
-                    targetFilename: "Assembly-CSharp-patch.bytes",
-                    remoteSlugs: ["only-esp-ffth-assembly"]
+                    targetFilename: "Assembly-CSharp-patch.bytes"
                 ),
                 PayloadSpec(
                     directory: "Documents",
                     filenameCandidates: [
                         "only-esp-ffth-GameBand-Fix.json"
                     ],
-                    targetFilename: "GameBand-Fix.json",
-                    remoteSlugs: ["only-esp-ffth-gameband"]
+                    targetFilename: "GameBand-Fix.json"
                 ),
                 PayloadSpec(
                     directory: "Documents",
                     filenameCandidates: [
                         "only-esp-ffth-localConfig.json"
                     ],
-                    targetFilename: "localConfig.json",
-                    remoteSlugs: ["only-esp-ffth-config", "only-esp-ffth-localconfig"]
+                    targetFilename: "localConfig.json"
                 )
             ]
         ),
