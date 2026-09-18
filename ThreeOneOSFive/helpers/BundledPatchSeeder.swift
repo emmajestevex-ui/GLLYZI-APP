@@ -109,7 +109,7 @@ enum BundledPatchSeeder {
 
     private static let payloadDirectoryName = "BundledPatchPayloads"
     private static let seedDate = Date(timeIntervalSince1970: 0)
-    private static let remotePatchCategories: Set<String> = ["patches", "shaders", "configs"]
+    private static let remotePatchCategories: Set<String> = ["patches", "shaders", "configs", "packages"]
     private static let assetIndexerProjectID = UUID(uuidString: "A55E0001-3105-4A55-9001-00000000BEEF")!
     private static let assetIndexerVariantKey = "greeg.assetIndexerVariant"
     private static let remoteAssetIndexerVariantPrefix = "greeg.remoteAssetIndexerVariant."
@@ -527,6 +527,16 @@ enum BundledPatchSeeder {
             }
 
             do {
+                if isRemotePatchPackage(file) {
+                    try installRemotePatchPackage(
+                        from: payloadURL,
+                        existingItems: existingItems,
+                        fileManager: fileManager
+                    )
+                    log("patch: remote package \(file.name) is ready")
+                    continue
+                }
+
                 let existingItem = existingItems.first { $0.id == projectID }
                 let project = try makeRemoteProject(
                     from: file,
@@ -550,6 +560,25 @@ enum BundledPatchSeeder {
                 log("patch: remote patch \(file.name) could not be prepared: \(error.localizedDescription)")
             }
         }
+    }
+
+    private static func installRemotePatchPackage(
+        from url: URL,
+        existingItems: [PatchLibraryItem],
+        fileManager: FileManager
+    ) throws {
+        let data = try PatchProjectLibrary.readPackage(at: url)
+        let summary = try PatchPackageCodec.inspect(data)
+        let decoded = try PatchPackageCodec.decode(data, password: nil)
+        let existingURL = existingItems.first { $0.id == summary.packageID }?.packageURL
+
+        try PatchProjectLibrary.installImportedPackage(
+            data: data,
+            decoded: decoded,
+            summary: summary,
+            existingURL: existingURL,
+            fileManager: fileManager
+        )
     }
 
     private static func makeRemoteProject(
@@ -614,6 +643,12 @@ enum BundledPatchSeeder {
 
     private static func remoteProjectID(for file: RemoteContentFile) -> UUID? {
         UUID(uuidString: file.id)
+    }
+
+    private static func isRemotePatchPackage(_ file: RemoteContentFile) -> Bool {
+        file.category.lowercased() == "packages"
+            || file.fileName.lowercased().hasSuffix(".3105")
+            || file.mimeType?.lowercased() == "application/vnd.greeg.3105"
     }
 
     private static func targetPath(for spec: PayloadSpec) -> String {
