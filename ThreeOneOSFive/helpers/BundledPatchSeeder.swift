@@ -102,6 +102,13 @@ enum BundledPatchSeeder {
         }
     }
 
+    private struct BundledPackageSpec {
+        let id: UUID
+        let resourceName: String
+        let resourceExtension: String
+        let sortRank: Int
+    }
+
     private enum SeedError: Error {
         case missingPayload(String)
         case emptyPayload(String)
@@ -115,6 +122,16 @@ enum BundledPatchSeeder {
     private static let remoteAssetIndexerVariantPrefix = "greeg.remoteAssetIndexerVariant."
     private static let remoteTargetBundlePrefix = "greeg.remoteTargetBundle."
     private static let assetIndexerDirectory = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar"
+    private static let onlyEspPackageID = UUID(uuidString: "F48A4F55-B529-4D0D-BE41-72988D6DA756")!
+
+    private static let bundledPackages = [
+        BundledPackageSpec(
+            id: onlyEspPackageID,
+            resourceName: "Only Esp FFTH",
+            resourceExtension: "3105",
+            sortRank: 35
+        )
+    ]
 
     private static let projects = [
         ProjectSpec(
@@ -159,35 +176,6 @@ enum BundledPatchSeeder {
                         "com.dts.freefireth.plist"
                     ],
                     remoteSlugs: ["144-fps"]
-                )
-            ]
-        ),
-        ProjectSpec(
-            id: UUID(uuidString: "A55E0006-3105-4A55-9001-00000000BEEF")!,
-            defaultName: "Only Esp FFTH",
-            legacyDefaultNames: [],
-            bundleID: "com.dts.freefireth",
-            payloads: [
-                PayloadSpec(
-                    directory: "Documents",
-                    filenameCandidates: [
-                        "only-esp-ffth-Assembly-CSharp-patch.bytes"
-                    ],
-                    targetFilename: "Assembly-CSharp-patch.bytes"
-                ),
-                PayloadSpec(
-                    directory: "Documents",
-                    filenameCandidates: [
-                        "only-esp-ffth-GameBand-Fix.json"
-                    ],
-                    targetFilename: "GameBand-Fix.json"
-                ),
-                PayloadSpec(
-                    directory: "Documents",
-                    filenameCandidates: [
-                        "only-esp-ffth-localConfig.json"
-                    ],
-                    targetFilename: "localConfig.json"
                 )
             ]
         ),
@@ -248,15 +236,20 @@ enum BundledPatchSeeder {
     }
 
     static var projectIDs: Set<UUID> {
-        Set(activeProjects.map { $0.id }).union(remoteProjectIDs())
+        Set(activeProjects.map { $0.id })
+            .union(bundledPackages.map(\.id))
+            .union(remoteProjectIDs())
     }
 
     static func sortRank(for id: UUID) -> Int {
         if let index = projects.firstIndex(where: { $0.id == id }) {
-            return index
+            return index * 10
+        }
+        if let package = bundledPackages.first(where: { $0.id == id }) {
+            return package.sortRank
         }
         if let index = sortedRemoteProjectIDs().firstIndex(of: id) {
-            return projects.count + index
+            return (projects.count * 10) + index
         }
         return Int.max
     }
@@ -348,6 +341,7 @@ enum BundledPatchSeeder {
     }
 
     static func seedIfNeeded(fileManager: FileManager = .default) {
+        seedBundledPackages(fileManager: fileManager)
         removeBuiltInRemoteDuplicates(fileManager: fileManager)
 
         for spec in activeProjects {
@@ -363,6 +357,42 @@ enum BundledPatchSeeder {
             }
         }
         seedRemoteProjects(fileManager: fileManager)
+    }
+
+    private static func seedBundledPackages(fileManager: FileManager) {
+        for spec in bundledPackages {
+            do {
+                try seedBundledPackage(spec, fileManager: fileManager)
+                log("patch: bundled package \(spec.resourceName) is ready")
+            } catch {
+                log("patch: bundled package \(spec.resourceName) could not be prepared: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private static func seedBundledPackage(_ spec: BundledPackageSpec, fileManager: FileManager) throws {
+        guard let packageURL = Bundle.main.url(
+            forResource: spec.resourceName,
+            withExtension: spec.resourceExtension,
+            subdirectory: payloadDirectoryName
+        ) else {
+            throw SeedError.missingPayload("\(spec.resourceName).\(spec.resourceExtension)")
+        }
+
+        let data = try PatchProjectLibrary.readPackage(at: packageURL)
+        let summary = try PatchPackageCodec.inspect(data)
+        let decoded = try PatchPackageCodec.decode(data, password: nil)
+        let existingURL = PatchProjectLibrary.load(fileManager: fileManager)
+            .first { $0.id == summary.packageID }?
+            .packageURL
+
+        try PatchProjectLibrary.installImportedPackage(
+            data: data,
+            decoded: decoded,
+            summary: summary,
+            existingURL: existingURL,
+            fileManager: fileManager
+        )
     }
 
     private static func removeBuiltInRemoteDuplicates(fileManager: FileManager) {
