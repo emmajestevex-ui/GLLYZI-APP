@@ -667,14 +667,14 @@ enum RemoteContentLibrary {
         let requestedPath = safeRelativePath(relativePath)
         let requestedBundle = safeBundleID(bundleID)
         let requestedSlugs = Set(slugs.map(safeSlug))
-        guard let file = loadManifest(fileManager: fileManager)?.files.first(where: {
-            guard $0.isAvailable else { return false }
+        guard let file = loadManifest(fileManager: fileManager)?.files.first(where: { file in
+            guard file.isAvailable else { return false }
             if !requestedSlugs.isEmpty {
-                return requestedSlugs.contains(safeSlug($0.slug))
-                    && safeBundleID($0.targetBundleID) == requestedBundle
+                return requestedSlugs.contains { slugMatches(safeSlug(file.slug), expected: $0) }
+                    && safeBundleID(file.targetBundleID) == requestedBundle
             }
-            return safeBundleID($0.targetBundleID) == requestedBundle
-                && safeRelativePath($0.localRelativePath) == requestedPath
+            return safeBundleID(file.targetBundleID) == requestedBundle
+                && safeRelativePath(file.localRelativePath) == requestedPath
         }) else {
             return nil
         }
@@ -693,14 +693,14 @@ enum RemoteContentLibrary {
         let requestedBundle = safeBundleID(bundleID)
         let requestedPath = safeRelativePath(relativePath)
         let requestedSlugs = Set(slugs.map(safeSlug))
-        return loadManifest(fileManager: fileManager)?.files.contains(where: {
-            guard !$0.isAvailable else { return false }
+        return loadManifest(fileManager: fileManager)?.files.contains(where: { file in
+            guard !file.isAvailable else { return false }
             if !requestedSlugs.isEmpty {
-                return requestedSlugs.contains(safeSlug($0.slug))
-                    && safeBundleID($0.targetBundleID) == requestedBundle
+                return requestedSlugs.contains { slugMatches(safeSlug(file.slug), expected: $0) }
+                    && safeBundleID(file.targetBundleID) == requestedBundle
             }
-            return safeBundleID($0.targetBundleID) == requestedBundle
-                && safeRelativePath($0.localRelativePath) == requestedPath
+            return safeBundleID(file.targetBundleID) == requestedBundle
+                && safeRelativePath(file.localRelativePath) == requestedPath
         }) ?? false
     }
 
@@ -729,6 +729,10 @@ enum RemoteContentLibrary {
 
     private static func safeSlug(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private static func slugMatches(_ actual: String, expected: String) -> Bool {
+        actual == expected || actual.hasPrefix(expected + "-")
     }
 
     private static func url(inside root: URL, relativePath: String) -> URL {

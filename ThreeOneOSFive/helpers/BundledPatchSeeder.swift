@@ -190,7 +190,7 @@ enum BundledPatchSeeder {
                         "only-esp-ffth-localConfig.json"
                     ],
                     targetFilename: "localConfig.json",
-                    remoteSlugs: ["only-esp-ffth-config"]
+                    remoteSlugs: ["only-esp-ffth-config", "only-esp-ffth-localconfig"]
                 )
             ]
         ),
@@ -342,7 +342,9 @@ enum BundledPatchSeeder {
         return projects
             .contains { spec in
                 spec.payloads.contains { payload in
-                    let slugMatches = payload.remoteSlugs.map(normalizedSlug).contains(requestedSlug)
+                    let slugMatches = payload.remoteSlugs.contains {
+                        remoteSlugMatches(requestedSlug, expected: $0)
+                    }
                     return slugMatches && normalizedBundleID(spec.bundleID) == requestedBundle
                 }
             }
@@ -407,7 +409,8 @@ enum BundledPatchSeeder {
         }
         let existingName = existingProject?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let name: String
-        if let remoteName = remoteOverride?.name.trimmingCharacters(in: .whitespacesAndNewlines),
+        if spec.payloads.count == 1,
+           let remoteName = remoteOverride?.name.trimmingCharacters(in: .whitespacesAndNewlines),
            !remoteName.isEmpty {
             name = remoteName
         } else if existingName.isEmpty || spec.legacyDefaultNames.contains(existingName) {
@@ -679,5 +682,11 @@ enum BundledPatchSeeder {
 
     private static func normalizedSlug(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private static func remoteSlugMatches(_ actual: String, expected: String) -> Bool {
+        let actual = normalizedSlug(actual)
+        let expected = normalizedSlug(expected)
+        return actual == expected || actual.hasPrefix(expected + "-")
     }
 }
