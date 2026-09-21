@@ -1,11 +1,11 @@
 import SwiftUI
 
 enum AppTheme {
-    static let accent = Color(red: 0.95, green: 0.08, blue: 0.10)
-    static let accentGlow = Color(red: 1.00, green: 0.16, blue: 0.18)
+    static let accent = Color(red: 0.94, green: 0.06, blue: 0.08)
+    static let accentGlow = Color(red: 1.00, green: 0.21, blue: 0.24)
     static let pageBackground = Color.black
-    static let consoleBackground = Color(red: 0.055, green: 0.055, blue: 0.065)
-    static let cardBackground = Color(red: 0.095, green: 0.095, blue: 0.11)
+    static let consoleBackground = Color(red: 0.035, green: 0.035, blue: 0.04)
+    static let cardBackground = Color(red: 0.085, green: 0.075, blue: 0.08)
     static let pageInset: CGFloat = 16
     static let rowIconSize: CGFloat = 17
     static let rowIconFrame: CGFloat = 28
@@ -86,7 +86,9 @@ struct AppLogo: View {
             if let logo = UIImage(named: "GreegLogo") {
                 Image(uiImage: logo)
                     .resizable()
-                    .scaledToFill()
+                    .scaledToFit()
+                    .padding(size * 0.12)
+                    .background(.white)
             } else {
                 Image(systemName: "crown.fill")
                     .font(.title2.weight(.semibold))

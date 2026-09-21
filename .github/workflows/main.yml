@@ -1,10 +1,11 @@
-name: Build GREEG APP IPA
+name: Build Glizzy Net IPA
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+      - glizzy-net
 
 jobs:
   build:
@@ -21,7 +22,7 @@ jobs:
       - name: Mostrar schemes disponibles
         run: xcodebuild -project ThreeOneOSFive.xcodeproj -list
 
-      - name: Compilar GREEG APP
+      - name: Compilar Glizzy Net
         run: |
           set -o pipefail
           xcodebuild \
@@ -63,29 +64,29 @@ jobs:
           mkdir -p Payload
           cp -R "$APP_PATH" Payload/
 
-          zip -r GREEG_APP_unsigned.ipa Payload
+          zip -r GLIZZY_NET_unsigned.ipa Payload
 
           echo "IPA creada correctamente:"
-          ls -lh GREEG_APP_unsigned.ipa
+          ls -lh GLIZZY_NET_unsigned.ipa
 
       - name: Subir IPA
         uses: actions/upload-artifact@v4
         with:
-          name: GREEG-APP-unsigned
-          path: GREEG_APP_unsigned.ipa
+          name: Glizzy-Net-unsigned
+          path: GLIZZY_NET_unsigned.ipa
           if-no-files-found: error
           retention-days: 30
 
       - name: Empaquetar panel admin
         run: |
           set -euo pipefail
-          zip -r GREEG_ADMIN_panel.zip admin supabase/remote_content_setup.sql supabase/admin_emails_setup.sql
-          ls -lh GREEG_ADMIN_panel.zip
+          zip -r GLIZZY_ADMIN_panel.zip admin supabase/remote_content_setup.sql supabase/admin_emails_setup.sql
+          ls -lh GLIZZY_ADMIN_panel.zip
 
       - name: Subir panel admin
         uses: actions/upload-artifact@v4
         with:
-          name: GREEG-admin-panel
-          path: GREEG_ADMIN_panel.zip
+          name: Glizzy-Net-admin-panel
+          path: GLIZZY_ADMIN_panel.zip
           if-no-files-found: error
           retention-days: 30

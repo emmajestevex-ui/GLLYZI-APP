@@ -4,15 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Cache-Control" content="no-store" />
-    <title>GREEG APP Admin</title>
-    <link rel="stylesheet" href="./styles.css?v=20260918-only-esp-ffth" />
+    <title>Glizzy Net Admin</title>
+    <link rel="stylesheet" href="./styles.css?v=20260921-glizzy-net" />
   </head>
   <body>
     <main class="shell">
       <section class="topbar">
         <div>
-          <p class="eyebrow">GREEG APP</p>
-          <h1>Archivos / Contenido</h1>
+          <p class="eyebrow">GLIZZY NET</p>
+          <h1>Panel de archivos</h1>
         </div>
         <div class="session">
           <span id="sessionEmail">Sin sesion</span>
@@ -21,8 +21,13 @@
       </section>
 
       <section id="loginPanel" class="panel narrow">
-        <h2>Entrar al panel</h2>
-        <p class="muted">Usa el correo admin de Supabase. No se usa ninguna service key en esta pagina.</p>
+        <div class="brandLockup">
+          <img src="./glizzy-logo.png" alt="" />
+          <div>
+            <h2>Entrar al panel</h2>
+            <p class="muted">Administra keys y archivos publicados sin tocar la IPA.</p>
+          </div>
+        </div>
         <p id="loginStatus" class="notice">Esperando correo y contrasena.</p>
         <form id="loginForm" class="form">
           <label>
@@ -50,14 +55,14 @@
         <aside class="panel">
           <div class="panelHeader">
             <div>
-              <h2 id="formTitle">Nuevo patch</h2>
+              <h2 id="formTitle">Nuevo archivo</h2>
               <p class="muted">Elige una plantilla o crea una ruta nueva.</p>
             </div>
             <button id="newButton" class="ghost" type="button">Nuevo</button>
           </div>
 
           <div class="quickPanel">
-            <h3>Patches listos</h3>
+            <h3>Archivos listos</h3>
             <div id="presetList" class="presetList"></div>
           </div>
 
@@ -75,7 +80,7 @@
               Categoria
               <select id="categoryInput">
                 <option value="files">files</option>
-                <option value="patches">patches</option>
+                <option value="patches">archivos</option>
                 <option value="images">images</option>
                 <option value="configs">configs</option>
                 <option value="media">media</option>
@@ -98,9 +103,9 @@
               <span class="fieldHint">PEN usa Free Fire Max. U6 usa Free Fire normal. El panel cambia la ruta y la app destino automaticamente.</span>
             </label>
             <label>
-              Ruta en GREEG APP
+              Ruta en Glizzy Net
               <input id="targetPathInput" type="text" maxlength="180" placeholder="patches/mi-patch.bundle" required />
-              <span class="fieldHint">Elige la app destino y la ruta exacta. Con Nuevo se crea otro patch; con Reemplazar se actualiza solo el elegido.</span>
+              <span class="fieldHint">Elige la app destino y la ruta exacta. Con Nuevo se crea otro archivo; con Reemplazar se actualiza solo el elegido.</span>
             </label>
             <label>
               Descripcion
@@ -110,7 +115,7 @@
               Archivo nuevo o reemplazo
               <input id="fileInput" type="file" required />
             </label>
-            <button id="saveButton" class="primary" type="submit">Crear patch nuevo</button>
+            <button id="saveButton" class="primary" type="submit">Crear archivo nuevo</button>
           </form>
         </aside>
 
@@ -158,6 +163,6 @@
       </article>
     </template>
 
-    <script type="module" src="./app.js?v=20260918-only-esp-ffth"></script>
+    <script type="module" src="./app.js?v=20260921-glizzy-net"></script>
   </body>
 </html>

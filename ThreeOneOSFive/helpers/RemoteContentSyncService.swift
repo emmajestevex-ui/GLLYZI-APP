@@ -247,8 +247,8 @@ enum RemoteContentSyncError: LocalizedError {
 final class RemoteContentStore: ObservableObject {
     @Published private(set) var installedFiles: [RemoteContentFile] = []
     @Published private(set) var remoteVersion = 0
-    @Published private(set) var statusText = "Ready"
-    @Published private(set) var detailText = "Remote content is stored inside GREEG APP."
+    @Published private(set) var statusText = "Listo"
+    @Published private(set) var detailText = "Los archivos remotos se guardan dentro de Glizzy Net."
     @Published private(set) var progress: Double?
     @Published private(set) var lastChecked: Date?
     @Published private(set) var isBusy = false
@@ -290,8 +290,8 @@ final class RemoteContentStore: ObservableObject {
     private func sync(force: Bool) async {
         isBusy = true
         progress = nil
-        statusText = "Checking updates"
-        detailText = force ? "Manual update started." : "Automatic update started."
+        statusText = "Buscando cambios"
+        detailText = force ? "Actualizacion manual iniciada." : "Actualizacion automatica iniciada."
 
         do {
             let manifest = try await fetchManifest()
@@ -305,10 +305,10 @@ final class RemoteContentStore: ObservableObject {
                 installedFiles = manifest.files.filter(\.isAvailable)
                 remoteVersion = manifest.version
                 progress = 1
-                statusText = "Up to date"
+                statusText = "Actualizado"
                 detailText = manifest.files.isEmpty
-                    ? "No published remote files yet."
-                    : "\(installedFiles.count) remote file(s) installed."
+                    ? "Todavia no hay archivos publicados."
+                    : "\(installedFiles.count) archivo(s) remoto(s) instalados."
                 lastChecked = Date()
                 isBusy = false
                 return
@@ -322,14 +322,14 @@ final class RemoteContentStore: ObservableObject {
 
             do {
                 for file in plan.changed {
-                    statusText = "Downloading \(file.name)"
+                    statusText = "Descargando \(file.name)"
                     let stagedURL = try await download(file, into: stagingRoot)
                     stagedDownloads[file.id] = stagedURL
                     completedSteps += 1
                     progress = Double(completedSteps) / Double(totalSteps)
                 }
 
-                statusText = "Installing content"
+                statusText = "Instalando archivos"
                 try install(
                     manifest: manifest,
                     previousManifest: localManifest,
@@ -349,12 +349,12 @@ final class RemoteContentStore: ObservableObject {
             installedFiles = manifest.files.filter(\.isAvailable)
             remoteVersion = manifest.version
             progress = 1
-            statusText = "Content updated"
-            detailText = "\(plan.changed.count) downloaded, \(plan.obsolete.count) removed."
+            statusText = "Archivos actualizados"
+            detailText = "\(plan.changed.count) descargado(s), \(plan.obsolete.count) quitado(s)."
             lastChecked = Date()
         } catch {
             progress = nil
-            statusText = "Update failed"
+            statusText = "Fallo la actualizacion"
             detailText = error.localizedDescription
             lastChecked = Date()
         }
@@ -625,7 +625,7 @@ final class RemoteContentStore: ObservableObject {
     private var storeRootURL: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        return base.appendingPathComponent("GREEGRemoteContent", isDirectory: true)
+        return base.appendingPathComponent("GlizzyNetRemoteContent", isDirectory: true)
     }
 
     private var currentRootURL: URL {
@@ -746,7 +746,7 @@ enum RemoteContentLibrary {
     private static func storeRootURL(fileManager: FileManager) -> URL {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        return base.appendingPathComponent("GREEGRemoteContent", isDirectory: true)
+        return base.appendingPathComponent("GlizzyNetRemoteContent", isDirectory: true)
     }
 
     private static func currentRootURL(fileManager: FileManager) -> URL {

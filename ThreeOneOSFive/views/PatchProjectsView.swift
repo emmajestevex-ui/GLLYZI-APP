@@ -51,7 +51,7 @@ struct PatchProjectsView: View {
                         searchEmptyState
                             .listRowSeparator(.hidden)
                     } else {
-                        Section("Built-in patches") {
+                        Section("Archivos integrados") {
                             ForEach(filteredItems) { item in
                                 itemRow(item)
                             }
@@ -59,7 +59,7 @@ struct PatchProjectsView: View {
                     }
 
                     if !remotePatchFiles.isEmpty {
-                        Section("Remote updates") {
+                        Section("Actualizaciones remotas") {
                             ForEach(remotePatchFiles) { file in
                                 RemotePatchRow(file: file)
                             }
@@ -151,9 +151,9 @@ private struct PatchListHeader: View {
         HStack(spacing: 14) {
             AppLogo(size: 46)
             VStack(alignment: .leading, spacing: 4) {
-                Text("GREEG client")
+                Text("Glizzy Net")
                     .font(.headline)
-                Text("Asset Indexer, Shaders, 144 fps, and Max")
+                Text("Aimbots, archivos y actualizaciones")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -164,7 +164,7 @@ private struct PatchListHeader: View {
                 Text("\(count)")
                     .font(.title3.weight(.black))
                     .foregroundColor(AppTheme.accent)
-                Text(count == 1 ? "patch" : "patches")
+                Text(count == 1 ? "archivo" : "archivos")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -213,7 +213,7 @@ private struct PatchProjectRow: View {
                     .foregroundStyle(.secondary)
                     .accessibilityLabel(language.text("patch.password_protected"))
             } else if !item.isLocked {
-                Text(fileCount == 1 ? "1 file" : "\(fileCount) files")
+                Text(fileCount == 1 ? "1 archivo" : "\(fileCount) archivos")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -251,7 +251,7 @@ private struct RemotePatchRow: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 3) {
-                Text("Remote")
+                Text("Remoto")
                     .font(.caption2.weight(.bold))
                     .foregroundColor(AppTheme.accent)
                 Text(file.displaySize)
@@ -381,7 +381,7 @@ private struct PatchProjectDetailView: View {
                     } header: {
                         Text("Target App")
                     } footer: {
-                        Text("Elige donde se va a escribir este patch antes de tocar Apply.")
+                        Text("Elige donde se va a escribir este archivo antes de tocar Aplicar.")
                     }
                 }
 
@@ -397,13 +397,13 @@ private struct PatchProjectDetailView: View {
 
                 Section {
                     Button(action: apply) {
-                        actionLabel("patch.apply", subtitle: "Write the selected preset", systemImage: "checkmark.shield.fill")
+                        actionLabel("patch.apply", subtitle: "Escribe el archivo seleccionado", systemImage: "checkmark.shield.fill")
                     }
                     .disabled(isWorking)
 
                     if receipt != nil {
                         Button(role: .destructive, action: restore) {
-                            actionLabel("patch.restore", subtitle: "Bring back the saved original", systemImage: "arrow.uturn.backward.circle")
+                            actionLabel("patch.restore", subtitle: "Vuelve al archivo original", systemImage: "arrow.uturn.backward.circle")
                         }
                         .disabled(isWorking)
                     }
@@ -585,7 +585,7 @@ private struct PatchDetailHeader: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text(project.rules.count == 1 ? "1 file" : "\(project.rules.count) files")
+            Text(project.rules.count == 1 ? "1 archivo" : "\(project.rules.count) archivos")
                 .font(.caption.weight(.semibold))
                 .foregroundColor(style.tint)
         }
@@ -668,18 +668,18 @@ private struct PatchVisualStyle {
         if searchable.contains("plist") || searchable.contains("144") {
             icon = "speedometer"
             tint = Color.green
-            subtitle = "FPS preferences"
-            detail = "Library preferences"
+            subtitle = "Preferencias FPS"
+            detail = "Preferencias internas"
         } else if searchable.contains("shader") {
             icon = "sparkles"
             tint = Color(red: 0.26, green: 0.72, blue: 1.0)
-            subtitle = "Shader bundle"
-            detail = "Optional visual content"
+            subtitle = "Archivo visual"
+            detail = "Contenido opcional"
         } else {
             icon = "shippingbox.fill"
             tint = AppTheme.accent
-            subtitle = "Avatar asset bundle"
-            detail = "Compulsory avatar content"
+            subtitle = "Archivo de aimbot"
+            detail = "Contenido de avatar"
         }
     }
 }

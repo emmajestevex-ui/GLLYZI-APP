@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260918-only-esp-ffth";
+const SCRIPT_VERSION = "20260921-glizzy-net";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -152,7 +152,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 });
 
-window.__GREEG_ADMIN_READY = SCRIPT_VERSION;
+window.__GLIZZY_ADMIN_READY = SCRIPT_VERSION;
 
 const state = {
   files: [],
@@ -432,11 +432,11 @@ async function saveFile(event) {
     return;
   }
   if (!targetPath) {
-    setStatus("Completa la ruta que va a reemplazar en GREEG APP.");
+    setStatus("Completa la ruta que va a reemplazar en Glizzy Net.");
     return;
   }
   if (!isCompleteTargetPath(targetPath)) {
-    setStatus("La ruta debe incluir carpeta y archivo. Usa una plantilla o escribe algo como patches/mi-archivo.bundle.");
+    setStatus("La ruta debe incluir carpeta y archivo. Usa una plantilla o escribe la ruta exacta.");
     return;
   }
 
@@ -486,8 +486,8 @@ async function saveFile(event) {
     resetForm();
     await loadFiles();
     setStatus(isReplacing
-      ? "Patch reemplazado. Pulsa Publicar cambios cuando estes listo."
-      : "Patch nuevo creado. Pulsa Publicar cambios cuando estes listo."
+      ? "Archivo reemplazado. Pulsa Publicar cambios cuando estes listo."
+      : "Archivo nuevo creado. Pulsa Publicar cambios cuando estes listo."
     );
   } catch (error) {
     const message = adminErrorMessage(error);
@@ -600,7 +600,7 @@ function editFile(file) {
 }
 
 function resetForm() {
-  els.formTitle.textContent = "Nuevo patch";
+  els.formTitle.textContent = "Nuevo archivo";
   els.fileForm.reset();
   els.editingId.value = "";
   delete els.slugInput.dataset.touched;
@@ -609,8 +609,8 @@ function resetForm() {
   els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
   els.targetPathInput.value = "";
   updateAssetVariantVisibility();
-  els.saveButton.textContent = "Crear patch nuevo";
-  setStatus("Modo nuevo: se creara otro patch, no se reemplazara uno publicado.");
+  els.saveButton.textContent = "Crear archivo nuevo";
+  setStatus("Modo nuevo: se creara otro archivo, no se reemplazara uno publicado.");
 }
 
 function applyPreset(preset, selectedRule = null) {
@@ -632,9 +632,9 @@ function applyPreset(preset, selectedRule = null) {
   updateAssetVariantVisibility();
   els.descriptionInput.value = rule.description || preset.description || "";
   els.fileInput.value = "";
-  els.saveButton.textContent = "Crear patch nuevo";
+  els.saveButton.textContent = "Crear archivo nuevo";
   els.fileInput.focus();
-  setStatus(`Listo para crear un patch nuevo de ${rule.label || preset.name}. No reemplazara los publicados.`);
+  setStatus(`Listo para crear un archivo nuevo de ${rule.label || preset.name}. No reemplazara los publicados.`);
 }
 
 function suggestTargetPath() {
@@ -888,7 +888,7 @@ function adminErrorMessage(error) {
     return "El login funciono, pero ese correo aun no tiene permiso admin. Ejecuta supabase/remote_content_setup.sql en Supabase.";
   }
   if (/could not find the function|function .* does not exist|schema cache/i.test(message)) {
-    return "Falta actualizar el backend para crear patches duplicados. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
+    return "Falta actualizar el backend para crear archivos duplicados. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
   }
   if (/duplicate key|unique constraint|target_path|target_bundle_path/i.test(message)) {
     return "Supabase todavia esta bloqueando rutas duplicadas. Ejecuta supabase/remote_content_setup.sql en Supabase una vez, refresca el panel y vuelve a guardar.";

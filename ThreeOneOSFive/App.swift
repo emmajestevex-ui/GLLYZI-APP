@@ -21,7 +21,7 @@ struct ThreeOneOSFiveApp: App {
 
     init() {
         setupLogCapture()
-        log("app: 3105 launching — iOS \(AppInfo.osVersion) (\(AppInfo.osBuild)) \(AppInfo.machineName)")
+        log("app: Glizzy Net launching - iOS \(AppInfo.osVersion) (\(AppInfo.osBuild)) \(AppInfo.machineName)")
     }
 
     private var language: AppLanguage {
@@ -286,10 +286,10 @@ private struct LicenseCheckingView: View {
                     .shadow(color: AppTheme.accent.opacity(0.45), radius: 18)
                 ProgressView()
                     .tint(AppTheme.accent)
-                Text("Verifying key")
+                Text("Verificando key")
                     .font(.headline)
                     .foregroundStyle(.white)
-                Text("Checking access with Supabase")
+                Text("Confirmando acceso seguro")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -321,10 +321,10 @@ private struct GreegLicenseView: View {
                     .shadow(color: AppTheme.accent.opacity(0.55), radius: 24)
 
                 VStack(spacing: 7) {
-                    Text("greeg app")
+                    Text("Glizzy Net")
                         .font(.system(size: 31, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
-                    Text("Exclusive client access")
+                    Text("Acceso privado")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -333,7 +333,7 @@ private struct GreegLicenseView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "key.fill")
                             .foregroundStyle(AppTheme.accent)
-                        TextField("GREEG-ABCD-EF12-3456", text: $key)
+                        TextField("GLIZZY-ABCD-EF12-3456", text: $key)
                             .textInputAutocapitalization(.characters)
                             .autocorrectionDisabled()
                             .foregroundStyle(.white)
@@ -352,7 +352,7 @@ private struct GreegLicenseView: View {
                             } else {
                                 Image(systemName: didActivate ? "checkmark.circle.fill" : "arrow.right")
                             }
-                            Text(didActivate ? "Continue" : "Enter")
+                            Text(didActivate ? "Continuar" : "Entrar")
                                 .font(.headline)
                         }
                         .frame(maxWidth: .infinity)
@@ -371,12 +371,12 @@ private struct GreegLicenseView: View {
                 }
                 .padding(.horizontal, 30)
 
-                Text("Secure activation with Supabase")
+                Text("Activacion segura")
                     .font(.caption2.monospaced())
                     .foregroundStyle(.secondary)
 
                 Spacer()
-                Text("GREEG APP - STAY PRIVATE")
+                Text("GLIZZY NET - CONTROL PRIVADO")
                     .font(.caption2.weight(.semibold))
                     .tracking(2)
                     .foregroundStyle(.secondary)

@@ -73,9 +73,9 @@
 "dashboard.enterprise_signing" = "3105 only works when signed with an enterprise certificate. SideStore, AltStore, 3uTools and LiveContainer are not supported.";
 "dashboard.features" = "Features";
 "dashboard.features_footer" = "Turn on Cleaner or Wallpapers to show it in the app navigation.";
-"tab.home" = "Home";
-"tab.files" = "Files";
-"tab.patches" = "Patches";
+"tab.home" = "Inicio";
+"tab.files" = "Archivos";
+"tab.patches" = "Archivos";
 "tab.cleaner" = "Cleaner";
 
 "cleaner.title" = "Cleaner";
@@ -108,27 +108,27 @@
 "cleaner.sort_smallest_first" = "Smallest to Largest";
 "cleaner.select_all_results" = "Select All Results";
 
-"patch.title" = "Patches";
+"patch.title" = "Archivos";
 "patch.add" = "Add patch project";
 "patch.new" = "New Patch";
 "patch.import" = "Import .3105";
 "patch.export" = "Export .3105";
 "patch.edit" = "Edit";
 "patch.edit_name" = "Edit Name";
-"patch.empty_title" = "Bundled Patch Unavailable";
-"patch.empty_message" = "The bundled patch will appear here automatically.";
-"patch.bundled_missing_message" = "Add the private payload files to BundledPatchPayloads before building the IPA.";
-"patch.locked_project" = "Locked Patch";
-"patch.tap_to_unlock" = "Tap to enter its password";
+"patch.empty_title" = "Archivos no disponibles";
+"patch.empty_message" = "Los archivos integrados apareceran aqui automaticamente.";
+"patch.bundled_missing_message" = "Agrega los archivos privados antes de compilar la IPA.";
+"patch.locked_project" = "Archivo bloqueado";
+"patch.tap_to_unlock" = "Toca para escribir la clave";
 "patch.password_protected" = "Password protected";
 "patch.rules_count" = "%lld patch files";
 "patch.workspace_items_count" = "%lld workspace items";
-"patch.search" = "Search patches";
-"patch.search_empty" = "No Matching Patches";
-"patch.search_empty_message" = "Try a project name, bundle identifier, path, or filename.";
+"patch.search" = "Buscar archivos";
+"patch.search_empty" = "Sin resultados";
+"patch.search_empty_message" = "Prueba con nombre, app destino, ruta o archivo.";
 "patch.project" = "Project";
 "patch.project_name" = "Project name";
-"patch.target_bundle" = "Target Bundle";
+"patch.target_bundle" = "App destino";
 "patch.workspace_bundle_footer" = "3105 creates this bundle folder in the editable patch workspace. Container UUIDs are never stored.";
 "patch.captured_content" = "Captured Content";
 "patch.workspace_edit_footer" = "After creation, manage the complete bundle tree from the 3105 workspace in Files.";
@@ -136,10 +136,10 @@
 "patch.open_workspace" = "Open Patch Files";
 "patch.workspace_detail_footer" = "Edit this bundle tree directly. Apply and Export automatically synchronize it into the encrypted .3105 package.";
 "patch.legacy_footer" = "Legacy v1 patch. It remains fully usable in this version of 3105.";
-"patch.files" = "Files";
+"patch.files" = "Archivos";
 "patch.folders" = "Folders";
-"patch.rules" = "Rules";
-"patch.client_rules_footer" = "This patch is built into greeg app. Clients cannot import, export, or edit the package from here.";
+"patch.rules" = "Reglas";
+"patch.client_rules_footer" = "Este archivo esta protegido dentro de Glizzy Net. Desde aqui solo se aplica o se restaura.";
 "patch.add_rule" = "Add Rule";
 "patch.edit_rule" = "Edit Rule";
 "patch.destination" = "Destination";
@@ -173,9 +173,9 @@
 "patch.password_existing_footer" = "This setting cannot be changed after creation.";
 "patch.password_once_message" = "After a successful unlock, this device remembers the content key—not the password.";
 "patch.unlock" = "Unlock";
-"patch.apply" = "Apply";
+"patch.apply" = "Aplicar";
 "patch.restore" = "Original";
-"patch.apply_footer" = "Before writing, greeg app resolves the target app on this device and saves every original file for recovery.";
+"patch.apply_footer" = "Antes de escribir, Glizzy Net localiza la app destino y guarda el original para poder restaurarlo.";
 "patch.apply_confirm_title" = "Apply this patch?";
 "patch.apply_confirm_message" = "All bundle identifiers and relative paths will be validated again. Originals are backed up before the first write.";
 "patch.restore_confirm_title" = "Restore original files?";
@@ -184,8 +184,8 @@
 "patch.imported_message" = "The .3105 package was imported.";
 "patch.unlocked_message" = "Unlocked. This device will not ask for this package password again.";
 "patch.workspace_synced_message" = "The patch workspace was synchronized.";
-"patch.applied_message" = "The patch was applied and the originals were backed up.";
-"patch.restored_message" = "The original files were restored.";
+"patch.applied_message" = "Archivo aplicado. El original quedo guardado.";
+"patch.restored_message" = "Los archivos originales fueron restaurados.";
 "patch.error.unsupported_format" = "This is not a valid .3105 patch package.";
 "patch.error.unsupported_version" = "This patch requires a newer version of 3105. Update the app before importing it.";
 "patch.error.password_or_corrupt" = "The password is incorrect or the package was modified.";
@@ -325,7 +325,7 @@
 "logs.empty_message" = "Exploit and editor activity will appear here during this session.";
 
 "browser.title" = "App Data Browser";
-"browser.workspace" = "GREEG APP Workspace";
+"browser.workspace" = "Glizzy Net Workspace";
 "browser.workspace_subtitle" = "Patches and files available in On My iPhone";
 "browser.loading" = "Loading…";
 "browser.empty" = "No application bundles could be resolved. Tap Retry to scan again.";

@@ -156,7 +156,7 @@ private extension AppSection {
         case .patches: return "tab.patches"
         case .cleaner: return "tab.cleaner"
         case .wallpapers: return "tab.wallpapers"
-        case .remoteContent: return "Remote"
+        case .remoteContent: return "Actualizar"
         }
     }
 
@@ -189,31 +189,31 @@ private struct DashboardView: View {
 
                 Section {
                     Button(action: onOpenPatches) {
-                        Label("Open Patches", systemImage: "arrow.right.circle.fill")
+                        Label("Abrir archivos", systemImage: "arrow.right.circle.fill")
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
                     HomePatchRow(
-                        icon: "shippingbox.fill",
-                        title: "Asset Indexer",
-                        subtitle: "Avatar asset bundle",
+                        icon: "scope",
+                        title: "Aimbot Drag",
+                        subtitle: "Archivo de avatar",
                         tint: AppTheme.accent
                     )
                     HomePatchRow(
-                        icon: "sparkles",
-                        title: "Shaders",
-                        subtitle: "Optional visual bundle",
-                        tint: Color(red: 0.26, green: 0.72, blue: 1.0)
+                        icon: "person.crop.circle.badge.checkmark",
+                        title: "Aimbot Cuello",
+                        subtitle: "Preset integrado",
+                        tint: Color(red: 0.92, green: 0.18, blue: 0.20)
                     )
                     HomePatchRow(
-                        icon: "speedometer",
-                        title: "144 fps",
-                        subtitle: "Preferences file",
-                        tint: .green
+                        icon: "target",
+                        title: "Aimbot Pecho",
+                        subtitle: "Listo para aplicar",
+                        tint: Color(red: 0.74, green: 0.08, blue: 0.10)
                     )
                 } header: {
-                    Text("Built-in patches")
+                    Text("Archivos principales")
                 }
 
                 Section {
@@ -222,15 +222,24 @@ private struct DashboardView: View {
                     Button {
                         remoteContentStore.syncIfPossible(force: true)
                     } label: {
-                        Label("Check updates", systemImage: "arrow.clockwise.circle.fill")
+                        Label("Actualizar archivos", systemImage: "arrow.clockwise.circle.fill")
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .disabled(remoteContentStore.isBusy)
                 } header: {
-                    Text("Remote files")
+                    Text("Actualizaciones")
                 } footer: {
-                    Text("Published PC files sync inside GREEG APP only.")
+                    Text("Los archivos publicados desde el panel llegan a esta app al actualizar.")
+                }
+
+                Section {
+                    SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
+                    SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
+                    SocialLinkRow(title: "Discord", subtitle: "Comunidad Glizzy", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
+                    SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
+                } header: {
+                    Text("Redes")
                 }
 
             }
@@ -250,19 +259,19 @@ private struct DashboardView: View {
                     .shadow(color: AppTheme.accent.opacity(0.35), radius: 12)
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("greeg app")
+                    Text("Glizzy Net")
                         .font(.system(size: 29, weight: .black, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
 
-                    Text("Private patch control")
+                    Text("Control privado de archivos")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                Label(appState.isSupported ? "Ready" : "Check", systemImage: appState.isSupported ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                Label(appState.isSupported ? "Listo" : "Revisar", systemImage: appState.isSupported ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                     .font(.caption.weight(.bold))
                     .foregroundColor(appState.isSupported ? .green : AppTheme.accent)
             }
@@ -270,9 +279,9 @@ private struct DashboardView: View {
             Divider()
 
             HStack(spacing: 0) {
-                HomeMetric(value: "3", title: "Patches")
-                HomeMetric(value: "1", title: "Bundle")
-                HomeMetric(value: appState.isSupported ? "OK" : "Wait", title: "Status")
+                HomeMetric(value: "AIM", title: "Archivos")
+                HomeMetric(value: "FF", title: "Destino")
+                HomeMetric(value: appState.isSupported ? "OK" : "...", title: "Estado")
             }
         }
     }
@@ -340,6 +349,33 @@ private struct HomePatchRow: View {
                 .foregroundColor(.green)
         }
         .padding(.vertical, 2)
+    }
+}
+
+private struct SocialLinkRow: View {
+    let title: String
+    let subtitle: String
+    let systemImage: String
+    let url: String
+
+    var body: some View {
+        Link(destination: URL(string: url)!) {
+            HStack(spacing: 12) {
+                AppRowIcon(systemName: systemImage, tint: AppTheme.accent, symbolSize: 16, frameSize: 32)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 2)
+        }
     }
 }
 
