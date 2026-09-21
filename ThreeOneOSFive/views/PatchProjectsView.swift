@@ -35,40 +35,38 @@ struct PatchProjectsView: View {
             VStack(spacing: 0) {
                 AppSearchField(
                     text: $searchText,
-                    prompt: language.text("patch.search"),
+                    prompt: "Buscar archivos Glizzy",
                     clearLabel: language.text("common.clear")
                 )
-                Divider()
-                List {
-                    Section {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
                         PatchListHeader(count: store.items.count + remotePatchFiles.count)
-                    }
 
-                    if store.items.isEmpty && !store.isBusy {
-                        emptyState
-                            .listRowSeparator(.hidden)
-                    } else if filteredItems.isEmpty && !store.isBusy {
-                        searchEmptyState
-                            .listRowSeparator(.hidden)
-                    } else {
-                        Section("Archivos integrados") {
+                        if store.items.isEmpty && !store.isBusy {
+                            emptyState
+                        } else if filteredItems.isEmpty && !store.isBusy {
+                            searchEmptyState
+                        } else {
+                            GlizzyFilesSectionTitle("Archivos integrados")
                             ForEach(filteredItems) { item in
                                 itemRow(item)
                             }
                         }
-                    }
 
-                    if !remotePatchFiles.isEmpty {
-                        Section("Actualizaciones remotas") {
+                        if !remotePatchFiles.isEmpty {
+                            GlizzyFilesSectionTitle("Actualizaciones remotas")
                             ForEach(remotePatchFiles) { file in
                                 RemotePatchRow(file: file)
                             }
                         }
                     }
+                    .padding(.horizontal, AppTheme.pageInset)
+                    .padding(.top, 12)
+                    .padding(.bottom, 28)
                 }
-                .listStyle(.insetGrouped)
             }
-            .navigationTitle(language.text("patch.title"))
+            .background(AppTheme.pageBackground.ignoresSafeArea())
+            .navigationTitle("Archivos Glizzy")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if store.isBusy {
@@ -124,7 +122,9 @@ struct PatchProjectsView: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 64)
+        .padding(.vertical, 54)
+        .padding(.horizontal, 20)
+        .background(GlizzyFilePanel())
     }
 
     private var searchEmptyState: some View {
@@ -140,7 +140,25 @@ struct PatchProjectsView: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 64)
+        .padding(.vertical, 54)
+        .padding(.horizontal, 20)
+        .background(GlizzyFilePanel())
+    }
+}
+
+private struct GlizzyFilesSectionTitle: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.bold))
+            .foregroundStyle(.secondary)
+            .tracking(1.1)
+            .padding(.horizontal, 2)
     }
 }
 
@@ -151,9 +169,9 @@ private struct PatchListHeader: View {
         HStack(spacing: 14) {
             AppLogo(size: 46)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Glizzy Net")
-                    .font(.headline)
-                Text("Aimbots, archivos y actualizaciones")
+                Text("Centro Glizzy")
+                    .font(.title3.weight(.black))
+                Text("Aimbots y archivos privados")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -169,7 +187,8 @@ private struct PatchListHeader: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 8)
+        .padding(16)
+        .background(GlizzyFilePanel())
     }
 }
 
@@ -217,8 +236,12 @@ private struct PatchProjectRow: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.tertiary)
         }
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(GlizzyFilePanel(cornerRadius: 18))
     }
 }
 
@@ -259,7 +282,21 @@ private struct RemotePatchRow: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(GlizzyFilePanel(cornerRadius: 18))
+    }
+}
+
+private struct GlizzyFilePanel: View {
+    var cornerRadius: CGFloat = 22
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Color(red: 0.105, green: 0.095, blue: 0.10))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(AppTheme.accent.opacity(0.14), lineWidth: 1)
+            )
     }
 }
 

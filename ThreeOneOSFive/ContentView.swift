@@ -182,68 +182,69 @@ private struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
                     dashboardHero
-                }
 
-                Section {
-                    Button(action: onOpenPatches) {
-                        Label("Abrir archivos", systemImage: "arrow.right.circle.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 10) {
+                        GlizzySectionTitle("Archivos principales")
+                        VStack(spacing: 0) {
+                            Button(action: onOpenPatches) {
+                                Label("Abrir centro de archivos", systemImage: "arrow.right.circle.fill")
+                                    .font(.headline)
+                                    .foregroundStyle(AppTheme.accent)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding(.bottom, 12)
+
+                            HomePatchRow(icon: "scope", title: "Aimbot Drag", subtitle: "Archivo de avatar", tint: AppTheme.accent)
+                            HomePatchRow(icon: "person.crop.circle.badge.checkmark", title: "Aimbot Cuello", subtitle: "Preset integrado", tint: Color(red: 0.92, green: 0.18, blue: 0.20))
+                            HomePatchRow(icon: "target", title: "Aimbot Pecho", subtitle: "Listo para aplicar", tint: Color(red: 0.74, green: 0.08, blue: 0.10))
+                        }
+                        .padding(16)
+                        .background(GlizzyPanelBackground())
                     }
 
-                    HomePatchRow(
-                        icon: "scope",
-                        title: "Aimbot Drag",
-                        subtitle: "Archivo de avatar",
-                        tint: AppTheme.accent
-                    )
-                    HomePatchRow(
-                        icon: "person.crop.circle.badge.checkmark",
-                        title: "Aimbot Cuello",
-                        subtitle: "Preset integrado",
-                        tint: Color(red: 0.92, green: 0.18, blue: 0.20)
-                    )
-                    HomePatchRow(
-                        icon: "target",
-                        title: "Aimbot Pecho",
-                        subtitle: "Listo para aplicar",
-                        tint: Color(red: 0.74, green: 0.08, blue: 0.10)
-                    )
-                } header: {
-                    Text("Archivos principales")
-                }
-
-                Section {
-                    RemoteContentDashboardRow()
-
-                    Button {
-                        remoteContentStore.syncIfPossible(force: true)
-                    } label: {
-                        Label("Actualizar archivos", systemImage: "arrow.clockwise.circle.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 10) {
+                        GlizzySectionTitle("Actualizaciones")
+                        VStack(spacing: 14) {
+                            RemoteContentDashboardRow()
+                            Button {
+                                remoteContentStore.syncIfPossible(force: true)
+                            } label: {
+                                Label("Sincronizar archivos", systemImage: "arrow.clockwise.circle.fill")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 48)
+                                    .background(AppTheme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    .foregroundStyle(.white)
+                            }
+                            .disabled(remoteContentStore.isBusy)
+                            Text("Los archivos publicados desde el panel de Glizzy llegan a esta app al actualizar.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(16)
+                        .background(GlizzyPanelBackground())
                     }
-                    .disabled(remoteContentStore.isBusy)
-                } header: {
-                    Text("Actualizaciones")
-                } footer: {
-                    Text("Los archivos publicados desde el panel llegan a esta app al actualizar.")
-                }
 
-                Section {
-                    SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
-                    SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
-                    SocialLinkRow(title: "Discord", subtitle: "Comunidad Glizzy", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
-                    SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
-                } header: {
-                    Text("Redes")
+                    VStack(alignment: .leading, spacing: 10) {
+                        GlizzySectionTitle("Redes")
+                        VStack(spacing: 0) {
+                            SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
+                            SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
+                            SocialLinkRow(title: "Discord", subtitle: "Comunidad Glizzy", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
+                            SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
+                        }
+                        .padding(16)
+                        .background(GlizzyPanelBackground())
+                    }
                 }
-
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.top, 18)
+                .padding(.bottom, 28)
             }
-            .listStyle(.insetGrouped)
+            .background(AppTheme.pageBackground.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .tint(AppTheme.accent)
             .onAppear {
@@ -284,8 +285,46 @@ private struct DashboardView: View {
                 HomeMetric(value: appState.isSupported ? "OK" : "...", title: "Estado")
             }
         }
+        .padding(18)
+        .background(GlizzyPanelBackground())
     }
 
+}
+
+private struct GlizzySectionTitle: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.bold))
+            .foregroundStyle(.secondary)
+            .tracking(1.1)
+            .padding(.horizontal, 2)
+    }
+}
+
+private struct GlizzyPanelBackground: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 22, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.13, green: 0.12, blue: 0.125),
+                        Color(red: 0.07, green: 0.065, blue: 0.07)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(AppTheme.accent.opacity(0.18), lineWidth: 1)
+            )
+    }
 }
 
 private struct RemoteContentDashboardRow: View {

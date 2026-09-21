@@ -19,30 +19,34 @@ struct RemoteContentView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                AppSearchField(text: $searchText, prompt: "Search remote files", clearLabel: "Clear")
-                Divider()
-                List {
-                    Section {
+                AppSearchField(text: $searchText, prompt: "Buscar actualizaciones", clearLabel: "Limpiar")
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
                         RemoteContentStatusCard()
-                    }
 
-                    if store.installedFiles.isEmpty && !store.isBusy {
-                        emptyState
-                            .listRowSeparator(.hidden)
-                    } else if filteredFiles.isEmpty && !store.isBusy {
-                        searchEmptyState
-                            .listRowSeparator(.hidden)
-                    } else {
-                        Section("Installed files") {
+                        if store.installedFiles.isEmpty && !store.isBusy {
+                            emptyState
+                        } else if filteredFiles.isEmpty && !store.isBusy {
+                            searchEmptyState
+                        } else {
+                            Text("ARCHIVOS INSTALADOS")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.secondary)
+                                .tracking(1.1)
+                                .padding(.horizontal, 2)
+
                             ForEach(filteredFiles) { file in
                                 RemoteContentFileRow(file: file)
                             }
                         }
                     }
+                    .padding(.horizontal, AppTheme.pageInset)
+                    .padding(.top, 12)
+                    .padding(.bottom, 28)
                 }
-                .listStyle(.insetGrouped)
             }
-            .navigationTitle("Remote Files")
+            .background(AppTheme.pageBackground.ignoresSafeArea())
+            .navigationTitle("Centro Glizzy")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -56,7 +60,7 @@ struct RemoteContentView: View {
                         }
                     }
                     .disabled(store.isBusy)
-                    .accessibilityLabel("Check updates")
+                    .accessibilityLabel("Sincronizar archivos")
                 }
             }
             .onAppear {
@@ -70,15 +74,17 @@ struct RemoteContentView: View {
             Image(systemName: "icloud.and.arrow.down")
                 .font(.system(size: AppTheme.emptyIconSize, weight: .light))
                 .foregroundStyle(AppTheme.accent)
-            Text("No remote files installed")
+            Text("No hay archivos de Glizzy")
                 .font(.headline)
-            Text("Tap Check updates after publishing content from the PC panel.")
+            Text("Publica desde el panel y toca Sincronizar para bajarlos.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 64)
+        .padding(.vertical, 54)
+        .padding(.horizontal, 20)
+        .background(GlizzyRemotePanel())
     }
 
     private var searchEmptyState: some View {
@@ -86,15 +92,17 @@ struct RemoteContentView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: AppTheme.emptyIconSize, weight: .light))
                 .foregroundStyle(.secondary)
-            Text("No files found")
+            Text("No se encontro nada")
                 .font(.headline)
-            Text("Try another name, slug, category, or filename.")
+            Text("Prueba con otro nombre, ruta o archivo.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 64)
+        .padding(.vertical, 54)
+        .padding(.horizontal, 20)
+        .background(GlizzyRemotePanel())
     }
 }
 
@@ -126,7 +134,7 @@ private struct RemoteContentStatusCard: View {
                     Text("v\(store.remoteVersion)")
                         .font(.headline.weight(.black))
                         .foregroundColor(AppTheme.accent)
-                    Text(store.installedFiles.count == 1 ? "1 file" : "\(store.installedFiles.count) files")
+                    Text(store.installedFiles.count == 1 ? "1 archivo" : "\(store.installedFiles.count) archivos")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
@@ -141,7 +149,7 @@ private struct RemoteContentStatusCard: View {
                 Button {
                     store.syncIfPossible(force: true)
                 } label: {
-                    Label("Check updates", systemImage: "arrow.clockwise.circle.fill")
+                    Label("Sincronizar", systemImage: "arrow.clockwise.circle.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -154,7 +162,8 @@ private struct RemoteContentStatusCard: View {
                 }
             }
         }
-        .padding(.vertical, 8)
+        .padding(16)
+        .background(GlizzyRemotePanel())
     }
 }
 
@@ -190,7 +199,7 @@ private struct RemoteContentFileRow: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 3) {
-                Text(file.category.isEmpty ? "files" : file.category)
+                Text(displayCategory)
                     .font(.caption2.weight(.bold))
                     .foregroundColor(tint)
                     .lineLimit(1)
@@ -199,7 +208,15 @@ private struct RemoteContentFileRow: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(GlizzyRemotePanel(cornerRadius: 18))
+    }
+
+    private var displayCategory: String {
+        let normalized = file.category
+            .replacingOccurrences(of: "glizzy-", with: "")
+            .replacingOccurrences(of: "-", with: " ")
+        return normalized.isEmpty ? "archivos" : normalized
     }
 
     private var icon: String {
@@ -211,12 +228,25 @@ private struct RemoteContentFileRow: View {
 
     private var tint: Color {
         switch file.category.lowercased() {
-        case "images", "image", "media":
+        case "images", "image", "media", "glizzy-shaders":
             return Color(red: 0.26, green: 0.72, blue: 1.0)
-        case "configs", "config":
+        case "configs", "config", "glizzy-configs":
             return .green
         default:
             return AppTheme.accent
         }
+    }
+}
+
+private struct GlizzyRemotePanel: View {
+    var cornerRadius: CGFloat = 22
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Color(red: 0.105, green: 0.095, blue: 0.10))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
     }
 }
