@@ -119,11 +119,45 @@ h3 {
   color: var(--green);
 }
 
-.grid {
+.gridInner,
+.keysGrid {
   display: grid;
   grid-template-columns: minmax(320px, 430px) 1fr;
   gap: 18px;
   align-items: start;
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+.tabs {
+  display: inline-flex;
+  width: fit-content;
+  gap: 6px;
+  padding: 5px;
+  background: #101014;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.tabButton {
+  min-height: 38px;
+  padding: 0 18px;
+  color: var(--muted);
+  background: transparent;
+  border-radius: 6px;
+  font-weight: 900;
+}
+
+.tabButton.active {
+  color: var(--text);
+  background: var(--accent);
+}
+
+.adminSection {
+  width: 100%;
 }
 
 .panel {
@@ -321,6 +355,38 @@ textarea:focus {
   grid-template-columns: 1fr 1fr;
 }
 
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkboxLabel input {
+  width: auto;
+}
+
+.generatedKeys {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.generatedKeys pre {
+  max-height: 190px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  color: #ffe5e7;
+  background: #0b0b0d;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .ghost,
 .fileActions button {
   background: var(--panel-strong);
@@ -458,7 +524,8 @@ textarea:focus {
   }
 
   .topbar,
-  .grid,
+  .gridInner,
+  .keysGrid,
   .fileCard {
     display: grid;
     grid-template-columns: 1fr;

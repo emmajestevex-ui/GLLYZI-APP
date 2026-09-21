@@ -4,6 +4,8 @@ const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
 const BUCKET = "greeg-content";
 const SCRIPT_VERSION = "20260921-glizzy-net";
+const CLIENT_PREFIX = "glizzy-";
+const LICENSE_PREFIX = "GLIZZY-";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -25,14 +27,14 @@ const PATCH_PRESETS = [
     key: "asset-indexer",
     name: "Asset Indexer",
     slug: "asset-indexer-ff-max",
-    category: "patches",
+    category: "glizzy-patches",
     description: "Avatar asset bundle",
     targetBundle: FREE_FIRE_MAX_BUNDLE,
     rules: [
       {
         label: ASSET_VARIANTS.pen.label,
         slug: "asset-indexer-ff-max",
-        category: "patches",
+        category: "glizzy-patches",
         description: "Avatar asset bundle for Free Fire Max",
         targetBundle: ASSET_VARIANTS.pen.targetBundle,
         targetPath: ASSET_VARIANTS.pen.targetPath,
@@ -41,7 +43,7 @@ const PATCH_PRESETS = [
       {
         label: ASSET_VARIANTS.h5.label,
         slug: "asset-indexer",
-        category: "patches",
+        category: "glizzy-patches",
         description: "Avatar asset bundle for Free Fire normal",
         targetBundle: ASSET_VARIANTS.h5.targetBundle,
         targetPath: ASSET_VARIANTS.h5.targetPath,
@@ -53,14 +55,14 @@ const PATCH_PRESETS = [
     key: "shaders",
     name: "Shaders",
     slug: "shaders",
-    category: "shaders",
+    category: "glizzy-shaders",
     description: "Shader bundle",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     rules: [
       {
         label: "Shaders - FF Normal",
         slug: "shaders",
-        category: "shaders",
+        category: "glizzy-shaders",
         description: "Shader bundle for Free Fire normal",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
@@ -68,7 +70,7 @@ const PATCH_PRESETS = [
       {
         label: "Shaders - FF Max",
         slug: "shaders-ff-max",
-        category: "shaders",
+        category: "glizzy-shaders",
         description: "Shader bundle for Free Fire Max",
         targetBundle: FREE_FIRE_MAX_BUNDLE,
         targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
@@ -79,7 +81,7 @@ const PATCH_PRESETS = [
     key: "fps-144",
     name: "144 fps",
     slug: "144-fps",
-    category: "configs",
+    category: "glizzy-configs",
     description: "FPS preferences",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Library/Preferences/com.dts.freefireth.plist",
@@ -88,14 +90,14 @@ const PATCH_PRESETS = [
     key: "only-esp-ffth",
     name: "Only Esp FFTH",
     slug: "only-esp-ffth",
-    category: "patches",
+    category: "glizzy-patches",
     description: "Only Esp patch for Free Fire TH",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     rules: [
       {
         label: "Assembly-CSharp-patch.bytes",
         slug: "only-esp-ffth-assembly",
-        category: "patches",
+        category: "glizzy-patches",
         description: "Assembly patch for Free Fire TH",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/Assembly-CSharp-patch.bytes",
@@ -103,7 +105,7 @@ const PATCH_PRESETS = [
       {
         label: "GameBand-Fix.json",
         slug: "only-esp-ffth-gameband",
-        category: "configs",
+        category: "glizzy-configs",
         description: "GameBand fix for Free Fire TH",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/GameBand-Fix.json",
@@ -111,7 +113,7 @@ const PATCH_PRESETS = [
       {
         label: "localConfig.json",
         slug: "only-esp-ffth-config",
-        category: "configs",
+        category: "glizzy-configs",
         description: "localConfig for Free Fire TH",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/localConfig.json",
@@ -122,21 +124,21 @@ const PATCH_PRESETS = [
     key: "aimbot-drag-ff-max",
     name: "Aimbot Drag FF Max",
     slug: "aimbot-drag-ff-max",
-    category: "patches",
+    category: "glizzy-patches",
     description: "Patch with Assembly-CSharp-patch.bytes and localConfig.json",
     targetBundle: FREE_FIRE_MAX_BUNDLE,
     rules: [
       {
         label: "Assembly-CSharp-patch.bytes",
         slug: "aimbot-drag-ff-max-assembly",
-        category: "patches",
+        category: "glizzy-patches",
         description: "Assembly patch for Free Fire Max",
         targetPath: "Documents/Assembly-CSharp-patch.bytes",
       },
       {
         label: "localConfig.json",
         slug: "aimbot-drag-ff-max-config",
-        category: "configs",
+        category: "glizzy-configs",
         description: "localConfig.json for Free Fire Max",
         targetPath: "Documents/localConfig.json",
       },
@@ -156,8 +158,10 @@ window.__GLIZZY_ADMIN_READY = SCRIPT_VERSION;
 
 const state = {
   files: [],
+  keys: [],
   session: null,
   busy: false,
+  activeSection: "files",
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -195,6 +199,25 @@ const els = {
   statusText: $("#statusText"),
   fileList: $("#fileList"),
   fileTemplate: $("#fileTemplate"),
+  filesTabButton: $("#filesTabButton"),
+  keysTabButton: $("#keysTabButton"),
+  filesSection: $("#filesSection"),
+  keysSection: $("#keysSection"),
+  keyForm: $("#keyForm"),
+  keyQuantityInput: $("#keyQuantityInput"),
+  keyDurationInput: $("#keyDurationInput"),
+  keyLabelInput: $("#keyLabelInput"),
+  customKeyInput: $("#customKeyInput"),
+  specialAssetInput: $("#specialAssetInput"),
+  generatedKeysBox: $("#generatedKeysBox"),
+  generatedKeysText: $("#generatedKeysText"),
+  copyGeneratedKeysButton: $("#copyGeneratedKeysButton"),
+  refreshKeysButton: $("#refreshKeysButton"),
+  keySearchInput: $("#keySearchInput"),
+  keyCounter: $("#keyCounter"),
+  keyStatusText: $("#keyStatusText"),
+  keyList: $("#keyList"),
+  keyTemplate: $("#keyTemplate"),
 };
 
 init();
@@ -235,6 +258,12 @@ function bindEvents() {
   els.refreshButton.addEventListener("click", loadFiles);
   els.publishButton.addEventListener("click", publishChanges);
   els.searchInput.addEventListener("input", renderFiles);
+  els.filesTabButton.addEventListener("click", () => switchSection("files"));
+  els.keysTabButton.addEventListener("click", () => switchSection("keys"));
+  els.keyForm.addEventListener("submit", generateKeys);
+  els.refreshKeysButton.addEventListener("click", loadKeys);
+  els.keySearchInput.addEventListener("input", renderKeys);
+  els.copyGeneratedKeysButton.addEventListener("click", copyGeneratedKeys);
   els.nameInput.addEventListener("input", () => {
     if (!els.editingId.value && !els.slugInput.dataset.touched) {
       els.slugInput.value = safeSlug(els.nameInput.value);
@@ -386,10 +415,23 @@ function setSession(session) {
   if (signedIn) {
     setLoginStatus("Sesion iniciada.", false, true);
     loadFiles();
+    loadKeys();
   } else {
     state.files = [];
+    state.keys = [];
     renderFiles();
+    renderKeys();
   }
+}
+
+function switchSection(section) {
+  state.activeSection = section;
+  const showKeys = section === "keys";
+  els.filesSection.classList.toggle("hidden", showKeys);
+  els.keysSection.classList.toggle("hidden", !showKeys);
+  els.filesTabButton.classList.toggle("active", !showKeys);
+  els.keysTabButton.classList.toggle("active", showKeys);
+  if (showKeys) loadKeys();
 }
 
 async function loadFiles() {
@@ -405,7 +447,7 @@ async function loadFiles() {
     return;
   }
 
-  state.files = data ?? [];
+  state.files = (data ?? []).filter(isGlizzyFile);
   setStatus("Listo. Recuerda publicar para que los iPhone reciban los cambios.");
   renderFiles();
 }
@@ -426,7 +468,7 @@ async function saveFile(event) {
     ? null
     : ASSET_VARIANTS[els.assetVariantInput.value];
   const targetBundle = safeTargetBundle(selectedAssetVariant?.targetBundle || els.targetBundleInput.value);
-  const targetPath = safeRelativePath(selectedAssetVariant?.targetPath || els.targetPathInput.value || `${els.categoryInput.value}/${file.name}`);
+  const targetPath = safeRelativePath(selectedAssetVariant?.targetPath || els.targetPathInput.value || `${glizzyCategory(els.categoryInput.value)}/${file.name}`);
   if (!name || !slug) {
     setStatus("Completa nombre y slug.");
     return;
@@ -464,7 +506,7 @@ async function saveFile(event) {
       p_id: els.editingId.value || null,
       p_name: name,
       p_slug: slug,
-      p_category: els.categoryInput.value || "files",
+      p_category: glizzyCategory(els.categoryInput.value || "glizzy-files"),
       p_target_bundle: targetBundle,
       p_target_path: targetPath,
       p_description: els.descriptionInput.value.trim() || null,
@@ -546,7 +588,7 @@ async function disablePreset(preset) {
     const { error } = await supabaseClient.rpc("admin_disable_remote_content_target", {
       p_name: preset.name,
       p_slug: rule.slug,
-      p_category: rule.category || preset.category || "patches",
+      p_category: glizzyCategory(rule.category || preset.category || "glizzy-patches"),
       p_target_bundle: ruleTargetBundle(preset, rule),
       p_target_path: safeRelativePath(rule.targetPath),
       p_description: rule.description || preset.description || null,
@@ -588,7 +630,7 @@ function editFile(file) {
   els.nameInput.value = file.name;
   els.slugInput.value = file.slug;
   els.slugInput.dataset.touched = "true";
-  els.categoryInput.value = file.category || "files";
+  els.categoryInput.value = glizzyCategory(file.category || "glizzy-files");
   els.targetBundleInput.value = safeTargetBundle(file.target_bundle);
   els.targetPathInput.value = file.target_path || fallbackTargetPath(file);
   els.targetPathInput.dataset.touched = "true";
@@ -605,12 +647,111 @@ function resetForm() {
   els.editingId.value = "";
   delete els.slugInput.dataset.touched;
   delete els.targetPathInput.dataset.touched;
-  els.categoryInput.value = "files";
+  els.categoryInput.value = "glizzy-files";
   els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
   els.targetPathInput.value = "";
   updateAssetVariantVisibility();
   els.saveButton.textContent = "Crear archivo nuevo";
   setStatus("Modo nuevo: se creara otro archivo, no se reemplazara uno publicado.");
+}
+
+async function loadKeys() {
+  if (!state.session) return;
+  setBusy(true, "Cargando keys...");
+  const { data, error } = await supabaseClient.rpc("admin_list_licenses");
+  setBusy(false);
+
+  if (error) {
+    setKeyStatus(adminErrorMessage(error));
+    state.keys = [];
+    renderKeys();
+    return;
+  }
+
+  state.keys = (data ?? []).filter(isGlizzyKey);
+  setKeyStatus("Listo. Puedes crear, copiar, pausar o bloquear keys.");
+  renderKeys();
+}
+
+async function generateKeys(event) {
+  event.preventDefault();
+  if (!state.session || state.busy) return;
+
+  const quantity = Math.max(1, Math.min(Number(els.keyQuantityInput.value || 1), 200));
+  const duration = Number(els.keyDurationInput.value || 0);
+  const customKey = normalizeKey(els.customKeyInput.value);
+  if (customKey && quantity !== 1) {
+    setKeyStatus("Para una key personalizada, la cantidad debe ser 1.");
+    return;
+  }
+  if (customKey && !customKey.startsWith(LICENSE_PREFIX)) {
+    setKeyStatus("La key personalizada debe empezar con GLIZZY- para no mezclarse con GREEG.");
+    return;
+  }
+
+  const capabilities = els.specialAssetInput.checked ? ["special_assetindexer"] : [];
+  setBusy(true, "Creando key...");
+  const createdKeys = [];
+  let firstError = null;
+  const total = customKey ? 1 : quantity;
+
+  for (let index = 0; index < total; index += 1) {
+    const nextKey = customKey || makeGlizzyKey();
+    const { data, error } = await supabaseClient.rpc("admin_generate_licenses", {
+      p_quantity: 1,
+      p_duration_hours: duration > 0 ? duration : null,
+      p_label: glizzyLabel(els.keyLabelInput.value.trim()),
+      p_capabilities: capabilities,
+      p_custom_license_key: nextKey,
+    });
+    if (error) {
+      firstError = error;
+      break;
+    }
+    createdKeys.push(...(data?.keys ?? [nextKey]));
+  }
+  setBusy(false);
+
+  if (firstError) {
+    setKeyStatus(adminErrorMessage(firstError));
+    return;
+  }
+
+  els.generatedKeysText.textContent = createdKeys.join("\n");
+  els.generatedKeysBox.classList.toggle("hidden", createdKeys.length === 0);
+  setKeyStatus(`${createdKeys.length} key(s) GLIZZY creada(s).`);
+  els.customKeyInput.value = "";
+  await loadKeys();
+}
+
+async function setLicenseStatus(key, status) {
+  if (!state.session || state.busy) return;
+  setBusy(true, "Actualizando key...");
+  const { data, error } = await supabaseClient.rpc("admin_set_license_status", {
+    p_license_key: key,
+    p_status: status,
+  });
+  setBusy(false);
+
+  if (error || data?.success === false) {
+    setKeyStatus(adminErrorMessage(error || { message: data?.message || "No se pudo actualizar la key." }));
+    return;
+  }
+
+  setKeyStatus(`Key ${status}.`);
+  await loadKeys();
+}
+
+async function copyGeneratedKeys() {
+  const value = els.generatedKeysText.textContent.trim();
+  if (!value) return;
+  await navigator.clipboard.writeText(value);
+  setKeyStatus("Keys copiadas.");
+}
+
+async function copyKey(key) {
+  await navigator.clipboard.writeText(key);
+  setKeyStatus("Key copiada.");
 }
 
 function applyPreset(preset, selectedRule = null) {
@@ -622,7 +763,7 @@ function applyPreset(preset, selectedRule = null) {
   els.nameInput.value = preset.name;
   els.slugInput.value = rule.slug;
   els.slugInput.dataset.touched = "true";
-  els.categoryInput.value = rule.category || preset.category || "patches";
+  els.categoryInput.value = glizzyCategory(rule.category || preset.category || "glizzy-patches");
   els.targetBundleInput.value = ruleTargetBundle(preset, rule);
   els.targetPathInput.value = safeRelativePath(rule.targetPath);
   els.targetPathInput.dataset.touched = "true";
@@ -641,7 +782,7 @@ function suggestTargetPath() {
   if (els.editingId.value || els.targetPathInput.dataset.touched) return;
   const file = els.fileInput.files?.[0];
   if (!file) return;
-  els.targetPathInput.value = safeRelativePath(`${els.categoryInput.value || "files"}/${file.name}`);
+  els.targetPathInput.value = safeRelativePath(`${glizzyCategory(els.categoryInput.value || "glizzy-files")}/${file.name}`);
   updateAssetVariantVisibility();
 }
 
@@ -650,7 +791,7 @@ function applyAssetVariant(value) {
   els.targetBundleInput.value = safeTargetBundle(variant.targetBundle);
   els.targetPathInput.value = safeRelativePath(variant.targetPath);
   els.targetPathInput.dataset.touched = "true";
-  els.categoryInput.value = "patches";
+  els.categoryInput.value = "glizzy-patches";
   updateAssetVariantVisibility();
 }
 
@@ -803,6 +944,62 @@ function sameTarget(file, preset, rule) {
     && safeTargetBundle(file.target_bundle) === ruleTargetBundle(preset, rule);
 }
 
+function renderKeys() {
+  const query = els.keySearchInput?.value.trim().toLowerCase() || "";
+  const keys = state.keys.filter((item) => {
+    if (!query) return true;
+    return [
+      item.license_key,
+      item.status,
+      item.label,
+      item.device_id,
+      item.expires_at,
+      JSON.stringify(item.capabilities || []),
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(query));
+  });
+
+  els.keyList.replaceChildren();
+  els.keyCounter.textContent = `${keys.length} ${keys.length === 1 ? "key" : "keys"}`;
+
+  if (!keys.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = state.keys.length ? "No hay keys con esa busqueda." : "Todavia no hay keys.";
+    els.keyList.append(empty);
+    return;
+  }
+
+  for (const item of keys) {
+    const node = els.keyTemplate.content.firstElementChild.cloneNode(true);
+    const key = item.license_key;
+    node.querySelector("h3").textContent = key;
+    node.querySelector(".fileMeta").textContent = [
+      item.label || "Sin etiqueta",
+      statusLabel(item.status),
+      item.expires_at ? `vence ${formatDate(item.expires_at)}` : "sin vencimiento",
+    ].join(" / ");
+    node.querySelector(".filePath").textContent = item.device_id
+      ? `Dispositivo: ${item.device_id}`
+      : "Sin usar";
+    node.querySelector(".fileHash").textContent = `Creada: ${formatDate(item.created_at)}${item.activated_at ? ` / Activada: ${formatDate(item.activated_at)}` : ""}`;
+
+    const badge = node.querySelector(".badge");
+    badge.textContent = statusLabel(item.status);
+    badge.classList.toggle("pending", item.status === "available");
+    badge.classList.toggle("inactive", ["paused", "blocked", "expired"].includes(item.status));
+
+    node.querySelector(".copyKeyButton").addEventListener("click", () => copyKey(key));
+    const pauseButton = node.querySelector(".pauseKeyButton");
+    pauseButton.textContent = item.status === "paused" ? "Activar" : "Pausar";
+    pauseButton.addEventListener("click", () => setLicenseStatus(key, item.status === "paused" ? "active" : "paused"));
+    node.querySelector(".blockKeyButton").addEventListener("click", () => setLicenseStatus(key, "blocked"));
+
+    els.keyList.append(node);
+  }
+}
+
 function ruleTargetBundle(preset, rule) {
   return safeTargetBundle(rule?.targetBundle || preset?.targetBundle);
 }
@@ -850,6 +1047,11 @@ function setStatus(message) {
   }
 }
 
+function setKeyStatus(message) {
+  els.keyStatusText.textContent = message;
+  if (!state.session) setLoginStatus(message);
+}
+
 function setLoginStatus(message, isError = false, isOK = false) {
   if (!els.loginStatus) return;
   els.loginStatus.textContent = message;
@@ -885,10 +1087,10 @@ function createAccessErrorMessage(error) {
 function adminErrorMessage(error) {
   const message = error?.message || String(error);
   if (/not authorized/i.test(message)) {
-    return "El login funciono, pero ese correo aun no tiene permiso admin. Ejecuta supabase/remote_content_setup.sql en Supabase.";
+    return "El login funciono, pero ese correo aun no tiene permiso admin. Ejecuta los SQL de Supabase y refresca.";
   }
   if (/could not find the function|function .* does not exist|schema cache/i.test(message)) {
-    return "Falta actualizar el backend para crear archivos duplicados. Ejecuta supabase/remote_content_setup.sql en Supabase y refresca.";
+    return "Falta actualizar el backend. Ejecuta supabase/licenses_setup.sql y supabase/remote_content_setup.sql en Supabase y refresca.";
   }
   if (/duplicate key|unique constraint|target_path|target_bundle_path/i.test(message)) {
     return "Supabase todavia esta bloqueando rutas duplicadas. Ejecuta supabase/remote_content_setup.sql en Supabase una vez, refresca el panel y vuelve a guardar.";
@@ -902,6 +1104,71 @@ function adminErrorMessage(error) {
   return message;
 }
 
+function normalizeKey(value) {
+  return String(value || "").trim().replace(/\s+/g, "").toUpperCase();
+}
+
+function makeGlizzyKey() {
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase();
+  return `${LICENSE_PREFIX}${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`;
+}
+
+function isGlizzyFile(file) {
+  return String(file.category || "").toLowerCase().startsWith(CLIENT_PREFIX)
+    || String(file.slug || "").toLowerCase().startsWith(CLIENT_PREFIX);
+}
+
+function isGlizzyKey(item) {
+  return normalizeKey(item.license_key).startsWith(LICENSE_PREFIX)
+    || String(item.label || "").toLowerCase().includes("[glizzy]");
+}
+
+function glizzyCategory(category) {
+  const clean = String(category || "glizzy-files").trim().toLowerCase();
+  if (clean.startsWith(CLIENT_PREFIX)) return clean;
+  const map = {
+    files: "glizzy-files",
+    patches: "glizzy-patches",
+    images: "glizzy-files",
+    configs: "glizzy-configs",
+    media: "glizzy-files",
+    shaders: "glizzy-shaders",
+    packages: "glizzy-packages",
+  };
+  return map[clean] || `${CLIENT_PREFIX}${clean}`;
+}
+
+function glizzyLabel(label) {
+  const clean = label || "Glizzy Net";
+  return clean.toLowerCase().includes("[glizzy]") ? clean : `[glizzy] ${clean}`;
+}
+
+function statusLabel(status) {
+  switch (status) {
+    case "available": return "Disponible";
+    case "active": return "Activa";
+    case "paused": return "Pausada";
+    case "blocked": return "Bloqueada";
+    case "expired": return "Vencida";
+    default: return status || "Desconocida";
+  }
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("es", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function isAllowedAdminEmail(email) {
   return [
     "2008yashirchavez@gmail.com",
@@ -911,7 +1178,7 @@ function isAllowedAdminEmail(email) {
 }
 
 function fallbackTargetPath(file) {
-  return safeRelativePath(`${file.category || "files"}/${file.slug || "content"}/${file.file_name || "content.bin"}`);
+  return safeRelativePath(`${glizzyCategory(file.category || "glizzy-files")}/${file.slug || "content"}/${file.file_name || "content.bin"}`);
 }
 
 function samePath(left, right) {

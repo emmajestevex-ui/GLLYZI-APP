@@ -294,7 +294,7 @@ final class RemoteContentStore: ObservableObject {
         detailText = force ? "Actualizacion manual iniciada." : "Actualizacion automatica iniciada."
 
         do {
-            let manifest = try await fetchManifest()
+        let manifest = Self.scopedManifest(try await fetchManifest())
             try validate(manifest)
             let localManifest = try? loadLocalManifest()
             let plan = try makePlan(remote: manifest, local: localManifest)
@@ -368,7 +368,7 @@ final class RemoteContentStore: ObservableObject {
     }
 
     private func fetchManifest() async throws -> RemoteContentManifest {
-        let licenseKey = UserDefaults.standard.string(forKey: "greeg.license.key")?.normalizedLicenseKey ?? ""
+        let licenseKey = UserDefaults.standard.string(forKey: "glizzy.license.key")?.normalizedLicenseKey ?? ""
         guard !licenseKey.isEmpty else { throw RemoteContentSyncError.missingLicense }
 
         var components = URLComponents(url: SupabaseLicenseConfig.projectURL, resolvingAgainstBaseURL: false)
@@ -645,6 +645,19 @@ final class RemoteContentStore: ObservableObject {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
         return "\(formatter.string(from: Date()))-\(UUID().uuidString)"
+    }
+
+    private static func scopedManifest(_ manifest: RemoteContentManifest) -> RemoteContentManifest {
+        RemoteContentManifest(
+            success: manifest.success,
+            message: manifest.message,
+            version: manifest.version,
+            publishedAt: manifest.publishedAt,
+            files: manifest.files.filter { file in
+                file.category.lowercased().hasPrefix("glizzy-")
+                    || file.slug.lowercased().hasPrefix("glizzy-")
+            }
+        )
     }
 }
 
