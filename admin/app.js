@@ -522,7 +522,7 @@ async function saveFile(event) {
   try {
     const hash = await sha256Hex(file);
     let uploadedPath = "";
-    const storagePath = `content/${crypto.randomUUID()}/${safeFileName(file.name)}`;
+    const storagePath = `content/${crypto.randomUUID()}/${safeStorageFileName(file.name)}`;
 
     setStatus("Subiendo archivo...");
     const { error: uploadError } = await supabaseClient.storage
@@ -1281,6 +1281,24 @@ function safeFileName(value) {
     .replace(/^-+|-+$/g, "")
     .replace(/^\.+|\.+$/g, "");
   return clean || "file.bin";
+}
+
+function safeStorageFileName(value) {
+  const source = String(value || "content.bin").trim();
+  const dotIndex = source.lastIndexOf(".");
+  const rawExtension = dotIndex > 0 ? source.slice(dotIndex + 1) : "bin";
+  const extension = rawExtension
+    .replace(/[^a-zA-Z0-9]+/g, "")
+    .slice(0, 12) || "bin";
+  const base = dotIndex > 0 ? source.slice(0, dotIndex) : source;
+  const cleanBase = base
+    .normalize("NFKD")
+    .replace(/[^\x00-\x7F]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/^\.+|\.+$/g, "")
+    .slice(0, 64) || "content";
+  return `${cleanBase}.${extension}`;
 }
 
 function formatBytes(value) {
