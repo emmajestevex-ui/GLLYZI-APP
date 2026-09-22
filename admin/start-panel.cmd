@@ -1,16 +1,16 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-set PORT=3105
+set PORT=3106
 start "" "http://127.0.0.1:%PORT%/"
 where py >nul 2>nul
 if %errorlevel%==0 (
-  py -3 -m http.server %PORT% --bind 127.0.0.1
+  py -3 no_cache_server.py
   exit /b
 )
 where python >nul 2>nul
 if %errorlevel%==0 (
-  python -m http.server %PORT% --bind 127.0.0.1
+  python no_cache_server.py
   exit /b
 )
 echo No encontre Python para abrir el panel local.
