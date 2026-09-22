@@ -1284,21 +1284,7 @@ function safeFileName(value) {
 }
 
 function safeStorageFileName(value) {
-  const source = String(value || "content.bin").trim();
-  const dotIndex = source.lastIndexOf(".");
-  const rawExtension = dotIndex > 0 ? source.slice(dotIndex + 1) : "bin";
-  const extension = rawExtension
-    .replace(/[^a-zA-Z0-9]+/g, "")
-    .slice(0, 12) || "bin";
-  const base = dotIndex > 0 ? source.slice(0, dotIndex) : source;
-  const cleanBase = base
-    .normalize("NFKD")
-    .replace(/[^\x00-\x7F]/g, "")
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/^\.+|\.+$/g, "")
-    .slice(0, 64) || "content";
-  return `${cleanBase}.${extension}`;
+  return "upload.bin";
 }
 
 function formatBytes(value) {
