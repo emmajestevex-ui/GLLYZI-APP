@@ -80,7 +80,7 @@ jobs:
       - name: Empaquetar panel admin
         run: |
           set -euo pipefail
-          zip -r GLLYZI_ADMIN_panel.zip admin supabase/licenses_setup.sql supabase/remote_content_setup.sql supabase/admin_emails_setup.sql
+          zip -r GLLYZI_ADMIN_panel.zip admin supabase/setup_all.sql supabase/licenses_setup.sql supabase/remote_content_setup.sql supabase/admin_emails_setup.sql
           ls -lh GLLYZI_ADMIN_panel.zip
 
       - name: Subir panel admin
