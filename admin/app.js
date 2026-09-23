@@ -1,7 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://zffwtixmbuctinffojwe.supabase.co";
-const SUPABASE_KEY = "PON_AQUI_LA_PUBLISHABLE_KEY_DE_GLLYZI";
+const SUPABASE_KEY = "sb_publishable_6xRmOLD0Cw4Dtwn460l_Zw_Y7khT6wA";
 const BUCKET = "gllyzi-content";
 const SCRIPT_VERSION = "20260923-gllyzi-app";
 const CLIENT_PREFIX = "gllyzi-";
