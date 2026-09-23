@@ -370,42 +370,59 @@ private struct PatchProjectDetailView: View {
     }
 
     var body: some View {
-        List {
+        ScrollView {
             if let project = item?.project {
-                Section {
-                    PatchDetailHeader(project: project, style: detailStyle)
-                }
+                VStack(spacing: 18) {
+                    PatchDetailHero(project: project, style: detailStyle, isApplied: receipt != nil)
 
-                Section {
-                    HStack(spacing: 12) {
-                        Image(systemName: receipt == nil ? "circle" : "checkmark.circle.fill")
-                            .font(.title3.weight(.bold))
-                            .foregroundColor(receipt == nil ? .secondary : .green)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(receipt == nil ? "Listo para aplicar" : "Aplicado")
-                                .font(.headline)
-                            Text(receipt == nil ? "Toca Apply para activar este archivo." : "Puedes volver al original cuando quieras.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    Link(destination: URL(string: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")!) {
+                        HStack(spacing: 12) {
+                            AppRowIcon(systemName: "play.rectangle.fill", tint: AppTheme.accent, symbolSize: 18, frameSize: 42)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("TikTok oficial")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text("@glizzynetx")
+                                    .font(.caption.weight(.medium))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(AppTheme.accent)
                         }
+                        .padding(16)
+                        .background(GLLYZIFilePanel(cornerRadius: 18))
                     }
-                    .padding(.vertical, 4)
-                }
 
-                Section {
-                    Button(action: apply) {
-                        actionLabel("patch.apply", subtitle: "Activar archivo", systemImage: "checkmark.shield.fill")
-                    }
-                    .disabled(isWorking)
+                    VStack(spacing: 12) {
+                        Button(action: apply) {
+                            PatchActionButtonContent(
+                                title: language.text("patch.apply"),
+                                subtitle: "Activar archivo",
+                                systemImage: "checkmark.shield.fill"
+                            )
+                        }
+                        .buttonStyle(PatchPrimaryActionStyle())
+                        .disabled(isWorking)
 
-                    Button(role: .destructive, action: restore) {
-                        actionLabel("patch.restore", subtitle: "Volver al original", systemImage: "arrow.uturn.backward.circle")
+                        Button(role: .destructive, action: restore) {
+                            PatchActionButtonContent(
+                                title: language.text("patch.restore"),
+                                subtitle: "Volver al original",
+                                systemImage: "arrow.uturn.backward.circle"
+                            )
+                        }
+                        .buttonStyle(PatchSecondaryActionStyle(isEnabled: receipt != nil && !isWorking))
+                        .disabled(isWorking || receipt == nil)
                     }
-                    .disabled(isWorking || receipt == nil)
                 }
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.top, 16)
+                .padding(.bottom, 28)
             }
         }
-        .listStyle(.insetGrouped)
+        .background(AppTheme.pageBackground.ignoresSafeArea())
         .navigationTitle(item?.project?.name ?? language.text("patch.title"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -481,21 +498,6 @@ private struct PatchProjectDetailView: View {
         )
     }
 
-    private func actionLabel(_ key: String, subtitle: String, systemImage: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.system(size: 20, weight: .semibold))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(language.text(key))
-                    .font(.headline)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
     private func apply() {
         guard let item, let project = item.project else { return }
         isWorking = true
@@ -554,28 +556,95 @@ private struct PatchProjectDetailView: View {
     }
 }
 
-private struct PatchDetailHeader: View {
+private struct PatchDetailHero: View {
     let project: PatchProject
     let style: PatchVisualStyle
+    let isApplied: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 14) {
+                AppRowIcon(systemName: style.icon, tint: style.tint, symbolSize: 21, frameSize: 48)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(project.name)
+                        .font(.title2.weight(.black))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.72)
+                    Text("Control privado")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+
+            HStack {
+                Label(isApplied ? "Aplicado" : "Listo", systemImage: isApplied ? "checkmark.seal.fill" : "circle.dashed")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(isApplied ? Color.green : AppTheme.accent)
+                Spacer()
+                Text(isApplied ? "ON" : "OK")
+                    .font(.title3.weight(.black))
+                    .foregroundStyle(isApplied ? Color.green : AppTheme.accent)
+            }
+            .padding(14)
+            .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .padding(18)
+        .background(GLLYZIFilePanel())
+    }
+}
+
+private struct PatchActionButtonContent: View {
+    let title: String
+    let subtitle: String
+    let systemImage: String
 
     var body: some View {
         HStack(spacing: 14) {
-            AppRowIcon(systemName: style.icon, tint: style.tint, symbolSize: 20, frameSize: 44)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(project.name)
-                    .font(.title2.weight(.bold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                Text(style.detail)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            Image(systemName: systemImage)
+                .font(.title3.weight(.bold))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline.weight(.black))
+                Text(subtitle)
+                    .font(.caption.weight(.semibold))
+                    .opacity(0.82)
             }
             Spacer()
-            Text(project.rules.count == 1 ? "1 archivo" : "\(project.rules.count) archivos")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(style.tint)
         }
-        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 60)
+        .padding(.horizontal, 18)
+    }
+}
+
+private struct PatchPrimaryActionStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(AppTheme.accent.opacity(configuration.isPressed ? 0.76 : 1))
+            )
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+    }
+}
+
+private struct PatchSecondaryActionStyle: ButtonStyle {
+    let isEnabled: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(isEnabled ? AppTheme.accent : .secondary)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(isEnabled ? (configuration.isPressed ? 0.10 : 0.065) : 0.035))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(AppTheme.accent.opacity(isEnabled ? 0.32 : 0.10), lineWidth: 1)
+                    )
+            )
+            .scaleEffect(configuration.isPressed && isEnabled ? 0.985 : 1)
     }
 }
 
