@@ -116,11 +116,11 @@ enum BundledPatchSeeder {
 
     private static let payloadDirectoryName = "BundledPatchPayloads"
     private static let seedDate = Date(timeIntervalSince1970: 0)
-    private static let remotePatchCategories: Set<String> = ["glizzy-patches", "glizzy-shaders", "glizzy-configs", "glizzy-packages"]
+    private static let remotePatchCategories: Set<String> = ["gllyzi-patches", "gllyzi-shaders", "gllyzi-configs", "gllyzi-packages"]
     private static let assetIndexerProjectID = UUID(uuidString: "A55E0001-3105-4A55-9001-00000000BEEF")!
-    private static let assetIndexerVariantKey = "glizzy.assetIndexerVariant"
-    private static let remoteAssetIndexerVariantPrefix = "glizzy.remoteAssetIndexerVariant."
-    private static let remoteTargetBundlePrefix = "glizzy.remoteTargetBundle."
+    private static let assetIndexerVariantKey = "gllyzi.assetIndexerVariant"
+    private static let remoteAssetIndexerVariantPrefix = "gllyzi.remoteAssetIndexerVariant."
+    private static let remoteTargetBundlePrefix = "gllyzi.remoteTargetBundle."
     private static let assetIndexerDirectory = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar"
     private static let onlyEspPackageID = UUID(uuidString: "F48A4F55-B529-4D0D-BE41-72988D6DA756")!
 
@@ -203,17 +203,17 @@ enum BundledPatchSeeder {
         ),
         ProjectSpec(
             id: UUID(uuidString: "A55E0004-3105-4A55-9001-00000000BEEF")!,
-            defaultName: "Glizzy Especial",
-            legacyDefaultNames: ["TIO GREEG"],
+            defaultName: "GLLYZI Especial",
+            legacyDefaultNames: ["GLLYZI Especial"],
             requiredCapability: LicenseEntitlements.specialAssetIndexer,
             payloads: [
                 PayloadSpec(
                     directory: "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar",
                     filenameCandidates: [
-                        "assetindexer.tio-greeg927394hd"
+                        "assetindexer.gllyzi-especial927394hd"
                     ],
                     targetFilename: "assetindexer.PENojQAQ-f9a1I6Dzjs0n1Z3rtVU~3D",
-                    remoteSlugs: ["glizzy-especial"]
+                    remoteSlugs: ["gllyzi-especial"]
                 )
             ]
         )
@@ -347,7 +347,7 @@ enum BundledPatchSeeder {
         for spec in activeProjects {
             do {
                 try seed(spec, fileManager: fileManager)
-                log("patch: bundled Glizzy patch \(spec.defaultName) is ready")
+                log("patch: bundled GLLYZI patch \(spec.defaultName) is ready")
             } catch SeedError.missingPayload(let filename) {
                 log("patch: bundled payload missing for \(spec.defaultName): \(filename)")
             } catch SeedError.emptyPayload(let filename) {

@@ -139,7 +139,7 @@
 "patch.files" = "文件";
 "patch.folders" = "文件夹";
 "patch.rules" = "规则";
-"patch.client_rules_footer" = "This patch is built into greeg app. Clients cannot import, export, or edit the package from here.";
+"patch.client_rules_footer" = "This patch is built into gllyzi app. Clients cannot import, export, or edit the package from here.";
 "patch.add_rule" = "添加规则";
 "patch.edit_rule" = "编辑规则";
 "patch.destination" = "目标位置";
@@ -175,7 +175,7 @@
 "patch.unlock" = "解锁";
 "patch.apply" = "Apply";
 "patch.restore" = "Original";
-"patch.apply_footer" = "Before writing, greeg app resolves the target app on this device and saves every original file for recovery.";
+"patch.apply_footer" = "Before writing, gllyzi app resolves the target app on this device and saves every original file for recovery.";
 "patch.apply_confirm_title" = "要应用此补丁吗？";
 "patch.apply_confirm_message" = "将再次验证所有 bundle identifier 和相对路径，并在首次写入前备份原始文件。";
 "patch.restore_confirm_title" = "要恢复原始文件吗？";

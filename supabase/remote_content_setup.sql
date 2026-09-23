@@ -48,8 +48,8 @@ insert into storage.buckets (
     allowed_mime_types
 )
 values (
-    'greeg-content',
-    'greeg-content',
+    'gllyzi-content',
+    'gllyzi-content',
     false,
     104857600,
     null
@@ -111,29 +111,29 @@ alter table public.remote_content_releases enable row level security;
 revoke all on public.remote_content_files from anon, authenticated;
 revoke all on public.remote_content_releases from anon, authenticated;
 
-drop policy if exists "GREEG content read for app" on storage.objects;
-drop policy if exists "GREEG content admin manage" on storage.objects;
+drop policy if exists "GLLYZI content read for app" on storage.objects;
+drop policy if exists "GLLYZI content admin manage" on storage.objects;
 
-create policy "GREEG content read for app"
+create policy "GLLYZI content read for app"
 on storage.objects
 for select
 to anon, authenticated
 using (
-    bucket_id = 'greeg-content'
+    bucket_id = 'gllyzi-content'
     and name like 'content/%'
 );
 
-create policy "GREEG content admin manage"
+create policy "GLLYZI content admin manage"
 on storage.objects
 for all
 to authenticated
 using (
-    bucket_id = 'greeg-content'
+    bucket_id = 'gllyzi-content'
     and name like 'content/%'
     and public.is_license_admin()
 )
 with check (
-    bucket_id = 'greeg-content'
+    bucket_id = 'gllyzi-content'
     and name like 'content/%'
     and public.is_license_admin()
 );

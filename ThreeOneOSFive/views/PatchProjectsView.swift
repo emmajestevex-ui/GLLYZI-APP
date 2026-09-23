@@ -35,7 +35,7 @@ struct PatchProjectsView: View {
             VStack(spacing: 0) {
                 AppSearchField(
                     text: $searchText,
-                    prompt: "Buscar archivos Glizzy",
+                    prompt: "Buscar archivos GLLYZI",
                     clearLabel: language.text("common.clear")
                 )
                 ScrollView {
@@ -47,14 +47,14 @@ struct PatchProjectsView: View {
                         } else if filteredItems.isEmpty && !store.isBusy {
                             searchEmptyState
                         } else {
-                            GlizzyFilesSectionTitle("Archivos integrados")
+                            GLLYZIFilesSectionTitle("Archivos integrados")
                             ForEach(filteredItems) { item in
                                 itemRow(item)
                             }
                         }
 
                         if !remotePatchFiles.isEmpty {
-                            GlizzyFilesSectionTitle("Actualizaciones remotas")
+                            GLLYZIFilesSectionTitle("Actualizaciones remotas")
                             ForEach(remotePatchFiles) { file in
                                 RemotePatchRow(file: file)
                             }
@@ -66,7 +66,7 @@ struct PatchProjectsView: View {
                 }
             }
             .background(AppTheme.pageBackground.ignoresSafeArea())
-            .navigationTitle("Archivos Glizzy")
+            .navigationTitle("Archivos GLLYZI")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if store.isBusy {
@@ -124,7 +124,7 @@ struct PatchProjectsView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 54)
         .padding(.horizontal, 20)
-        .background(GlizzyFilePanel())
+        .background(GLLYZIFilePanel())
     }
 
     private var searchEmptyState: some View {
@@ -142,11 +142,11 @@ struct PatchProjectsView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 54)
         .padding(.horizontal, 20)
-        .background(GlizzyFilePanel())
+        .background(GLLYZIFilePanel())
     }
 }
 
-private struct GlizzyFilesSectionTitle: View {
+private struct GLLYZIFilesSectionTitle: View {
     let title: String
 
     init(_ title: String) {
@@ -169,7 +169,7 @@ private struct PatchListHeader: View {
         HStack(spacing: 14) {
             AppLogo(size: 46)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Centro Glizzy")
+                Text("Centro GLLYZI")
                     .font(.title3.weight(.black))
                 Text("Aimbots y archivos privados")
                     .font(.caption)
@@ -188,7 +188,7 @@ private struct PatchListHeader: View {
             }
         }
         .padding(16)
-        .background(GlizzyFilePanel())
+        .background(GLLYZIFilePanel())
     }
 }
 
@@ -241,7 +241,7 @@ private struct PatchProjectRow: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(14)
-        .background(GlizzyFilePanel(cornerRadius: 18))
+        .background(GLLYZIFilePanel(cornerRadius: 18))
     }
 }
 
@@ -283,11 +283,11 @@ private struct RemotePatchRow: View {
             }
         }
         .padding(14)
-        .background(GlizzyFilePanel(cornerRadius: 18))
+        .background(GLLYZIFilePanel(cornerRadius: 18))
     }
 }
 
-private struct GlizzyFilePanel: View {
+private struct GLLYZIFilePanel: View {
     var cornerRadius: CGFloat = 22
 
     var body: some View {

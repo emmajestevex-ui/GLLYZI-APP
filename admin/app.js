@@ -1,11 +1,11 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const SUPABASE_URL = "https://qlfugpumolehqzzuvocn.supabase.co";
-const SUPABASE_KEY = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y";
-const BUCKET = "greeg-content";
-const SCRIPT_VERSION = "20260921-glizzy-net";
-const CLIENT_PREFIX = "glizzy-";
-const LICENSE_PREFIX = "GLIZZY-";
+const SUPABASE_URL = "https://zffwtixmbuctinffojwe.supabase.co";
+const SUPABASE_KEY = "PON_AQUI_LA_PUBLISHABLE_KEY_DE_GLLYZI";
+const BUCKET = "gllyzi-content";
+const SCRIPT_VERSION = "20260923-gllyzi-app";
+const CLIENT_PREFIX = "gllyzi-";
+const LICENSE_PREFIX = "GLLYZI-";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
 const FREE_FIRE_MAX_BUNDLE = "com.dts.freefiremax";
 const ASSET_INDEXER_DIRECTORY = "Documents/contentcache/Compulsory/ios/gameassetbundles/avatar";
@@ -27,14 +27,14 @@ const PATCH_PRESETS = [
     key: "asset-indexer",
     name: "Aimbot Drag FF Normal",
     slug: "asset-indexer-ff-max",
-    category: "glizzy-patches",
+    category: "gllyzi-patches",
     description: "Archivo de aimbot",
     targetBundle: FREE_FIRE_MAX_BUNDLE,
     rules: [
       {
         label: ASSET_VARIANTS.pen.label,
         slug: "asset-indexer-ff-max",
-        category: "glizzy-patches",
+        category: "gllyzi-patches",
         description: "Avatar asset bundle for Free Fire Max",
         targetBundle: ASSET_VARIANTS.pen.targetBundle,
         targetPath: ASSET_VARIANTS.pen.targetPath,
@@ -43,7 +43,7 @@ const PATCH_PRESETS = [
       {
         label: ASSET_VARIANTS.h5.label,
         slug: "asset-indexer",
-        category: "glizzy-patches",
+        category: "gllyzi-patches",
         description: "Avatar asset bundle for Free Fire normal",
         targetBundle: ASSET_VARIANTS.h5.targetBundle,
         targetPath: ASSET_VARIANTS.h5.targetPath,
@@ -55,14 +55,14 @@ const PATCH_PRESETS = [
     key: "shaders",
     name: "Holo RGB",
     slug: "shaders",
-    category: "glizzy-shaders",
+    category: "gllyzi-shaders",
     description: "Archivo visual",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     rules: [
       {
         label: "Holo RGB - FF Normal",
         slug: "shaders",
-        category: "glizzy-shaders",
+        category: "gllyzi-shaders",
         description: "Archivo visual para Free Fire normal",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
@@ -70,7 +70,7 @@ const PATCH_PRESETS = [
       {
         label: "Holo RGB - FF Max",
         slug: "shaders-ff-max",
-        category: "glizzy-shaders",
+        category: "gllyzi-shaders",
         description: "Archivo visual para Free Fire Max",
         targetBundle: FREE_FIRE_MAX_BUNDLE,
         targetPath: "Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D",
@@ -81,7 +81,7 @@ const PATCH_PRESETS = [
     key: "holo-pj-normal",
     name: "Holo FF Normal PJ",
     slug: "holo-ff-normal-pj",
-    category: "glizzy-shaders",
+    category: "gllyzi-shaders",
     description: "Holo de personajes para Free Fire normal",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Documents/contentcache/Optional/ios/optionalavatarres/gameassetbundles/optionalavatarres_commonab_shader.BNrjwQsbTrqz6jACY9i6FB6DyYI~3D",
@@ -90,7 +90,7 @@ const PATCH_PRESETS = [
     key: "aimbot-cuello-normal",
     name: "Aimbot Cuello FF Normal",
     slug: "aimbot-cuello-ff-normal",
-    category: "glizzy-patches",
+    category: "gllyzi-patches",
     description: "Archivo de aimbot cuello para Free Fire normal",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D`,
@@ -99,7 +99,7 @@ const PATCH_PRESETS = [
     key: "aimbot-pecho-normal",
     name: "Aimbot Pecho FF Normal",
     slug: "aimbot-pecho-ff-normal",
-    category: "glizzy-patches",
+    category: "gllyzi-patches",
     description: "Archivo de aimbot pecho para Free Fire normal",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: `${ASSET_INDEXER_DIRECTORY}/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D`,
@@ -108,7 +108,7 @@ const PATCH_PRESETS = [
     key: "balas-magicas-normal",
     name: "Balas Magicas FF Normal",
     slug: "balas-magicas-ff-normal",
-    category: "glizzy-patches",
+    category: "gllyzi-patches",
     description: "Archivo de balas magicas para Free Fire normal",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: ASSET_VARIANTS.h5.targetPath,
@@ -117,7 +117,7 @@ const PATCH_PRESETS = [
     key: "fps-144",
     name: "Optimizador FPS",
     slug: "144-fps",
-    category: "glizzy-configs",
+    category: "gllyzi-configs",
     description: "Preferencias FPS",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     targetPath: "Library/Preferences/com.dts.freefireth.plist",
@@ -126,14 +126,14 @@ const PATCH_PRESETS = [
     key: "only-esp-ffth",
     name: "Only Esp FFTH",
     slug: "only-esp-ffth",
-    category: "glizzy-patches",
+    category: "gllyzi-patches",
     description: "Only Esp patch for Free Fire TH",
     targetBundle: DEFAULT_TARGET_BUNDLE,
     rules: [
       {
         label: "Assembly-CSharp-patch.bytes",
         slug: "only-esp-ffth-assembly",
-        category: "glizzy-patches",
+        category: "gllyzi-patches",
         description: "Assembly patch for Free Fire TH",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/Assembly-CSharp-patch.bytes",
@@ -141,7 +141,7 @@ const PATCH_PRESETS = [
       {
         label: "GameBand-Fix.json",
         slug: "only-esp-ffth-gameband",
-        category: "glizzy-configs",
+        category: "gllyzi-configs",
         description: "GameBand fix for Free Fire TH",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/GameBand-Fix.json",
@@ -149,7 +149,7 @@ const PATCH_PRESETS = [
       {
         label: "localConfig.json",
         slug: "only-esp-ffth-config",
-        category: "glizzy-configs",
+        category: "gllyzi-configs",
         description: "localConfig for Free Fire TH",
         targetBundle: DEFAULT_TARGET_BUNDLE,
         targetPath: "Documents/localConfig.json",
@@ -160,21 +160,21 @@ const PATCH_PRESETS = [
     key: "aimbot-drag-ff-max",
     name: "Aimbot Drag FF Max",
     slug: "aimbot-drag-ff-max",
-    category: "glizzy-patches",
+    category: "gllyzi-patches",
     description: "Patch with Assembly-CSharp-patch.bytes and localConfig.json",
     targetBundle: FREE_FIRE_MAX_BUNDLE,
     rules: [
       {
         label: "Assembly-CSharp-patch.bytes",
         slug: "aimbot-drag-ff-max-assembly",
-        category: "glizzy-patches",
+        category: "gllyzi-patches",
         description: "Assembly patch for Free Fire Max",
         targetPath: "Documents/Assembly-CSharp-patch.bytes",
       },
       {
         label: "localConfig.json",
         slug: "aimbot-drag-ff-max-config",
-        category: "glizzy-configs",
+        category: "gllyzi-configs",
         description: "localConfig.json for Free Fire Max",
         targetPath: "Documents/localConfig.json",
       },
@@ -190,7 +190,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 });
 
-window.__GLIZZY_ADMIN_READY = SCRIPT_VERSION;
+window.__GLLYZI_ADMIN_READY = SCRIPT_VERSION;
 
 const state = {
   files: [],
@@ -259,6 +259,11 @@ const els = {
 init();
 
 async function init() {
+  if (SUPABASE_KEY.startsWith("PON_AQUI_")) {
+    setLoginStatus("Falta pegar la publishable key del Supabase nuevo de GLLYZI APP en admin/app.js.", true);
+    return;
+  }
+
   window.addEventListener("error", (event) => {
     setLoginStatus(`Error del panel: ${event.message}`, true);
   });
@@ -483,7 +488,7 @@ async function loadFiles() {
     return;
   }
 
-  state.files = (data ?? []).filter(isGlizzyFile);
+  state.files = (data ?? []).filter(isGLLYZIFile);
   setStatus("Listo. Recuerda publicar para que los iPhone reciban los cambios.");
   renderFiles();
 }
@@ -504,13 +509,13 @@ async function saveFile(event) {
     ? null
     : ASSET_VARIANTS[els.assetVariantInput.value];
   const targetBundle = safeTargetBundle(selectedAssetVariant?.targetBundle || els.targetBundleInput.value);
-  const targetPath = safeRelativePath(selectedAssetVariant?.targetPath || els.targetPathInput.value || `${glizzyCategory(els.categoryInput.value)}/${file.name}`);
+  const targetPath = safeRelativePath(selectedAssetVariant?.targetPath || els.targetPathInput.value || `${gllyziCategory(els.categoryInput.value)}/${file.name}`);
   if (!name || !slug) {
     setStatus("Completa nombre y slug.");
     return;
   }
   if (!targetPath) {
-    setStatus("Completa la ruta que va a reemplazar en Glizzy Net.");
+    setStatus("Completa la ruta que va a reemplazar en GLLYZI APP.");
     return;
   }
   if (!isCompleteTargetPath(targetPath)) {
@@ -542,7 +547,7 @@ async function saveFile(event) {
       p_id: els.editingId.value || null,
       p_name: name,
       p_slug: slug,
-      p_category: glizzyCategory(els.categoryInput.value || "glizzy-files"),
+      p_category: gllyziCategory(els.categoryInput.value || "gllyzi-files"),
       p_target_bundle: targetBundle,
       p_target_path: targetPath,
       p_description: els.descriptionInput.value.trim() || null,
@@ -624,7 +629,7 @@ async function disablePreset(preset) {
     const { error } = await supabaseClient.rpc("admin_disable_remote_content_target", {
       p_name: preset.name,
       p_slug: rule.slug,
-      p_category: glizzyCategory(rule.category || preset.category || "glizzy-patches"),
+      p_category: gllyziCategory(rule.category || preset.category || "gllyzi-patches"),
       p_target_bundle: ruleTargetBundle(preset, rule),
       p_target_path: safeRelativePath(rule.targetPath),
       p_description: rule.description || preset.description || null,
@@ -666,7 +671,7 @@ function editFile(file) {
   els.nameInput.value = file.name;
   els.slugInput.value = file.slug;
   els.slugInput.dataset.touched = "true";
-  els.categoryInput.value = glizzyCategory(file.category || "glizzy-files");
+  els.categoryInput.value = gllyziCategory(file.category || "gllyzi-files");
   els.targetBundleInput.value = safeTargetBundle(file.target_bundle);
   els.targetPathInput.value = file.target_path || fallbackTargetPath(file);
   els.targetPathInput.dataset.touched = "true";
@@ -683,7 +688,7 @@ function resetForm() {
   els.editingId.value = "";
   delete els.slugInput.dataset.touched;
   delete els.targetPathInput.dataset.touched;
-  els.categoryInput.value = "glizzy-files";
+  els.categoryInput.value = "gllyzi-files";
   els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
   els.targetPathInput.value = "";
   updateAssetVariantVisibility();
@@ -704,7 +709,7 @@ async function loadKeys() {
     return;
   }
 
-  state.keys = (data ?? []).filter(isGlizzyKey);
+  state.keys = (data ?? []).filter(isGLLYZIKey);
   setKeyStatus("Listo. Puedes crear, copiar, pausar o bloquear keys.");
   renderKeys();
 }
@@ -721,7 +726,7 @@ async function generateKeys(event) {
     return;
   }
   if (customKey && !customKey.startsWith(LICENSE_PREFIX)) {
-    setKeyStatus("La key personalizada debe empezar con GLIZZY- para no mezclarse con GREEG.");
+    setKeyStatus("La key personalizada debe empezar con GLLYZI- para no mezclarse con otros proyectos.");
     return;
   }
 
@@ -732,11 +737,11 @@ async function generateKeys(event) {
   const total = customKey ? 1 : quantity;
 
   for (let index = 0; index < total; index += 1) {
-    const nextKey = customKey || makeGlizzyKey();
+    const nextKey = customKey || makeGLLYZIKey();
     const { data, error } = await supabaseClient.rpc("admin_generate_licenses", {
       p_quantity: 1,
       p_duration_hours: duration > 0 ? duration : null,
-      p_label: glizzyLabel(els.keyLabelInput.value.trim()),
+      p_label: gllyziLabel(els.keyLabelInput.value.trim()),
       p_capabilities: capabilities,
       p_custom_license_key: nextKey,
     });
@@ -755,7 +760,7 @@ async function generateKeys(event) {
 
   els.generatedKeysText.textContent = createdKeys.join("\n");
   els.generatedKeysBox.classList.toggle("hidden", createdKeys.length === 0);
-  setKeyStatus(`${createdKeys.length} key(s) GLIZZY creada(s).`);
+  setKeyStatus(`${createdKeys.length} key(s) GLLYZI creada(s).`);
   els.customKeyInput.value = "";
   await loadKeys();
 }
@@ -799,7 +804,7 @@ function applyPreset(preset, selectedRule = null) {
   els.nameInput.value = preset.name;
   els.slugInput.value = rule.slug;
   els.slugInput.dataset.touched = "true";
-  els.categoryInput.value = glizzyCategory(rule.category || preset.category || "glizzy-patches");
+  els.categoryInput.value = gllyziCategory(rule.category || preset.category || "gllyzi-patches");
   els.targetBundleInput.value = ruleTargetBundle(preset, rule);
   els.targetPathInput.value = safeRelativePath(rule.targetPath);
   els.targetPathInput.dataset.touched = "true";
@@ -818,7 +823,7 @@ function suggestTargetPath() {
   if (els.editingId.value || els.targetPathInput.dataset.touched) return;
   const file = els.fileInput.files?.[0];
   if (!file) return;
-  els.targetPathInput.value = safeRelativePath(`${glizzyCategory(els.categoryInput.value || "glizzy-files")}/${file.name}`);
+  els.targetPathInput.value = safeRelativePath(`${gllyziCategory(els.categoryInput.value || "gllyzi-files")}/${file.name}`);
   updateAssetVariantVisibility();
 }
 
@@ -827,7 +832,7 @@ function applyAssetVariant(value) {
   els.targetBundleInput.value = safeTargetBundle(variant.targetBundle);
   els.targetPathInput.value = safeRelativePath(variant.targetPath);
   els.targetPathInput.dataset.touched = "true";
-  els.categoryInput.value = "glizzy-patches";
+  els.categoryInput.value = "gllyzi-patches";
   updateAssetVariantVisibility();
 }
 
@@ -1144,41 +1149,41 @@ function normalizeKey(value) {
   return String(value || "").trim().replace(/\s+/g, "").toUpperCase();
 }
 
-function makeGlizzyKey() {
+function makeGLLYZIKey() {
   const bytes = new Uint8Array(12);
   crypto.getRandomValues(bytes);
   const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase();
   return `${LICENSE_PREFIX}${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`;
 }
 
-function isGlizzyFile(file) {
+function isGLLYZIFile(file) {
   return String(file.category || "").toLowerCase().startsWith(CLIENT_PREFIX)
     || String(file.slug || "").toLowerCase().startsWith(CLIENT_PREFIX);
 }
 
-function isGlizzyKey(item) {
+function isGLLYZIKey(item) {
   return normalizeKey(item.license_key).startsWith(LICENSE_PREFIX)
-    || String(item.label || "").toLowerCase().includes("[glizzy]");
+    || String(item.label || "").toLowerCase().includes("[gllyzi]");
 }
 
-function glizzyCategory(category) {
-  const clean = String(category || "glizzy-files").trim().toLowerCase();
+function gllyziCategory(category) {
+  const clean = String(category || "gllyzi-files").trim().toLowerCase();
   if (clean.startsWith(CLIENT_PREFIX)) return clean;
   const map = {
-    files: "glizzy-files",
-    patches: "glizzy-patches",
-    images: "glizzy-files",
-    configs: "glizzy-configs",
-    media: "glizzy-files",
-    shaders: "glizzy-shaders",
-    packages: "glizzy-packages",
+    files: "gllyzi-files",
+    patches: "gllyzi-patches",
+    images: "gllyzi-files",
+    configs: "gllyzi-configs",
+    media: "gllyzi-files",
+    shaders: "gllyzi-shaders",
+    packages: "gllyzi-packages",
   };
   return map[clean] || `${CLIENT_PREFIX}${clean}`;
 }
 
-function glizzyLabel(label) {
-  const clean = label || "Glizzy Net";
-  return clean.toLowerCase().includes("[glizzy]") ? clean : `[glizzy] ${clean}`;
+function gllyziLabel(label) {
+  const clean = label || "GLLYZI APP";
+  return clean.toLowerCase().includes("[gllyzi]") ? clean : `[gllyzi] ${clean}`;
 }
 
 function statusLabel(status) {
@@ -1214,7 +1219,7 @@ function isAllowedAdminEmail(email) {
 }
 
 function fallbackTargetPath(file) {
-  return safeRelativePath(`${glizzyCategory(file.category || "glizzy-files")}/${file.slug || "content"}/${file.file_name || "content.bin"}`);
+  return safeRelativePath(`${gllyziCategory(file.category || "gllyzi-files")}/${file.slug || "content"}/${file.file_name || "content.bin"}`);
 }
 
 function samePath(left, right) {

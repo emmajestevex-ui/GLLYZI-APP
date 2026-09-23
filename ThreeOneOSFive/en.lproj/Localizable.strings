@@ -139,7 +139,7 @@
 "patch.files" = "Archivos";
 "patch.folders" = "Folders";
 "patch.rules" = "Reglas";
-"patch.client_rules_footer" = "Este archivo esta protegido dentro de Glizzy Net. Desde aqui solo se aplica o se restaura.";
+"patch.client_rules_footer" = "Este archivo esta protegido dentro de GLLYZI APP. Desde aqui solo se aplica o se restaura.";
 "patch.add_rule" = "Add Rule";
 "patch.edit_rule" = "Edit Rule";
 "patch.destination" = "Destination";
@@ -175,7 +175,7 @@
 "patch.unlock" = "Unlock";
 "patch.apply" = "Aplicar";
 "patch.restore" = "Original";
-"patch.apply_footer" = "Antes de escribir, Glizzy Net localiza la app destino y guarda el original para poder restaurarlo.";
+"patch.apply_footer" = "Antes de escribir, GLLYZI APP localiza la app destino y guarda el original para poder restaurarlo.";
 "patch.apply_confirm_title" = "Apply this patch?";
 "patch.apply_confirm_message" = "All bundle identifiers and relative paths will be validated again. Originals are backed up before the first write.";
 "patch.restore_confirm_title" = "Restore original files?";
@@ -325,7 +325,7 @@
 "logs.empty_message" = "Exploit and editor activity will appear here during this session.";
 
 "browser.title" = "App Data Browser";
-"browser.workspace" = "Glizzy Net Workspace";
+"browser.workspace" = "GLLYZI APP Workspace";
 "browser.workspace_subtitle" = "Patches and files available in On My iPhone";
 "browser.loading" = "Loading…";
 "browser.empty" = "No application bundles could be resolved. Tap Retry to scan again.";

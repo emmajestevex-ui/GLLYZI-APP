@@ -85,6 +85,8 @@ struct ContentView: View {
             )
         case .patches:
             PatchProjectsView()
+        case .social:
+            SocialHubView()
         case .cleaner:
             CleanerView()
         case .wallpapers:
@@ -154,6 +156,7 @@ private extension AppSection {
         case .home: return "tab.home"
         case .files: return "tab.files"
         case .patches: return "tab.patches"
+        case .social: return "Redes"
         case .cleaner: return "tab.cleaner"
         case .wallpapers: return "tab.wallpapers"
         case .remoteContent: return "Actualizar"
@@ -165,6 +168,7 @@ private extension AppSection {
         case .home: return "house.fill"
         case .files: return "folder.fill"
         case .patches: return "shippingbox.fill"
+        case .social: return "link.circle.fill"
         case .cleaner: return "sparkles"
         case .wallpapers: return "photo.on.rectangle.angled"
         case .remoteContent: return "icloud.and.arrow.down.fill"
@@ -187,7 +191,7 @@ private struct DashboardView: View {
                     dashboardHero
 
                     VStack(alignment: .leading, spacing: 10) {
-                        GlizzySectionTitle("Archivos principales")
+                        GLLYZISectionTitle("Archivos principales")
                         VStack(spacing: 0) {
                             Button(action: onOpenPatches) {
                                 Label("Abrir centro de archivos", systemImage: "arrow.right.circle.fill")
@@ -202,11 +206,11 @@ private struct DashboardView: View {
                             HomePatchRow(icon: "target", title: "Aimbot Pecho", subtitle: "Listo para aplicar", tint: Color(red: 0.74, green: 0.08, blue: 0.10))
                         }
                         .padding(16)
-                        .background(GlizzyPanelBackground())
+                        .background(GLLYZIPanelBackground())
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        GlizzySectionTitle("Actualizaciones")
+                        GLLYZISectionTitle("Actualizaciones")
                         VStack(spacing: 14) {
                             RemoteContentDashboardRow()
                             Button {
@@ -220,24 +224,24 @@ private struct DashboardView: View {
                                     .foregroundStyle(.white)
                             }
                             .disabled(remoteContentStore.isBusy)
-                            Text("Los archivos publicados desde el panel de Glizzy llegan a esta app al actualizar.")
+                            Text("Los archivos publicados desde el panel de GLLYZI llegan a esta app al actualizar.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         .padding(16)
-                        .background(GlizzyPanelBackground())
+                        .background(GLLYZIPanelBackground())
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        GlizzySectionTitle("Redes")
+                        GLLYZISectionTitle("Redes")
                         VStack(spacing: 0) {
                             SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
                             SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
-                            SocialLinkRow(title: "Discord", subtitle: "Comunidad Glizzy", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
+                            SocialLinkRow(title: "Discord", subtitle: "Comunidad GLLYZI", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
                             SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
                         }
                         .padding(16)
-                        .background(GlizzyPanelBackground())
+                        .background(GLLYZIPanelBackground())
                     }
                 }
                 .padding(.horizontal, AppTheme.pageInset)
@@ -260,7 +264,7 @@ private struct DashboardView: View {
                     .shadow(color: AppTheme.accent.opacity(0.35), radius: 12)
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Glizzy Net")
+                    Text("GLLYZI APP")
                         .font(.system(size: 29, weight: .black, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
@@ -286,12 +290,45 @@ private struct DashboardView: View {
             }
         }
         .padding(18)
-        .background(GlizzyPanelBackground())
+        .background(GLLYZIPanelBackground())
     }
 
 }
 
-private struct GlizzySectionTitle: View {
+private struct SocialHubView: View {
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Redes oficiales")
+                            .font(.system(size: 30, weight: .black, design: .rounded))
+                        Text("Canales de soporte, comunidad y actualizaciones de GLLYZI APP.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 18)
+
+                    VStack(spacing: 0) {
+                        SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
+                        SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
+                        SocialLinkRow(title: "Discord", subtitle: "Comunidad GLLYZI", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
+                        SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
+                    }
+                    .padding(16)
+                    .background(GLLYZIPanelBackground())
+                }
+                .padding(.horizontal, AppTheme.pageInset)
+                .padding(.bottom, 28)
+            }
+            .background(AppTheme.pageBackground.ignoresSafeArea())
+            .navigationTitle("Redes")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+private struct GLLYZISectionTitle: View {
     let title: String
 
     init(_ title: String) {
@@ -307,7 +344,7 @@ private struct GlizzySectionTitle: View {
     }
 }
 
-private struct GlizzyPanelBackground: View {
+private struct GLLYZIPanelBackground: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
             .fill(

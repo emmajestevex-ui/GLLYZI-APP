@@ -139,7 +139,7 @@
 "patch.files" = "Tệp";
 "patch.folders" = "Thư mục";
 "patch.rules" = "Quy tắc";
-"patch.client_rules_footer" = "This patch is built into greeg app. Clients cannot import, export, or edit the package from here.";
+"patch.client_rules_footer" = "This patch is built into gllyzi app. Clients cannot import, export, or edit the package from here.";
 "patch.add_rule" = "Thêm quy tắc";
 "patch.edit_rule" = "Sửa quy tắc";
 "patch.destination" = "Đường dẫn đích";
@@ -175,7 +175,7 @@
 "patch.unlock" = "Mở khóa";
 "patch.apply" = "Apply";
 "patch.restore" = "Original";
-"patch.apply_footer" = "Before writing, greeg app resolves the target app on this device and saves every original file for recovery.";
+"patch.apply_footer" = "Before writing, gllyzi app resolves the target app on this device and saves every original file for recovery.";
 "patch.apply_confirm_title" = "Áp dụng patch này?";
 "patch.apply_confirm_message" = "Mọi bundle identifier và đường dẫn tương đối sẽ được kiểm tra lại. File gốc được sao lưu trước lần ghi đầu tiên.";
 "patch.restore_confirm_title" = "Khôi phục các file gốc?";

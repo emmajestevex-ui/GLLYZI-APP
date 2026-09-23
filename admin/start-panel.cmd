@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-set PORT=3106
+set PORT=3107
 start "" "http://127.0.0.1:%PORT%/"
 where py >nul 2>nul
 if %errorlevel%==0 (

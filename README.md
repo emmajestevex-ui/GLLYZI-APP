@@ -1,18 +1,18 @@
-# greeg app
+# gllyzi app
 
 Private client build with Supabase key activation and automatic bundled patches.
 
 ## What this build does
 
-- Shows the app as `greeg app`.
+- Shows the app as `gllyzi app`.
 - Requires a Supabase license key before opening the app.
 - Consumes each key one time on the server and binds it to one iOS device ID.
 - Re-checks the license on launch, foreground, and every 10 seconds while active.
-- Syncs published remote files from Supabase Storage into GREEG APP's own app storage, using a versioned `target_path` so replacing the same route downloads only the changed file.
+- Syncs published remote files from Supabase Storage into GLLYZI APP's own app storage, using a versioned `target_path` so replacing the same route downloads only the changed file.
 - Downloads only changed files, verifies SHA-256, and rolls back local content if an update fails.
 - Adds a PC admin panel in `admin/` for uploading, replacing, disabling, deleting, and publishing content changes.
 - Creates the internal `Asset Indexer`, `Shaders`, and `144 fps` patches automatically after activation.
-- Shows the extra `TIO GREEG` patch only for the special key `TIO-GREEG927394HD`.
+- Shows the extra `GLLYZI Especial` patch only for the special key `GLLYZI-ESPECIAL927394HD`.
 - Lets the client use `Apply`, `Original`, and name editing only.
 - Hides Files, Cleaner, Wallpapers, patch creation, import, export, and editing.
 
@@ -30,7 +30,7 @@ Included names:
 assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D
 shaders.HPt9DZviTSXL9hpGW9QNOMigNLA~3D
 com.dts.freefireth.plist
-assetindexer.tio-greeg927394hd
+assetindexer.gllyzi-especial927394hd
 ```
 
 Patch targets:
@@ -45,12 +45,12 @@ Documents/contentcache/Optional/ios/gameassetbundles/shaders.HPt9DZviTSXL9hpGW9Q
 144 fps:
 Library/Preferences/com.dts.freefireth.plist
 
-TIO GREEG, only for `TIO-GREEG927394HD`:
+GLLYZI Especial, only for `GLLYZI-ESPECIAL927394HD`:
 Documents/contentcache/Compulsory/ios/gameassetbundles/avatar/assetindexer.H5ak1JM1Eck~2FxRcJrEp~2FMzeuqmY~3D
 ```
 
-Run `supabase/licenses_setup.sql` before using the app. It disables old numeric keys like `GREEG-1`, adds secure key generation, and creates the admin RPC functions.
+Run `supabase/licenses_setup.sql` before using the app. It disables old numeric keys like `GLLYZI-1`, adds secure key generation, and creates the admin RPC functions.
 
-Run `supabase/remote_content_setup.sql` to enable remote content releases, `target_path` routing, and the `greeg-content` Storage bucket. The iOS client and the PC panel both use the same Supabase project URL and publishable key; admin writes require Supabase Auth plus a row in `public.license_admins`.
+Run `supabase/remote_content_setup.sql` to enable remote content releases, `target_path` routing, and the `gllyzi-content` Storage bucket. The iOS client and the PC panel both use the same Supabase project URL and publishable key; admin writes require Supabase Auth plus a row in `public.license_admins`.
 
-See `GREEG_BUILD_GUIDE.md` for Supabase setup and GitHub Actions build steps.
+See `GLLYZI_BUILD_GUIDE.md` for Supabase setup and GitHub Actions build steps.

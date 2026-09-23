@@ -9,7 +9,7 @@ struct ThreeOneOSFiveApp: App {
     @StateObject private var patchDraftCoordinator = PatchDraftCoordinator()
     @StateObject private var fileOperationCoordinator = FileOperationCoordinator()
     @State private var showOnboarding = false
-    @AppStorage("greeg.license.supabaseUnlocked") private var licenseUnlocked = false
+    @AppStorage("gllyzi.license.supabaseUnlocked") private var licenseUnlocked = false
     @State private var licenseMessage = ""
     @State private var licenseCheckInFlight = false
     @State private var licenseValidationPending = true
@@ -41,7 +41,7 @@ struct ThreeOneOSFiveApp: App {
         }
 
         let deviceID = DeviceInstallationID.current()
-        let storedKey = UserDefaults.standard.string(forKey: "greeg.license.key")?.normalizedLicenseKey ?? ""
+        let storedKey = UserDefaults.standard.string(forKey: "gllyzi.license.key")?.normalizedLicenseKey ?? ""
         guard !storedKey.isEmpty else {
             resetStoredLicense(message: "Enter a valid key to continue.")
             return
@@ -80,9 +80,9 @@ struct ThreeOneOSFiveApp: App {
 
     private func resetStoredLicense(message: String) {
         let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: "greeg.license.key")
-        defaults.removeObject(forKey: "greeg.license.device")
-        defaults.set(false, forKey: "greeg.license.supabaseUnlocked")
+        defaults.removeObject(forKey: "gllyzi.license.key")
+        defaults.removeObject(forKey: "gllyzi.license.device")
+        defaults.set(false, forKey: "gllyzi.license.supabaseUnlocked")
         LicenseEntitlements.clear()
         licenseMessage = message
         licenseValidationPending = false
@@ -309,7 +309,7 @@ private struct GreegLicenseView: View {
                     .shadow(color: AppTheme.accent.opacity(0.55), radius: 24)
 
                 VStack(spacing: 7) {
-                    Text("greeg app")
+                    Text("gllyzi app")
                         .font(.system(size: 31, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                     Text("Exclusive client access")
@@ -321,7 +321,7 @@ private struct GreegLicenseView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "key.fill")
                             .foregroundStyle(AppTheme.accent)
-                        TextField("GREEG-ABCD-EF12-3456", text: $key)
+                        TextField("GLLYZI-ABCD-EF12-3456", text: $key)
                             .textInputAutocapitalization(.characters)
                             .autocorrectionDisabled()
                             .foregroundStyle(.white)
@@ -364,7 +364,7 @@ private struct GreegLicenseView: View {
                     .foregroundStyle(.secondary)
 
                 Spacer()
-                Text("GREEG APP - STAY PRIVATE")
+                Text("GLLYZI APP - STAY PRIVATE")
                     .font(.caption2.weight(.semibold))
                     .tracking(2)
                     .foregroundStyle(.secondary)
@@ -403,9 +403,9 @@ private struct GreegLicenseView: View {
 
             if response.success {
                 let defaults = UserDefaults.standard
-                defaults.set(normalized, forKey: "greeg.license.key")
-                defaults.set(deviceID, forKey: "greeg.license.device")
-                defaults.set(true, forKey: "greeg.license.supabaseUnlocked")
+                defaults.set(normalized, forKey: "gllyzi.license.key")
+                defaults.set(deviceID, forKey: "gllyzi.license.device")
+                defaults.set(true, forKey: "gllyzi.license.supabaseUnlocked")
                 LicenseEntitlements.store(response.capabilities, expiresAt: response.expiresAt)
                 didActivate = true
                 onSuccess()
@@ -417,15 +417,15 @@ private struct GreegLicenseView: View {
 }
 
 private enum SupabaseLicenseConfig {
-    static let projectURL = URL(string: "https://qlfugpumolehqzzuvocn.supabase.co")!
-    static let publishableKey = "sb_publishable_EAsMdYoIsenDI9ZYxKMcFA_3nuPXW5y"
+    static let projectURL = URL(string: "https://zffwtixmbuctinffojwe.supabase.co")!
+    static let publishableKey = "PON_AQUI_LA_PUBLISHABLE_KEY_DE_GLLYZI"
 }
 
 enum LicenseEntitlements {
     static let specialAssetIndexer = "special_assetindexer"
 
-    private static let capabilitiesKey = "greeg.license.capabilities"
-    private static let expiresAtKey = "greeg.license.expiresAt"
+    private static let capabilitiesKey = "gllyzi.license.capabilities"
+    private static let expiresAtKey = "gllyzi.license.expiresAt"
 
     static func store(_ capabilities: [String], expiresAt: String?, defaults: UserDefaults = .standard) {
         let normalized = capabilities
@@ -572,9 +572,9 @@ private final class SupabaseLicenseClient {
 }
 
 private enum DeviceInstallationID {
-    private static let service = "com.apple.mobile.MobileHouseArrest.greeg-license"
+    private static let service = "com.apple.mobile.MobileHouseArrest.gllyzi-license"
     private static let account = "installation-id"
-    private static let fallbackKey = "greeg.license.installationID"
+    private static let fallbackKey = "gllyzi.license.installationID"
 
     static func current(defaults: UserDefaults = .standard) -> String {
         if let existing = readFromKeychain(), !existing.isEmpty {

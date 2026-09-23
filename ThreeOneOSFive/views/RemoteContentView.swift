@@ -46,7 +46,7 @@ struct RemoteContentView: View {
                 }
             }
             .background(AppTheme.pageBackground.ignoresSafeArea())
-            .navigationTitle("Centro Glizzy")
+            .navigationTitle("Centro GLLYZI")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -74,7 +74,7 @@ struct RemoteContentView: View {
             Image(systemName: "icloud.and.arrow.down")
                 .font(.system(size: AppTheme.emptyIconSize, weight: .light))
                 .foregroundStyle(AppTheme.accent)
-            Text("No hay archivos de Glizzy")
+            Text("No hay archivos de GLLYZI")
                 .font(.headline)
             Text("Publica desde el panel y toca Sincronizar para bajarlos.")
                 .font(.subheadline)
@@ -84,7 +84,7 @@ struct RemoteContentView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 54)
         .padding(.horizontal, 20)
-        .background(GlizzyRemotePanel())
+        .background(GLLYZIRemotePanel())
     }
 
     private var searchEmptyState: some View {
@@ -102,7 +102,7 @@ struct RemoteContentView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 54)
         .padding(.horizontal, 20)
-        .background(GlizzyRemotePanel())
+        .background(GLLYZIRemotePanel())
     }
 }
 
@@ -163,7 +163,7 @@ private struct RemoteContentStatusCard: View {
             }
         }
         .padding(16)
-        .background(GlizzyRemotePanel())
+        .background(GLLYZIRemotePanel())
     }
 }
 
@@ -209,12 +209,12 @@ private struct RemoteContentFileRow: View {
             }
         }
         .padding(14)
-        .background(GlizzyRemotePanel(cornerRadius: 18))
+        .background(GLLYZIRemotePanel(cornerRadius: 18))
     }
 
     private var displayCategory: String {
         let normalized = file.category
-            .replacingOccurrences(of: "glizzy-", with: "")
+            .replacingOccurrences(of: "gllyzi-", with: "")
             .replacingOccurrences(of: "-", with: " ")
         return normalized.isEmpty ? "archivos" : normalized
     }
@@ -228,9 +228,9 @@ private struct RemoteContentFileRow: View {
 
     private var tint: Color {
         switch file.category.lowercased() {
-        case "images", "image", "media", "glizzy-shaders":
+        case "images", "image", "media", "gllyzi-shaders":
             return Color(red: 0.26, green: 0.72, blue: 1.0)
-        case "configs", "config", "glizzy-configs":
+        case "configs", "config", "gllyzi-configs":
             return .green
         default:
             return AppTheme.accent
@@ -238,7 +238,7 @@ private struct RemoteContentFileRow: View {
     }
 }
 
-private struct GlizzyRemotePanel: View {
+private struct GLLYZIRemotePanel: View {
     var cornerRadius: CGFloat = 22
 
     var body: some View {
