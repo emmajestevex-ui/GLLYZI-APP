@@ -3,7 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://zffwtixmbuctinffojwe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_6xRmOLD0Cw4Dtwn460l_Zw_Y7khT6wA";
 const BUCKET = "gllyzi-content";
-const SCRIPT_VERSION = "20260923-gllyzi-app";
+const SCRIPT_VERSION = "20260923-target-help";
 const CLIENT_PREFIX = "gllyzi-";
 const LICENSE_PREFIX = "GLLYZI-";
 const DEFAULT_TARGET_BUNDLE = "com.dts.freefireth";
@@ -309,17 +309,22 @@ function bindEvents() {
     if (!els.editingId.value && !els.slugInput.dataset.touched) {
       els.slugInput.value = safeSlug(els.nameInput.value);
     }
+    if (!els.editingId.value && !els.targetPathInput.dataset.touched) {
+      suggestTargetPath();
+    } else {
+      updateAssetVariantVisibility();
+    }
   });
   els.slugInput.addEventListener("input", () => {
     els.slugInput.dataset.touched = "true";
     els.slugInput.value = safeSlug(els.slugInput.value);
   });
-  els.categoryInput.addEventListener("change", suggestTargetPath);
+  els.categoryInput.addEventListener("change", handleCategoryChange);
   els.targetBundleInput.addEventListener("change", syncAssetVariantWithTargetBundle);
   els.assetVariantInput.addEventListener("change", () => {
     applyAssetVariant(els.assetVariantInput.value);
   });
-  els.fileInput.addEventListener("change", suggestTargetPath);
+  els.fileInput.addEventListener("change", handleFileChange);
   els.targetPathInput.addEventListener("input", () => {
     els.targetPathInput.dataset.touched = "true";
     els.targetPathInput.value = safeRelativePath(els.targetPathInput.value);
@@ -505,9 +510,7 @@ async function saveFile(event) {
 
   const name = els.nameInput.value.trim();
   const slug = safeSlug(els.slugInput.value || name);
-  const selectedAssetVariant = els.assetVariantLabel.classList.contains("hidden")
-    ? null
-    : ASSET_VARIANTS[els.assetVariantInput.value];
+  const selectedAssetVariant = selectedAssetVariantForSave(file);
   const targetBundle = safeTargetBundle(selectedAssetVariant?.targetBundle || els.targetBundleInput.value);
   const targetPath = safeRelativePath(selectedAssetVariant?.targetPath || els.targetPathInput.value || `${gllyziCategory(els.categoryInput.value)}/${file.name}`);
   if (!name || !slug) {
@@ -547,7 +550,7 @@ async function saveFile(event) {
       p_id: els.editingId.value || null,
       p_name: name,
       p_slug: slug,
-      p_category: gllyziCategory(els.categoryInput.value || "gllyzi-files"),
+      p_category: gllyziCategory(els.categoryInput.value || "gllyzi-patches"),
       p_target_bundle: targetBundle,
       p_target_path: targetPath,
       p_description: els.descriptionInput.value.trim() || null,
@@ -688,12 +691,13 @@ function resetForm() {
   els.editingId.value = "";
   delete els.slugInput.dataset.touched;
   delete els.targetPathInput.dataset.touched;
-  els.categoryInput.value = "gllyzi-files";
-  els.targetBundleInput.value = DEFAULT_TARGET_BUNDLE;
+  els.categoryInput.value = "gllyzi-patches";
+  els.targetBundleInput.value = FREE_FIRE_MAX_BUNDLE;
+  els.assetVariantInput.value = "pen";
   els.targetPathInput.value = "";
   updateAssetVariantVisibility();
   els.saveButton.textContent = "Crear archivo nuevo";
-  setStatus("Modo nuevo: se creara otro archivo, no se reemplazara uno publicado.");
+  setStatus("Modo nuevo: sube aimbots para que salgan en Archivos. Paquetes es solo para .3105.");
 }
 
 async function loadKeys() {
@@ -823,8 +827,35 @@ function suggestTargetPath() {
   if (els.editingId.value || els.targetPathInput.dataset.touched) return;
   const file = els.fileInput.files?.[0];
   if (!file) return;
-  els.targetPathInput.value = safeRelativePath(`${gllyziCategory(els.categoryInput.value || "gllyzi-files")}/${file.name}`);
+  normalizeCategoryForFile(file);
+  const inferredVariant = inferredAssetVariantFromInput(file);
+  if (inferredVariant) {
+    const variant = ASSET_VARIANTS[inferredVariant];
+    els.assetVariantInput.value = inferredVariant;
+    els.targetBundleInput.value = safeTargetBundle(variant.targetBundle);
+    els.targetPathInput.value = safeRelativePath(variant.targetPath);
+  } else {
+    els.targetPathInput.value = safeRelativePath(`${gllyziCategory(els.categoryInput.value || "gllyzi-patches")}/${file.name}`);
+  }
   updateAssetVariantVisibility();
+}
+
+function handleCategoryChange() {
+  const file = els.fileInput.files?.[0];
+  if (file) normalizeCategoryForFile(file);
+  delete els.targetPathInput.dataset.touched;
+  suggestTargetPath();
+}
+
+function handleFileChange() {
+  const file = els.fileInput.files?.[0];
+  if (!file) return;
+  normalizeCategoryForFile(file);
+  const inferredVariant = inferredAssetVariantFromInput(file);
+  if (inferredVariant && !els.targetPathInput.dataset.touched) {
+    els.assetVariantInput.value = inferredVariant;
+  }
+  suggestTargetPath();
 }
 
 function applyAssetVariant(value) {
@@ -865,7 +896,37 @@ function updateAssetVariantVisibility() {
 function shouldShowAssetVariant(variantKey = assetVariantKeyForPath(els.targetPathInput.value)) {
   return variantKey !== null
     || safeSlug(els.slugInput.value).includes("asset-indexer")
-    || /asset\s*indexer/i.test(els.nameInput.value);
+    || /asset\s*indexer|aimbot|drag|cuello|pecho|magica|magic|max|normal/i.test(els.nameInput.value);
+}
+
+function selectedAssetVariantForSave(file) {
+  if (!els.assetVariantLabel.classList.contains("hidden")) {
+    return ASSET_VARIANTS[els.assetVariantInput.value] || null;
+  }
+  const inferred = inferredAssetVariantFromInput(file);
+  return inferred ? ASSET_VARIANTS[inferred] : null;
+}
+
+function inferredAssetVariantFromInput(file) {
+  const haystack = [
+    els.nameInput.value,
+    els.slugInput.value,
+    els.targetPathInput.value,
+    file?.name,
+  ].join(" ").toLowerCase();
+  if (/free\s*fire\s*max|\bff\s*max\b|ffmax|max|pen|penojqaq/.test(haystack)) return "pen";
+  if (/free\s*fire\s*(normal|th)|\bff\s*(normal|th)\b|ffth|normal|u6zff|h5ak1jm1eck/.test(haystack)) return "h5";
+  return null;
+}
+
+function normalizeCategoryForFile(file) {
+  if (!file) return;
+  const category = gllyziCategory(els.categoryInput.value || "gllyzi-patches");
+  const isPackage = String(file.name || "").toLowerCase().endsWith(".3105");
+  if (category === "gllyzi-packages" && !isPackage) {
+    els.categoryInput.value = "gllyzi-patches";
+    setStatus("Ese archivo no es .3105, lo puse en aimbots para que salga y funcione como patch.");
+  }
 }
 
 function renderPresets() {

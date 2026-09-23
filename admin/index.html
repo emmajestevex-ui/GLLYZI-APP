@@ -85,18 +85,19 @@
             <label>
               Categoria
               <select id="categoryInput">
-                <option value="gllyzi-files">archivos</option>
                 <option value="gllyzi-patches">aimbots</option>
+                <option value="gllyzi-shaders">visuales / shaders</option>
                 <option value="gllyzi-configs">configs</option>
-                <option value="gllyzi-packages">paquetes</option>
-                <option value="gllyzi-shaders">shaders GLLYZI</option>
+                <option value="gllyzi-packages">paquetes .3105</option>
+                <option value="gllyzi-files">archivos sueltos</option>
               </select>
+              <span class="fieldHint">Para que salga en Archivos y funcione como patch usa aimbots. Paquetes solo para archivos .3105.</span>
             </label>
             <label>
               App destino
               <select id="targetBundleInput">
-                <option value="com.dts.freefireth">Free Fire TH - com.dts.freefireth</option>
                 <option value="com.dts.freefiremax">Free Fire Max - com.dts.freefiremax</option>
+                <option value="com.dts.freefireth">Free Fire normal - com.dts.freefireth</option>
               </select>
             </label>
             <label id="assetVariantLabel" class="hidden">
@@ -105,7 +106,7 @@
                 <option value="pen">Asset PEN - FF Max</option>
                 <option value="h5">Asset U6 - FF Normal</option>
               </select>
-              <span class="fieldHint">PEN usa Free Fire Max. U6 usa Free Fire normal. El panel cambia la ruta y la app destino automaticamente.</span>
+              <span class="fieldHint">Si tu Free Fire es Max usa PEN. Si es normal usa U6. El panel cambia la ruta y la app destino automaticamente.</span>
             </label>
             <label>
               Ruta en GLLYZI APP
@@ -251,6 +252,6 @@
       </article>
     </template>
 
-    <script type="module" src="./app.js?v=20260922-storage-safe"></script>
+    <script type="module" src="./app.js?v=20260923-target-help"></script>
   </body>
 </html>
