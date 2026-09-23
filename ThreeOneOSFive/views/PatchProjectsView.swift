@@ -377,75 +377,31 @@ private struct PatchProjectDetailView: View {
                 }
 
                 Section {
-                    ForEach(project.allBundleIdentifiers, id: \.self) { bundleID in
-                        Label {
-                            Text(bundleID)
-                                .font(.subheadline.monospaced())
-                        } icon: {
-                            Image(systemName: "app.dashed")
-                                .foregroundColor(detailStyle.tint)
+                    HStack(spacing: 12) {
+                        Image(systemName: receipt == nil ? "circle" : "checkmark.circle.fill")
+                            .font(.title3.weight(.bold))
+                            .foregroundColor(receipt == nil ? .secondary : .green)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(receipt == nil ? "Listo para aplicar" : "Aplicado")
+                                .font(.headline)
+                            Text(receipt == nil ? "Toca Apply para activar este archivo." : "Puedes volver al original cuando quieras.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    LabeledContent(language.text("patch.files")) {
-                        Text("\(project.rules.count)")
-                            .fontWeight(.semibold)
-                    }
-                } header: {
-                    Text(language.text("patch.target_bundle"))
-                }
-
-                if BundledPatchSeeder.hasAssetIndexerRule(project) {
-                    Section {
-                        Picker("Asset", selection: assetVariantBinding) {
-                            ForEach(BundledPatchSeeder.AssetIndexerVariant.allCases) { variant in
-                                Text(variant.label).tag(variant)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                    } header: {
-                        Text("Asset Indexer")
-                    } footer: {
-                        Text("PEN usa Free Fire Max. H5 usa Free Fire normal.")
-                    }
-                } else if BundledPatchSeeder.canOverrideTargetBundle(project) {
-                    Section {
-                        Picker("App", selection: targetBundleBinding) {
-                            ForEach(BundledPatchSeeder.TargetBundleChoice.allCases) { choice in
-                                Text(choice.label).tag(choice)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                    } header: {
-                        Text("Target App")
-                    } footer: {
-                        Text("Elige donde se va a escribir este archivo antes de tocar Aplicar.")
-                    }
-                }
-
-                Section {
-                    ForEach(project.rules) { rule in
-                        PatchRuleSummary(rule: rule, style: detailStyle)
-                    }
-                } header: {
-                    Text(language.text("patch.rules"))
-                } footer: {
-                    Text(language.text("patch.client_rules_footer"))
+                    .padding(.vertical, 4)
                 }
 
                 Section {
                     Button(action: apply) {
-                        actionLabel("patch.apply", subtitle: "Escribe el archivo seleccionado", systemImage: "checkmark.shield.fill")
+                        actionLabel("patch.apply", subtitle: "Activar archivo", systemImage: "checkmark.shield.fill")
                     }
                     .disabled(isWorking)
 
-                    if receipt != nil {
-                        Button(role: .destructive, action: restore) {
-                            actionLabel("patch.restore", subtitle: "Vuelve al archivo original", systemImage: "arrow.uturn.backward.circle")
-                        }
-                        .disabled(isWorking)
+                    Button(role: .destructive, action: restore) {
+                        actionLabel("patch.restore", subtitle: "Volver al original", systemImage: "arrow.uturn.backward.circle")
                     }
-                } footer: {
-                    Text(language.text("patch.apply_footer"))
+                    .disabled(isWorking || receipt == nil)
                 }
             }
         }
@@ -462,13 +418,6 @@ private struct PatchProjectDetailView: View {
             if isWorking {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProgressView()
-                }
-            } else {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(language.text("patch.edit_name")) {
-                        showNameEditor = true
-                    }
-                    .disabled(item?.project == nil)
                 }
             }
         }
