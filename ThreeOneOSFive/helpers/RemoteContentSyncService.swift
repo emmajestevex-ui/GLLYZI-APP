@@ -248,7 +248,7 @@ final class RemoteContentStore: ObservableObject {
     @Published private(set) var installedFiles: [RemoteContentFile] = []
     @Published private(set) var remoteVersion = 0
     @Published private(set) var statusText = "Listo"
-    @Published private(set) var detailText = "Los archivos remotos se guardan dentro de GLLYZI APP."
+    @Published private(set) var detailText = "Los archivos remotos se guardan dentro de Glizzy Net."
     @Published private(set) var progress: Double?
     @Published private(set) var lastChecked: Date?
     @Published private(set) var isBusy = false

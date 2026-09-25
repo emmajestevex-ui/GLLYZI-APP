@@ -21,7 +21,7 @@ struct ThreeOneOSFiveApp: App {
 
     init() {
         setupLogCapture()
-        log("app: GLLYZI APP launching - iOS \(AppInfo.osVersion) (\(AppInfo.osBuild)) \(AppInfo.machineName)")
+        log("app: Glizzy Net launching - iOS \(AppInfo.osVersion) (\(AppInfo.osBuild)) \(AppInfo.machineName)")
     }
 
     private var language: AppLanguage {
@@ -330,7 +330,7 @@ private struct GreegLicenseView: View {
                     .shadow(color: Color.black.opacity(0.12), radius: 24)
 
                 VStack(spacing: 7) {
-                    Text("GLLYZI APP")
+                    Text("Glizzy Net")
                         .font(.system(size: 31, weight: .black, design: .rounded))
                         .foregroundStyle(.black)
                     Text("Acceso privado")
@@ -342,7 +342,7 @@ private struct GreegLicenseView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "key.fill")
                             .foregroundStyle(.black)
-                        TextField("GLLYZI-ABCD-EF12-3456", text: $key)
+                        TextField("GLIZZY-ABCD-EF12-3456", text: $key)
                             .textInputAutocapitalization(.characters)
                             .autocorrectionDisabled()
                             .foregroundStyle(.black)
@@ -386,7 +386,7 @@ private struct GreegLicenseView: View {
                     .foregroundStyle(.secondary)
 
                 Spacer()
-                Text("GLLYZI APP - CONTROL PRIVADO")
+                Text("Glizzy Net - CONTROL PRIVADO")
                     .font(.caption2.weight(.semibold))
                     .tracking(2)
                     .foregroundStyle(.secondary)

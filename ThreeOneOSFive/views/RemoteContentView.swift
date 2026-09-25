@@ -46,7 +46,7 @@ struct RemoteContentView: View {
                 }
             }
             .background(AppTheme.pageBackground.ignoresSafeArea())
-            .navigationTitle("Centro GLLYZI")
+            .navigationTitle("Centro Glizzy Net")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -74,7 +74,7 @@ struct RemoteContentView: View {
             Image(systemName: "icloud.and.arrow.down")
                 .font(.system(size: AppTheme.emptyIconSize, weight: .light))
                 .foregroundStyle(AppTheme.accent)
-            Text("No hay archivos de GLLYZI")
+            Text("No hay archivos de Glizzy Net")
                 .font(.headline)
             Text("Publica desde el panel y toca Sincronizar para bajarlos.")
                 .font(.subheadline)

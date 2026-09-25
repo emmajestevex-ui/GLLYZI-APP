@@ -35,7 +35,7 @@ struct PatchProjectsView: View {
             VStack(spacing: 0) {
                 AppSearchField(
                     text: $searchText,
-                    prompt: "Buscar archivos GLLYZI",
+                    prompt: "Buscar archivos Glizzy Net",
                     clearLabel: language.text("common.clear")
                 )
                 ScrollView {
@@ -66,7 +66,7 @@ struct PatchProjectsView: View {
                 }
             }
             .background(AppTheme.pageBackground.ignoresSafeArea())
-            .navigationTitle("Archivos GLLYZI")
+            .navigationTitle("Archivos Glizzy Net")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if store.isBusy {
@@ -169,7 +169,7 @@ private struct PatchListHeader: View {
         HStack(spacing: 14) {
             AppLogo(size: 46)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Centro GLLYZI")
+                Text("Centro Glizzy Net")
                     .font(.title3.weight(.black))
                 Text("Aimbots y archivos privados")
                     .font(.caption)

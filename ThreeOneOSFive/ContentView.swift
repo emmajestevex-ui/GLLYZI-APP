@@ -224,7 +224,7 @@ private struct DashboardView: View {
                                     .foregroundStyle(.white)
                             }
                             .disabled(remoteContentStore.isBusy)
-                            Text("Los archivos publicados desde el panel de GLLYZI llegan a esta app al actualizar.")
+                            Text("Los archivos publicados desde el panel de Glizzy Net llegan a esta app al actualizar.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -237,7 +237,7 @@ private struct DashboardView: View {
                         VStack(spacing: 0) {
                             SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
                             SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
-                            SocialLinkRow(title: "Discord", subtitle: "Comunidad GLLYZI", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
+                            SocialLinkRow(title: "Discord", subtitle: "Comunidad Glizzy Net", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
                             SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
                         }
                         .padding(16)
@@ -264,7 +264,7 @@ private struct DashboardView: View {
                     .shadow(color: Color.black.opacity(0.10), radius: 14)
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("GLLYZI APP")
+                    Text("Glizzy Net")
                         .font(.system(size: 29, weight: .black, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
@@ -303,7 +303,7 @@ private struct SocialHubView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Redes oficiales")
                             .font(.system(size: 30, weight: .black, design: .rounded))
-                        Text("Canales de soporte, comunidad y actualizaciones de GLLYZI APP.")
+                        Text("Canales de soporte, comunidad y actualizaciones de Glizzy Net.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -312,7 +312,7 @@ private struct SocialHubView: View {
                     VStack(spacing: 0) {
                         SocialLinkRow(title: "TikTok", subtitle: "@glizzynetx", systemImage: "play.rectangle.fill", url: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")
                         SocialLinkRow(title: "WhatsApp", subtitle: "Grupo oficial", systemImage: "bubble.left.and.bubble.right.fill", url: "https://chat.whatsapp.com/ICeEc3AVpzb8TZaGrpwX0N?s=cl&p=i&mlu=4&ilr=4")
-                        SocialLinkRow(title: "Discord", subtitle: "Comunidad GLLYZI", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
+                        SocialLinkRow(title: "Discord", subtitle: "Comunidad Glizzy Net", systemImage: "person.2.fill", url: "https://discord.gg/yTEpTMQwV")
                         SocialLinkRow(title: "YouTube", subtitle: "@glizzyvis1on", systemImage: "tv.fill", url: "https://youtube.com/@glizzyvis1on?si=KOnA6elopYL718l_")
                     }
                     .padding(16)
