@@ -253,8 +253,8 @@ private struct GLLYZIRemotePanel: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 0.085, green: 0.070, blue: 0.145),
-                        Color(red: 0.040, green: 0.042, blue: 0.078)
+                        Color(red: 0.115, green: 0.050, blue: 0.055),
+                        Color(red: 0.040, green: 0.030, blue: 0.032)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing

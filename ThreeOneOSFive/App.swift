@@ -317,7 +317,7 @@ private struct GreegLicenseView: View {
             LinearGradient(
                 colors: [
                     AppTheme.pageBackground,
-                    Color(red: 0.06, green: 0.035, blue: 0.12),
+                    Color(red: 0.105, green: 0.026, blue: 0.030),
                     AppTheme.pageBackground
                 ],
                 startPoint: .topLeading,

@@ -1,14 +1,15 @@
 :root {
   color-scheme: dark;
-  --bg: #070708;
-  --panel: #131316;
-  --panel-strong: #1b1b20;
-  --line: #2c2c33;
-  --text: #f4f7fb;
-  --muted: #9a9aa4;
-  --accent: #eb111b;
-  --accent-strong: #ff3039;
-  --blue: #ff3b43;
+  --bg: #050303;
+  --panel: #110b0c;
+  --panel-strong: #1b1012;
+  --line: #332022;
+  --line-hot: #682025;
+  --text: #fff7f7;
+  --muted: #a89597;
+  --accent: #e20d18;
+  --accent-strong: #ff3d2e;
+  --blue: #ff5449;
   --green: #4bd47b;
   --warning: #f5b84b;
 }
@@ -21,8 +22,12 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 20% -10%, rgba(235, 17, 27, 0.18), transparent 36%),
-    linear-gradient(180deg, #0b0b0d 0%, var(--bg) 46%);
+    linear-gradient(rgba(255, 61, 46, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 61, 46, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 14% -12%, rgba(255, 28, 42, 0.26), transparent 32%),
+    radial-gradient(circle at 86% 8%, rgba(255, 120, 50, 0.12), transparent 28%),
+    linear-gradient(180deg, #0b0506 0%, var(--bg) 52%);
+  background-size: 100% 100%, 42px 42px, 100% 100%, 100% 100%, 100% 100%;
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -137,9 +142,10 @@ h3 {
   width: fit-content;
   gap: 6px;
   padding: 5px;
-  background: #101014;
-  border: 1px solid var(--line);
+  background: rgba(12, 7, 8, 0.88);
+  border: 1px solid var(--line-hot);
   border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
 }
 
 .tabButton {
@@ -153,7 +159,8 @@ h3 {
 
 .tabButton.active {
   color: var(--text);
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #8f1018);
+  box-shadow: 0 8px 26px rgba(226, 13, 24, 0.22);
 }
 
 .adminSection {
@@ -161,10 +168,25 @@ h3 {
 }
 
 .panel {
-  background: var(--panel);
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(38, 17, 19, 0.92), rgba(13, 8, 9, 0.96)),
+    var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 18px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.34);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-strong), transparent);
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .narrow {
@@ -182,7 +204,8 @@ h3 {
   height: 58px;
   object-fit: contain;
   border-radius: 14px;
-  background: #fff;
+  background: #090506;
+  border: 1px solid rgba(255, 61, 46, 0.34);
   padding: 7px;
 }
 
@@ -223,7 +246,7 @@ h3 {
   padding: 10px 12px;
   color: var(--text);
   text-align: left;
-  background: #10151b;
+  background: #100909;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
@@ -232,7 +255,7 @@ h3 {
   width: 78px;
   min-height: 70px;
   color: #ff9ea3;
-  background: #10151b;
+  background: #100909;
   border: 1px solid var(--line);
   border-radius: 8px;
   font-weight: 900;
@@ -274,7 +297,7 @@ h3 {
   padding: 7px 8px;
   color: var(--text);
   text-align: left;
-  background: #0b0f14;
+  background: #0b0708;
   border: 1px solid var(--line);
   border-radius: 7px;
 }
@@ -313,7 +336,7 @@ select,
 textarea {
   width: 100%;
   color: var(--text);
-  background: #0f1318;
+  background: #0a0708;
   border: 1px solid var(--line);
   border-radius: 7px;
   padding: 11px 12px;
@@ -328,7 +351,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent-strong);
-  box-shadow: 0 0 0 3px rgba(240, 24, 33, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 61, 46, 0.18);
 }
 
 .primary,
@@ -342,11 +365,12 @@ textarea:focus {
 }
 
 .primary {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #7e0c13);
+  box-shadow: 0 12px 28px rgba(226, 13, 24, 0.22);
 }
 
 .primary:hover {
-  background: var(--accent-strong);
+  background: linear-gradient(135deg, var(--accent-strong), var(--accent));
 }
 
 .loginActions {
@@ -379,7 +403,7 @@ textarea:focus {
   margin: 0;
   padding: 12px;
   color: #ffe5e7;
-  background: #0b0b0d;
+  background: #090506;
   border: 1px solid var(--line);
   border-radius: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -434,13 +458,26 @@ textarea:focus {
 }
 
 .fileCard {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 12px;
   padding: 14px;
-  background: #10151b;
+  background:
+    linear-gradient(135deg, rgba(32, 13, 15, 0.95), rgba(9, 7, 8, 0.96));
   border: 1px solid var(--line);
   border-radius: 8px;
+}
+
+.fileCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
 }
 
 .fileMain {
@@ -455,7 +492,8 @@ textarea:focus {
   height: 42px;
   flex: 0 0 auto;
   border-radius: 8px;
-  background: rgba(235, 17, 27, 0.14);
+  background: rgba(226, 13, 24, 0.16);
+  border: 1px solid rgba(255, 61, 46, 0.20);
   color: var(--blue);
   font-size: 10px;
   font-weight: 900;
@@ -471,7 +509,7 @@ textarea:focus {
 
 .filePath {
   margin-top: 3px;
-  color: #c8d7ea;
+  color: #ffd0d2;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -496,6 +534,15 @@ textarea:focus {
   color: var(--green);
   font-size: 12px;
   font-weight: 900;
+}
+
+.keyCard {
+  border-color: rgba(255, 61, 46, 0.28);
+}
+
+.keyCard .fileIcon {
+  color: #fff0f0;
+  background: linear-gradient(135deg, rgba(226, 13, 24, 0.38), rgba(255, 61, 46, 0.08));
 }
 
 .badge.pending {

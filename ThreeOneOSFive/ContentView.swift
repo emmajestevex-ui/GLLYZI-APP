@@ -357,8 +357,8 @@ private struct GLLYZIPanelBackground: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 0.10, green: 0.075, blue: 0.18),
-                        Color(red: 0.045, green: 0.04, blue: 0.09)
+                        Color(red: 0.120, green: 0.055, blue: 0.060),
+                        Color(red: 0.040, green: 0.030, blue: 0.032)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
