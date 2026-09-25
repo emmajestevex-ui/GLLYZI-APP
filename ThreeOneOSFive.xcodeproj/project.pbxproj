@@ -469,7 +469,7 @@
 				);
 				MARKETING_VERSION = 1.4.8;
 				OTHER_LDFLAGS = "-lz";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.gllyzinet.client";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.apple.mobile.MobileHouseArrest";
 				PRODUCT_NAME = 3105;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "ThreeOneOSFive/ThreeOneOSFive-Bridging-Header.h";
@@ -503,7 +503,7 @@
 				);
 				MARKETING_VERSION = 1.4.8;
 				OTHER_LDFLAGS = "-lz";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.gllyzinet.client";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.apple.mobile.MobileHouseArrest";
 				PRODUCT_NAME = 3105;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "ThreeOneOSFive/ThreeOneOSFive-Bridging-Header.h";
