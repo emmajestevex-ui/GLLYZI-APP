@@ -280,12 +280,12 @@ class AppState: ObservableObject {
 private struct LicenseCheckingView: View {
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            AppTheme.pageBackground.ignoresSafeArea()
             VStack(spacing: 16) {
                 AppLogo(size: 82)
-                    .shadow(color: AppTheme.accent.opacity(0.45), radius: 18)
+                    .shadow(color: AppTheme.accentGlow.opacity(0.32), radius: 18)
                 ProgressView()
-                    .tint(AppTheme.accent)
+                    .tint(AppTheme.accentGlow)
                 Text("Verificando key")
                     .font(.headline)
                     .foregroundStyle(.white)
@@ -314,11 +314,20 @@ private struct GreegLicenseView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            LinearGradient(
+                colors: [
+                    AppTheme.pageBackground,
+                    Color(red: 0.06, green: 0.035, blue: 0.12),
+                    AppTheme.pageBackground
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             VStack(spacing: 22) {
                 Spacer()
                 AppLogo(size: 104)
-                    .shadow(color: AppTheme.accent.opacity(0.55), radius: 24)
+                    .shadow(color: AppTheme.accentGlow.opacity(0.36), radius: 24)
 
                 VStack(spacing: 7) {
                     Text("GLLYZI APP")
@@ -332,7 +341,7 @@ private struct GreegLicenseView: View {
                 VStack(spacing: 12) {
                     HStack(spacing: 10) {
                         Image(systemName: "key.fill")
-                            .foregroundStyle(AppTheme.accent)
+                            .foregroundStyle(AppTheme.accentGlow)
                         TextField("GLLYZI-ABCD-EF12-3456", text: $key)
                             .textInputAutocapitalization(.characters)
                             .autocorrectionDisabled()
@@ -341,8 +350,8 @@ private struct GreegLicenseView: View {
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 54)
-                    .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 15))
-                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.white.opacity(0.12)))
+                    .background(AppTheme.cardBackground.opacity(0.88), in: RoundedRectangle(cornerRadius: 15))
+                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(AppTheme.accentGlow.opacity(0.20)))
 
                     Button(action: primaryAction) {
                         HStack(spacing: 10) {
@@ -357,7 +366,14 @@ private struct GreegLicenseView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
-                        .background(AppTheme.accent, in: RoundedRectangle(cornerRadius: 15))
+                        .background(
+                            LinearGradient(
+                                colors: [AppTheme.accent, AppTheme.accentGlow],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            in: RoundedRectangle(cornerRadius: 15)
+                        )
                         .foregroundStyle(.white)
                     }
                     .disabled(isLoading)
@@ -365,7 +381,7 @@ private struct GreegLicenseView: View {
                     if !messageText.isEmpty {
                         Text(messageText)
                             .font(.footnote)
-                            .foregroundStyle(didActivate ? .green : AppTheme.accent)
+                            .foregroundStyle(didActivate ? AppTheme.mint : AppTheme.amber)
                             .multilineTextAlignment(.center)
                     }
                 }

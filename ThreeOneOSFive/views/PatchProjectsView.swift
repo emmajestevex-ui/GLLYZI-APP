@@ -156,7 +156,7 @@ private struct GLLYZIFilesSectionTitle: View {
     var body: some View {
         Text(title.uppercased())
             .font(.caption.weight(.bold))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppTheme.accentGlow)
             .tracking(1.1)
             .padding(.horizontal, 2)
     }
@@ -181,7 +181,7 @@ private struct PatchListHeader: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(count)")
                     .font(.title3.weight(.black))
-                    .foregroundColor(AppTheme.accent)
+                    .foregroundColor(AppTheme.accentGlow)
                 Text(count == 1 ? "archivo" : "archivos")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -189,6 +189,19 @@ private struct PatchListHeader: View {
         }
         .padding(16)
         .background(GLLYZIFilePanel())
+        .overlay(alignment: .bottomLeading) {
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [AppTheme.accent, AppTheme.accentGlow, AppTheme.mint],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(width: 118, height: 3)
+                .padding(.leading, 16)
+                .padding(.bottom, 10)
+        }
     }
 }
 
@@ -242,6 +255,12 @@ private struct PatchProjectRow: View {
         }
         .padding(14)
         .background(GLLYZIFilePanel(cornerRadius: 18))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(style.tint)
+                .frame(width: 3)
+                .padding(.vertical, 14)
+        }
     }
 }
 
@@ -264,7 +283,7 @@ private struct RemotePatchRow: View {
                         .minimumScaleFactor(0.78)
                     Text("v\(file.version)")
                         .font(.caption2.weight(.bold))
-                        .foregroundColor(AppTheme.accent)
+                        .foregroundColor(AppTheme.accentGlow)
                 }
                 Text(file.localRelativePath)
                     .font(.caption.monospaced())
@@ -276,7 +295,7 @@ private struct RemotePatchRow: View {
             VStack(alignment: .trailing, spacing: 3) {
                 Text("Remoto")
                     .font(.caption2.weight(.bold))
-                    .foregroundColor(AppTheme.accent)
+                    .foregroundColor(AppTheme.accentGlow)
                 Text(file.displaySize)
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -292,11 +311,32 @@ private struct GLLYZIFilePanel: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(Color(red: 0.105, green: 0.095, blue: 0.10))
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.085, green: 0.070, blue: 0.145),
+                        Color(red: 0.040, green: 0.042, blue: 0.078)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(AppTheme.accent.opacity(0.14), lineWidth: 1)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                AppTheme.accentGlow.opacity(0.24),
+                                AppTheme.accent.opacity(0.15),
+                                .white.opacity(0.06)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
             )
+            .shadow(color: AppTheme.accent.opacity(0.10), radius: 14, x: 0, y: 8)
     }
 }
 
@@ -377,7 +417,7 @@ private struct PatchProjectDetailView: View {
 
                     Link(destination: URL(string: "https://www.tiktok.com/@glizzynetx?_r=1&_t=ZS-99vZ2aOwzau")!) {
                         HStack(spacing: 12) {
-                            AppRowIcon(systemName: "play.rectangle.fill", tint: AppTheme.accent, symbolSize: 18, frameSize: 42)
+                            AppRowIcon(systemName: "play.rectangle.fill", tint: AppTheme.accentGlow, symbolSize: 18, frameSize: 42)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("TikTok oficial")
                                     .font(.headline)
@@ -389,7 +429,7 @@ private struct PatchProjectDetailView: View {
                             Spacer()
                             Image(systemName: "arrow.up.right")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(AppTheme.accent)
+                                .foregroundStyle(AppTheme.accentGlow)
                         }
                         .padding(16)
                         .background(GLLYZIFilePanel(cornerRadius: 18))
@@ -580,11 +620,11 @@ private struct PatchDetailHero: View {
             HStack {
                 Label(isApplied ? "Aplicado" : "Listo", systemImage: isApplied ? "checkmark.seal.fill" : "circle.dashed")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(isApplied ? Color.green : AppTheme.accent)
+                    .foregroundStyle(isApplied ? AppTheme.mint : AppTheme.accentGlow)
                 Spacer()
                 Text(isApplied ? "ON" : "OK")
                     .font(.title3.weight(.black))
-                    .foregroundStyle(isApplied ? Color.green : AppTheme.accent)
+                    .foregroundStyle(isApplied ? AppTheme.mint : AppTheme.accentGlow)
             }
             .padding(14)
             .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -624,7 +664,15 @@ private struct PatchPrimaryActionStyle: ButtonStyle {
             .foregroundStyle(.white)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(AppTheme.accent.opacity(configuration.isPressed ? 0.76 : 1))
+                    .fill(
+                        LinearGradient(
+                            colors: configuration.isPressed
+                                ? [AppTheme.accent.opacity(0.78), AppTheme.accentGlow.opacity(0.78)]
+                                : [AppTheme.accent, AppTheme.accentGlow],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
             )
             .scaleEffect(configuration.isPressed ? 0.985 : 1)
     }
@@ -635,13 +683,13 @@ private struct PatchSecondaryActionStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundStyle(isEnabled ? AppTheme.accent : .secondary)
+            .foregroundStyle(isEnabled ? AppTheme.accentGlow : .secondary)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color.white.opacity(isEnabled ? (configuration.isPressed ? 0.10 : 0.065) : 0.035))
                     .overlay(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(AppTheme.accent.opacity(isEnabled ? 0.32 : 0.10), lineWidth: 1)
+                            .stroke(AppTheme.accentGlow.opacity(isEnabled ? 0.32 : 0.10), lineWidth: 1)
                     )
             )
             .scaleEffect(configuration.isPressed && isEnabled ? 0.985 : 1)
@@ -722,17 +770,17 @@ private struct PatchVisualStyle {
 
         if searchable.contains("plist") || searchable.contains("144") {
             icon = "speedometer"
-            tint = Color.green
+            tint = AppTheme.amber
             subtitle = "Preferencias FPS"
             detail = "Preferencias internas"
         } else if searchable.contains("shader") {
             icon = "sparkles"
-            tint = Color(red: 0.26, green: 0.72, blue: 1.0)
+            tint = AppTheme.mint
             subtitle = "Archivo visual"
             detail = "Contenido opcional"
         } else {
-            icon = "shippingbox.fill"
-            tint = AppTheme.accent
+            icon = "cube.transparent.fill"
+            tint = AppTheme.accentGlow
             subtitle = "Archivo de aimbot"
             detail = "Contenido de avatar"
         }

@@ -194,16 +194,16 @@ private struct DashboardView: View {
                         GLLYZISectionTitle("Archivos principales")
                         VStack(spacing: 0) {
                             Button(action: onOpenPatches) {
-                                Label("Abrir centro de archivos", systemImage: "arrow.right.circle.fill")
+                                Label("Abrir laboratorio", systemImage: "rectangle.stack.badge.play.fill")
                                     .font(.headline)
-                                    .foregroundStyle(AppTheme.accent)
+                                    .foregroundStyle(AppTheme.accentGlow)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .padding(.bottom, 12)
 
                             HomePatchRow(icon: "scope", title: "Aimbot Drag", subtitle: "Archivo de avatar", tint: AppTheme.accent)
-                            HomePatchRow(icon: "person.crop.circle.badge.checkmark", title: "Aimbot Cuello", subtitle: "Preset integrado", tint: Color(red: 0.92, green: 0.18, blue: 0.20))
-                            HomePatchRow(icon: "target", title: "Aimbot Pecho", subtitle: "Listo para aplicar", tint: Color(red: 0.74, green: 0.08, blue: 0.10))
+                            HomePatchRow(icon: "person.crop.circle.badge.checkmark", title: "Aimbot Cuello", subtitle: "Preset integrado", tint: AppTheme.accentGlow)
+                            HomePatchRow(icon: "target", title: "Aimbot Pecho", subtitle: "Listo para aplicar", tint: AppTheme.mint)
                         }
                         .padding(16)
                         .background(GLLYZIPanelBackground())
@@ -220,7 +220,14 @@ private struct DashboardView: View {
                                     .font(.headline)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(AppTheme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    .background(
+                                        LinearGradient(
+                                            colors: [AppTheme.accent, AppTheme.accentGlow],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ),
+                                        in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    )
                                     .foregroundStyle(.white)
                             }
                             .disabled(remoteContentStore.isBusy)
@@ -261,7 +268,7 @@ private struct DashboardView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 14) {
                 AppLogo(size: 64)
-                    .shadow(color: AppTheme.accent.opacity(0.35), radius: 12)
+                    .shadow(color: AppTheme.accentGlow.opacity(0.28), radius: 14)
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text("GLLYZI APP")
@@ -278,7 +285,7 @@ private struct DashboardView: View {
 
                 Label(appState.isSupported ? "Listo" : "Revisar", systemImage: appState.isSupported ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                     .font(.caption.weight(.bold))
-                    .foregroundColor(appState.isSupported ? .green : AppTheme.accent)
+                    .foregroundColor(appState.isSupported ? AppTheme.mint : AppTheme.amber)
             }
 
             Divider()
@@ -338,7 +345,7 @@ private struct GLLYZISectionTitle: View {
     var body: some View {
         Text(title.uppercased())
             .font(.caption.weight(.bold))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppTheme.accentGlow)
             .tracking(1.1)
             .padding(.horizontal, 2)
     }
@@ -350,8 +357,8 @@ private struct GLLYZIPanelBackground: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 0.13, green: 0.12, blue: 0.125),
-                        Color(red: 0.07, green: 0.065, blue: 0.07)
+                        Color(red: 0.10, green: 0.075, blue: 0.18),
+                        Color(red: 0.045, green: 0.04, blue: 0.09)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -359,8 +366,16 @@ private struct GLLYZIPanelBackground: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(AppTheme.accent.opacity(0.18), lineWidth: 1)
+                    .stroke(
+                        LinearGradient(
+                            colors: [AppTheme.accentGlow.opacity(0.34), AppTheme.accent.opacity(0.18), .white.opacity(0.06)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
             )
+            .shadow(color: AppTheme.accent.opacity(0.13), radius: 18, x: 0, y: 10)
     }
 }
 
@@ -372,7 +387,7 @@ private struct RemoteContentDashboardRow: View {
             HStack(spacing: 12) {
                 AppRowIcon(
                     systemName: remoteContentStore.isBusy ? "arrow.triangle.2.circlepath" : "icloud.fill",
-                    tint: Color(red: 0.26, green: 0.72, blue: 1.0),
+                    tint: AppTheme.accentGlow,
                     symbolSize: 16,
                     frameSize: 32
                 )
@@ -388,7 +403,7 @@ private struct RemoteContentDashboardRow: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("v\(remoteContentStore.remoteVersion)")
                         .font(.caption.weight(.bold))
-                        .foregroundColor(AppTheme.accent)
+                        .foregroundColor(AppTheme.accentGlow)
                     Text(remoteContentStore.installedFiles.count == 1 ? "1 file" : "\(remoteContentStore.installedFiles.count) files")
                         .font(.caption2.weight(.medium))
                         .foregroundStyle(.secondary)
@@ -397,7 +412,7 @@ private struct RemoteContentDashboardRow: View {
 
             if let progress = remoteContentStore.progress, remoteContentStore.isBusy {
                 ProgressView(value: progress)
-                    .tint(AppTheme.accent)
+                    .tint(AppTheme.accentGlow)
             }
         }
         .padding(.vertical, 2)
@@ -422,7 +437,7 @@ private struct HomePatchRow: View {
             }
             Spacer()
             Image(systemName: "checkmark.seal.fill")
-                .foregroundColor(.green)
+                .foregroundColor(AppTheme.mint)
         }
         .padding(.vertical, 2)
     }
@@ -437,7 +452,7 @@ private struct SocialLinkRow: View {
     var body: some View {
         Link(destination: URL(string: url)!) {
             HStack(spacing: 12) {
-                AppRowIcon(systemName: systemImage, tint: AppTheme.accent, symbolSize: 16, frameSize: 32)
+                AppRowIcon(systemName: systemImage, tint: AppTheme.accentGlow, symbolSize: 16, frameSize: 32)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.subheadline.weight(.semibold))

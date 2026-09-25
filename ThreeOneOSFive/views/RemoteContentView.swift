@@ -114,7 +114,7 @@ private struct RemoteContentStatusCard: View {
             HStack(spacing: 14) {
                 AppRowIcon(
                     systemName: store.isBusy ? "arrow.triangle.2.circlepath" : "icloud.fill",
-                    tint: store.isBusy ? Color(red: 0.26, green: 0.72, blue: 1.0) : AppTheme.accent,
+                    tint: store.isBusy ? AppTheme.accentGlow : AppTheme.mint,
                     symbolSize: 18,
                     frameSize: 42
                 )
@@ -133,7 +133,7 @@ private struct RemoteContentStatusCard: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("v\(store.remoteVersion)")
                         .font(.headline.weight(.black))
-                        .foregroundColor(AppTheme.accent)
+                        .foregroundColor(AppTheme.accentGlow)
                     Text(store.installedFiles.count == 1 ? "1 archivo" : "\(store.installedFiles.count) archivos")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -142,7 +142,7 @@ private struct RemoteContentStatusCard: View {
 
             if let progress = store.progress, store.isBusy {
                 ProgressView(value: progress)
-                    .tint(AppTheme.accent)
+                    .tint(AppTheme.accentGlow)
             }
 
             HStack {
@@ -153,6 +153,7 @@ private struct RemoteContentStatusCard: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(AppTheme.accent)
                 .disabled(store.isBusy)
 
                 if let lastChecked = store.lastChecked {
@@ -210,6 +211,12 @@ private struct RemoteContentFileRow: View {
         }
         .padding(14)
         .background(GLLYZIRemotePanel(cornerRadius: 18))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(tint)
+                .frame(width: 3)
+                .padding(.vertical, 14)
+        }
     }
 
     private var displayCategory: String {
@@ -229,11 +236,11 @@ private struct RemoteContentFileRow: View {
     private var tint: Color {
         switch file.category.lowercased() {
         case "images", "image", "media", "gllyzi-shaders":
-            return Color(red: 0.26, green: 0.72, blue: 1.0)
+            return AppTheme.mint
         case "configs", "config", "gllyzi-configs":
-            return .green
+            return AppTheme.amber
         default:
-            return AppTheme.accent
+            return AppTheme.accentGlow
         }
     }
 }
@@ -243,10 +250,31 @@ private struct GLLYZIRemotePanel: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(Color(red: 0.105, green: 0.095, blue: 0.10))
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.085, green: 0.070, blue: 0.145),
+                        Color(red: 0.040, green: 0.042, blue: 0.078)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                AppTheme.accentGlow.opacity(0.24),
+                                AppTheme.accent.opacity(0.15),
+                                .white.opacity(0.06)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
             )
+            .shadow(color: AppTheme.accent.opacity(0.10), radius: 14, x: 0, y: 8)
     }
 }
