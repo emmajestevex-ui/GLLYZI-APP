@@ -250,11 +250,11 @@ private struct GLLYZIRemotePanel: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.115, green: 0.050, blue: 0.055),
-                        Color(red: 0.040, green: 0.030, blue: 0.032)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                        Color.white,
+                        Color(red: 0.965, green: 0.962, blue: 0.952)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -265,9 +265,9 @@ private struct GLLYZIRemotePanel: View {
                     .stroke(
                         LinearGradient(
                             colors: [
-                                AppTheme.accentGlow.opacity(0.24),
-                                AppTheme.accent.opacity(0.15),
-                                .white.opacity(0.06)
+                                Color.black.opacity(0.16),
+                                Color.black.opacity(0.06),
+                                .white.opacity(0.30)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -275,6 +275,6 @@ private struct GLLYZIRemotePanel: View {
                         lineWidth: 1
                     )
             )
-            .shadow(color: AppTheme.accent.opacity(0.10), radius: 14, x: 0, y: 8)
+            .shadow(color: Color.black.opacity(0.07), radius: 14, x: 0, y: 8)
     }
 }

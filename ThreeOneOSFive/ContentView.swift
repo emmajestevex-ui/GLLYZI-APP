@@ -220,14 +220,7 @@ private struct DashboardView: View {
                                     .font(.headline)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(
-                                        LinearGradient(
-                                            colors: [AppTheme.accent, AppTheme.accentGlow],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        ),
-                                        in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    )
+                                    .background(Color.black, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                                     .foregroundStyle(.white)
                             }
                             .disabled(remoteContentStore.isBusy)
@@ -268,7 +261,7 @@ private struct DashboardView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 14) {
                 AppLogo(size: 64)
-                    .shadow(color: AppTheme.accentGlow.opacity(0.28), radius: 14)
+                    .shadow(color: Color.black.opacity(0.10), radius: 14)
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text("GLLYZI APP")
@@ -357,8 +350,8 @@ private struct GLLYZIPanelBackground: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 0.120, green: 0.055, blue: 0.060),
-                        Color(red: 0.040, green: 0.030, blue: 0.032)
+                        Color.white,
+                        Color.white
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -368,14 +361,14 @@ private struct GLLYZIPanelBackground: View {
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(
                         LinearGradient(
-                            colors: [AppTheme.accentGlow.opacity(0.34), AppTheme.accent.opacity(0.18), .white.opacity(0.06)],
+                            colors: [Color.black.opacity(0.18), Color.black.opacity(0.07), Color.white.opacity(0.30)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
                         lineWidth: 1
                     )
             )
-            .shadow(color: AppTheme.accent.opacity(0.13), radius: 18, x: 0, y: 10)
+            .shadow(color: Color.black.opacity(0.08), radius: 18, x: 0, y: 10)
     }
 }
 

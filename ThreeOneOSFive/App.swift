@@ -138,7 +138,7 @@ struct ThreeOneOSFiveApp: App {
                     }
                 }
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(.light)
             .displayIdentityAttribution(isPresented: $showAttribution, enabled: licenseUnlocked && !showOnboarding)
             .sheet(isPresented: $showAttribution) {
                 DisplayAttributionSheet()
@@ -283,12 +283,12 @@ private struct LicenseCheckingView: View {
             AppTheme.pageBackground.ignoresSafeArea()
             VStack(spacing: 16) {
                 AppLogo(size: 82)
-                    .shadow(color: AppTheme.accentGlow.opacity(0.32), radius: 18)
+                    .shadow(color: Color.black.opacity(0.12), radius: 18)
                 ProgressView()
-                    .tint(AppTheme.accentGlow)
+                    .tint(Color.black)
                 Text("Verificando key")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.black)
                 Text("Confirmando acceso seguro")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -317,7 +317,7 @@ private struct GreegLicenseView: View {
             LinearGradient(
                 colors: [
                     AppTheme.pageBackground,
-                    Color(red: 0.105, green: 0.026, blue: 0.030),
+                    Color.white,
                     AppTheme.pageBackground
                 ],
                 startPoint: .topLeading,
@@ -327,12 +327,12 @@ private struct GreegLicenseView: View {
             VStack(spacing: 22) {
                 Spacer()
                 AppLogo(size: 104)
-                    .shadow(color: AppTheme.accentGlow.opacity(0.36), radius: 24)
+                    .shadow(color: Color.black.opacity(0.12), radius: 24)
 
                 VStack(spacing: 7) {
                     Text("GLLYZI APP")
                         .font(.system(size: 31, weight: .black, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.black)
                     Text("Acceso privado")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -341,17 +341,18 @@ private struct GreegLicenseView: View {
                 VStack(spacing: 12) {
                     HStack(spacing: 10) {
                         Image(systemName: "key.fill")
-                            .foregroundStyle(AppTheme.accentGlow)
+                            .foregroundStyle(.black)
                         TextField("GLLYZI-ABCD-EF12-3456", text: $key)
                             .textInputAutocapitalization(.characters)
                             .autocorrectionDisabled()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.black)
                             .disabled(isLoading || didActivate)
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 54)
-                    .background(AppTheme.cardBackground.opacity(0.88), in: RoundedRectangle(cornerRadius: 15))
-                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(AppTheme.accentGlow.opacity(0.20)))
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 15))
+                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.black.opacity(0.14)))
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
 
                     Button(action: primaryAction) {
                         HStack(spacing: 10) {
@@ -366,14 +367,7 @@ private struct GreegLicenseView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
-                        .background(
-                            LinearGradient(
-                                colors: [AppTheme.accent, AppTheme.accentGlow],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
-                            in: RoundedRectangle(cornerRadius: 15)
-                        )
+                        .background(Color.black, in: RoundedRectangle(cornerRadius: 15))
                         .foregroundStyle(.white)
                     }
                     .disabled(isLoading)
