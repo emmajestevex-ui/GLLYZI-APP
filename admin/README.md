@@ -1,6 +1,6 @@
-# GLLYZI APP Admin
+# Glizzy Net Admin
 
-Panel estatico para administrar contenido remoto propio de GLLYZI APP desde una PC.
+Panel estatico para administrar contenido remoto propio de Glizzy Net desde una PC.
 
 ## Uso
 
@@ -16,12 +16,12 @@ En Windows tambien puedes abrir `admin/start-panel.cmd`; eso levanta el panel en
 ## Crear o reemplazar un archivo
 
 1. Toca una plantilla en `Archivos listos`, por ejemplo `Asset Indexer` o `Aimbot Drag FF Max`.
-2. El panel llena nombre, categoria, slug, `App destino` y `Ruta en GLLYZI APP`.
+2. El panel llena nombre, categoria, slug, `App destino` y `Ruta en Glizzy Net`.
 3. Selecciona el archivo nuevo desde tu PC.
 4. Pulsa `Guardar cambio`.
 5. Pulsa `Publicar cambios`.
 
-Para editar uno ya publicado, pulsa `Reemplazar` en la tarjeta del archivo o vuelve a tocar la misma plantilla. Algunos archivos, como `Aimbot Drag FF Max`, tienen dos reglas dentro del mismo paquete; toca la regla que quieres reemplazar, por ejemplo `Assembly-CSharp-patch.bytes` o `localConfig.json`. Si usas la misma combinacion de `App destino` y `Ruta en GLLYZI APP`, el iPhone descarga solo el archivo cambiado y reemplaza esa copia local despues de verificar el SHA-256.
+Para editar uno ya publicado, pulsa `Reemplazar` en la tarjeta del archivo o vuelve a tocar la misma plantilla. Algunos archivos, como `Aimbot Drag FF Max`, tienen dos reglas dentro del mismo paquete; toca la regla que quieres reemplazar, por ejemplo `Assembly-CSharp-patch.bytes` o `localConfig.json`. Si usas la misma combinacion de `App destino` y `Ruta en Glizzy Net`, el iPhone descarga solo el archivo cambiado y reemplaza esa copia local despues de verificar el SHA-256.
 
 Para quitar un archivo integrado, pulsa `Quitar` en su plantilla y despues `Publicar cambios`. La app lo oculta despues de buscar actualizaciones. Para traerlo de vuelta, vuelve a tocar la plantilla, sube un archivo nuevo y publica.
 

@@ -260,7 +260,7 @@ init();
 
 async function init() {
   if (SUPABASE_KEY.startsWith("PON_AQUI_")) {
-    setLoginStatus("Falta pegar la publishable key del Supabase nuevo de GLLYZI APP en admin/app.js.", true);
+    setLoginStatus("Falta pegar la publishable key del Supabase nuevo de Glizzy Net en admin/app.js.", true);
     return;
   }
 
@@ -460,6 +460,7 @@ function setSession(session) {
 
   if (signedIn) {
     setLoginStatus("Sesion iniciada.", false, true);
+    switchSection(window.location.hash === "#keys" ? "keys" : state.activeSection);
     loadFiles();
     loadKeys();
   } else {
@@ -472,6 +473,9 @@ function setSession(session) {
 
 function switchSection(section) {
   state.activeSection = section;
+  if (window.location.hash !== `#${section}`) {
+    history.replaceState(null, "", `#${section}`);
+  }
   const showKeys = section === "keys";
   els.filesSection.classList.toggle("hidden", showKeys);
   els.keysSection.classList.toggle("hidden", !showKeys);
@@ -518,7 +522,7 @@ async function saveFile(event) {
     return;
   }
   if (!targetPath) {
-    setStatus("Completa la ruta que va a reemplazar en GLLYZI APP.");
+    setStatus("Completa la ruta que va a reemplazar en Glizzy Net.");
     return;
   }
   if (!isCompleteTargetPath(targetPath)) {
@@ -1243,7 +1247,7 @@ function gllyziCategory(category) {
 }
 
 function gllyziLabel(label) {
-  const clean = label || "GLLYZI APP";
+  const clean = label || "Glizzy Net";
   return clean.toLowerCase().includes("[gllyzi]") ? clean : `[gllyzi] ${clean}`;
 }
 
